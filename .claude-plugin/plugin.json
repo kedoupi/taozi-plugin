@@ -1,0 +1,9 @@
+{
+  "name": "taozi",
+  "version": "1.0.0",
+  "description": "Taozi 开发工具集 - 智能调度、19 个专家 Agent、Git 工作流",
+  "author": {
+    "name": "Taozi"
+  },
+  "keywords": ["workflow", "git", "agents", "subagent", "development"]
+}

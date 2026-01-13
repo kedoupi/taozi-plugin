@@ -1,0 +1,17 @@
+{
+  "name": "kedoupi",
+  "owner": {
+    "name": "kedoupi"
+  },
+  "plugins": [
+    {
+      "name": "taozi",
+      "source": {
+        "source": "url",
+        "url": "https://github.com/kedoupi/taozi-plugin.git"
+      },
+      "description": "Taozi 开发工具集 - 智能调度、19 个专家 Agent、Git 工作流",
+      "version": "1.0.0"
+    }
+  ]
+}
