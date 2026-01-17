@@ -320,6 +320,80 @@ A: `插件名@marketplace名`，例如 `taozi@kedoupi`
 
 ---
 
+---
+
+## 扩展指南
+
+### 添加新代理
+
+1. 在 `agents/` 目录创建 `<agent-name>.md`
+2. 使用标准 YAML frontmatter：
+
+```yaml
+---
+name: agent-name
+description: 描述（在什么场景主动使用）
+tools: Read, Write, Edit, Bash, Grep, Glob
+model: sonnet | opus | haiku
+---
+```
+
+3. 使用标准结构：
+```markdown
+## 角色定位
+## 核心技能
+## 工作方法
+## 输出格式
+## 最佳实践
+## 相关 Skills（如有）
+```
+
+4. 在 `commands/taozi.md` 中注册新代理
+
+### 添加新 Skill
+
+1. 在 `skills/` 目录创建新目录：`skills/<skill-name>/`
+2. 创建 `SKILL.md` 主文件：
+
+```yaml
+---
+name: skill-name
+description: 描述（何时使用此 skill）
+---
+```
+
+3. 如有详细内容，放入 `references/` 子目录
+4. 如有脚本模板，放入 `scripts/` 子目录
+
+### 添加新命令
+
+1. 在 `commands/` 目录创建 `<command-name>.md`
+2. 使用标准 YAML frontmatter：
+
+```yaml
+---
+name: command-name
+description: 描述
+allowed-tools: Tool1, Tool2
+argument-hint: [参数说明]
+---
+```
+
+### 代理模板规范
+
+- 核心内容控制在 30-50 行
+- 详细示例迁移到 skills/
+- 在末尾添加 `## 相关 Skills` 引用
+- 统一使用中文描述
+
+### 模型选择原则
+
+- **opus**: 复杂推理、架构设计、深度分析
+- **sonnet**: 日常开发任务（默认选择）
+- **haiku**: 简单查询、快速验证
+
+---
+
 ## 相关链接
 
 - [GitHub 仓库](https://github.com/kedoupi/taozi-plugin)
@@ -327,4 +401,4 @@ A: `插件名@marketplace名`，例如 `taozi@kedoupi`
 
 ---
 
-*最后更新：2026-01-14*
+*最后更新：2026-01-18*

@@ -1,4 +1,5 @@
 ---
+name: update-context
 description: 更新当前目录的 CLAUDE.md 上下文
 argument-hint: [path] 默认当前目录
 ---

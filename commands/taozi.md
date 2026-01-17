@@ -1,7 +1,8 @@
 ---
+name: taozi
+description: Taozi 智能调度 - 自动分析任务并调用合适的 subagent 执行
 allowed-tools: Task
 argument-hint: <任务描述>
-description: "Taozi 智能调度 - 自动分析任务并调用合适的 subagent 执行"
 ---
 
 # Taozi 智能调度
@@ -82,6 +83,46 @@ UX/界面设计/用户体验          → ui-ux-designer
 1. **单一任务** → 选择 1-2 个最相关的 agent
 2. **复杂任务** → 选择 2-4 个 agent 并行执行
 3. **优先直接相关** → 避免信息过载
+
+## 代理选择决策树
+
+```
+任务类型判断：
+├── 纯前端 UI/组件 → frontend-developer
+├── Next.js 特定问题 → nextjs-architecture-expert
+├── 前后端联动/完整功能 → fullstack-developer
+├── 仅 API/数据库设计 → backend-architect
+├── 类型系统问题 → typescript-pro
+├── Bug/错误/异常 → debugger
+├── 代码审查 → code-reviewer
+├── 测试相关 → testing-engineer
+└── 不确定 → 分析后选择最相关 1-2 个
+```
+
+## 模型选择策略
+
+| 模型 | 适用场景 | 代理示例 |
+|------|----------|----------|
+| **opus** | 架构设计、全栈开发、复杂重构、深度分析 | debugger, fullstack-developer |
+| **sonnet** | 日常开发、代码审查、测试、文档 | 大多数代理 |
+| **haiku** | 简单查询、格式化、快速验证 | 轻量任务 |
+
+## 协作模式
+
+### 顺序协作
+`架构 → 开发 → 测试 → 审查`
+
+适用于：完整功能开发流程
+
+### 并行协作
+`前端 + 后端 + 测试` 同时进行
+
+适用于：独立模块可并行开发
+
+### 迭代协作
+`开发 ↔ 审查` 循环
+
+适用于：需要多轮改进的任务
 
 ## 执行流程
 

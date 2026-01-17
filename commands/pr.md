@@ -1,4 +1,5 @@
 ---
+name: pr
 description: 推送分支并创建 GitHub PR
 allowed-tools: Bash(git:*), Bash(gh:*)
 ---

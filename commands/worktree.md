@@ -1,7 +1,8 @@
 ---
+name: worktree
 description: 创建 Git worktree 隔离开发环境
-argument-hint: [branch-name] 分支名称
 allowed-tools: Bash(git:*), Bash(pnpm:*), Bash(yarn:*), Bash(npm:*)
+argument-hint: [branch-name] 分支名称
 ---
 
 # Taozi Worktree 隔离开发

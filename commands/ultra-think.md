@@ -1,4 +1,5 @@
 ---
+name: ultra-think
 description: Deep analysis and problem solving with multi-dimensional thinking
 argument-hint: [problem or question to analyze]
 ---

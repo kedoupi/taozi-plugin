@@ -87,7 +87,37 @@ git clone git@github.com:kedoupi/taozi-plugin.git taozi
 
 ## Skills
 
-- **taozi-workflow** - Git 工作流知识库（worktree、提交规范、PR 流程）
+| Skill | 用途 |
+|-------|------|
+| typescript-patterns | TypeScript 高级类型模式参考 |
+| nextjs-architecture | Next.js App Router 架构模式 |
+| mcp-templates | MCP Server 开发模板 |
+| code-quality-checklist | 代码质量检查清单 |
+| git-conventions | Git 提交规范和工作流 |
+| testing-strategies | 测试策略和框架参考 |
+
+## 代理选择指南
+
+```
+任务类型 → 推荐代理
+────────────────────────
+纯前端 UI → frontend-developer
+Next.js 问题 → nextjs-architecture-expert
+前后端联动 → fullstack-developer
+API/数据库 → backend-architect
+类型问题 → typescript-pro
+Bug 调试 → debugger
+代码审查 → code-reviewer
+测试相关 → testing-engineer
+```
+
+### 模型选择
+
+| 模型 | 适用场景 |
+|------|----------|
+| opus | 架构设计、复杂分析、深度调试 |
+| sonnet | 日常开发、审查、测试、文档 |
+| haiku | 简单查询、格式化 |
 
 ## 使用示例
 

@@ -1,7 +1,8 @@
 ---
+name: cleanup
 description: PR 合并后清理 worktree 和分支
-argument-hint: [branch-name] 可选，默认当前分支
 allowed-tools: Bash(git:*)
+argument-hint: [branch-name] 可选，默认当前分支
 ---
 
 # Taozi 清理流程
