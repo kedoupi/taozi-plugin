@@ -149,6 +149,25 @@ async function getData(key: string) {
 
 ## 输出规范
 
+### 标准化结果格式
+```typescript
+interface AgentResult {
+  agent: "performance-engineer";
+  status: "success" | "failed" | "partial";
+  output: {
+    findings: string[];        // 性能瓶颈发现
+    recommendations: string[]; // 优化建议
+    artifacts?: string[];      // 修改的文件
+  };
+  context: {
+    bottlenecks: string[];     // 识别的瓶颈
+    metrics_before: Record<string, number>;
+    metrics_after?: Record<string, number>;
+    optimization_applied: boolean;
+  };
+}
+```
+
 ### 性能报告
 ```markdown
 ## 性能分析报告

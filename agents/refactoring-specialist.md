@@ -167,6 +167,24 @@ class GuideDog {
 
 ## 输出规范
 
+### 标准化结果格式
+```typescript
+interface AgentResult {
+  agent: "refactoring-specialist";
+  status: "success" | "failed" | "partial";
+  output: {
+    findings: string[];        // 代码异味发现
+    recommendations: string[]; // 重构建议
+    artifacts?: string[];      // 修改的文件
+  };
+  context: {
+    code_smells: string[];     // 识别的代码异味
+    techniques_applied: string[]; // 应用的重构手法
+    complexity_reduction: number; // 复杂度降低百分比
+  };
+}
+```
+
 ### 重构提案
 ```markdown
 ## 重构提案: [标题]

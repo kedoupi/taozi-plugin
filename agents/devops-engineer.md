@@ -139,6 +139,24 @@ spec:
 
 ## 输出规范
 
+### 标准化结果格式
+```typescript
+interface AgentResult {
+  agent: "devops-engineer";
+  status: "success" | "failed" | "partial";
+  output: {
+    findings: string[];        // 发现和分析
+    recommendations: string[]; // 建议和方案
+    artifacts?: string[];      // 生成的配置文件
+  };
+  context: {
+    infrastructure: string[];  // 涉及的基础设施
+    config_files: string[];    // 配置文件路径
+    deployment_status?: string;
+  };
+}
+```
+
 ### CI/CD Pipeline
 - 清晰的阶段划分（Build → Test → Deploy）
 - 缓存策略优化构建速度

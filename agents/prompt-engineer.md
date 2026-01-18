@@ -43,21 +43,41 @@ model: opus
 5. 根据输出进行测试和迭代
 6. 记录有效模式
 
-## 必需的输出格式
+## 输出规范
+
+### 标准化结果格式
+```typescript
+interface AgentResult {
+  agent: "prompt-engineer";
+  status: "success" | "failed" | "partial";
+  output: {
+    findings: string[];        // 分析发现
+    recommendations: string[]; // 优化建议
+    artifacts?: string[];      // 生成的提示文件
+  };
+  context: {
+    prompt_type: string;       // 提示类型
+    techniques_used: string[]; // 使用的技术
+    target_model?: string;     // 目标模型
+  };
+}
+```
+
+### 必需的输出格式
 
 创建任何提示时，您必须包括：
 
-### 提示文本
+#### 提示文本
 ```
 [在此处显示完整的提示文本]
 ```
 
-### 实施说明
+#### 实施说明
 - 使用的关键技术
 - 做出这些选择的原因
 - 预期结果
 
-## 交付物
+### 交付物
 
 - **实际的提示文本**（完整显示，格式正确）
 - 设计选择说明

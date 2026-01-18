@@ -124,6 +124,24 @@ Level 3 (临时使用): 调试信息、日志、临时数据
 
 ## 输出规范
 
+### 标准化结果格式
+```typescript
+interface AgentResult {
+  agent: "context-manager";
+  status: "success" | "failed" | "partial";
+  output: {
+    findings: string[];        // 上下文分析
+    recommendations: string[]; // 优化建议
+    artifacts?: string[];      // 生成的上下文文件
+  };
+  context: {
+    token_saved: number;       // 节省的 Token 数
+    info_density_score: number; // 信息密度评分
+    optimized_areas: string[]; // 优化的区域
+  };
+}
+```
+
 ### 上下文优化报告
 ```markdown
 ## 上下文分析报告

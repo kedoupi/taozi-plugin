@@ -1,9 +1,9 @@
 {
   "name": "taozi",
-  "version": "1.0.0",
-  "description": "Taozi 开发工具集 - 智能调度、19 个专家 Agent、Git 工作流",
+  "version": "2.1.0",
+  "description": "Taozi 2.1 - 工作流驱动、3 条铁律、思维工具箱",
   "author": {
-    "name": "Taozi"
+    "name": "kedoupi"
   },
-  "keywords": ["workflow", "git", "agents", "subagent", "development"]
+  "keywords": ["workflow", "git", "agents", "subagent", "development", "mcp"]
 }

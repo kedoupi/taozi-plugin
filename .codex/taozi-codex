@@ -1,0 +1,406 @@
+#!/usr/bin/env node
+/**
+ * Taozi CLI for Codex
+ *
+ * 命令:
+ *   bootstrap     初始化 Codex 集成，生成 AGENTS.md
+ *   find-agents   列出所有可用的 Agent
+ *   use-agent     输出指定 Agent 的内容
+ *   find-skills   列出所有可用的 Skill
+ *   use-skill     输出指定 Skill 的内容
+ */
+
+const fs = require('fs');
+const path = require('path');
+
+// 获取 Taozi 安装目录
+const TAOZI_DIR = process.env.TAOZI_DIR || path.join(process.env.HOME, '.codex/taozi');
+const AGENTS_DIR = path.join(TAOZI_DIR, 'agents');
+const SKILLS_DIR = path.join(TAOZI_DIR, 'skills');
+const CODEX_DIR = process.env.HOME ? path.join(process.env.HOME, '.codex') : null;
+
+// 颜色输出
+const colors = {
+    reset: '\x1b[0m',
+    green: '\x1b[32m',
+    yellow: '\x1b[33m',
+    blue: '\x1b[34m',
+    cyan: '\x1b[36m',
+    dim: '\x1b[2m'
+};
+
+function log(msg) { console.log(msg); }
+function success(msg) { console.log(`${colors.green}✓${colors.reset} ${msg}`); }
+function info(msg) { console.log(`${colors.blue}ℹ${colors.reset} ${msg}`); }
+function warn(msg) { console.log(`${colors.yellow}⚠${colors.reset} ${msg}`); }
+
+/**
+ * 解析 Markdown 文件的 frontmatter
+ */
+function parseFrontmatter(content) {
+    const match = content.match(/^---\n([\s\S]*?)\n---/);
+    if (!match) return { metadata: {}, body: content };
+
+    const metadata = {};
+    match[1].split('\n').forEach(line => {
+        const [key, ...valueParts] = line.split(':');
+        if (key && valueParts.length) {
+            metadata[key.trim()] = valueParts.join(':').trim();
+        }
+    });
+
+    return {
+        metadata,
+        body: content.slice(match[0].length).trim()
+    };
+}
+
+/**
+ * 列出目录中的所有 .md 文件
+ * 支持: 直接 .md 文件、目录下的 SKILL.md/index.md/同名.md
+ */
+function listMarkdownFiles(dir) {
+    if (!fs.existsSync(dir)) return [];
+
+    const items = [];
+    const entries = fs.readdirSync(dir, { withFileTypes: true });
+
+    for (const entry of entries) {
+        const fullPath = path.join(dir, entry.name);
+
+        if (entry.isFile() && entry.name.endsWith('.md')) {
+            const content = fs.readFileSync(fullPath, 'utf-8');
+            const { metadata } = parseFrontmatter(content);
+            items.push({
+                name: path.basename(entry.name, '.md'),
+                description: metadata.description || '',
+                path: fullPath
+            });
+        } else if (entry.isDirectory()) {
+            // 检查目录下的入口文件，按优先级: SKILL.md > index.md > 同名.md
+            const skillPath = path.join(fullPath, 'SKILL.md');
+            const indexPath = path.join(fullPath, 'index.md');
+            const namedPath = path.join(fullPath, `${entry.name}.md`);
+
+            let mdPath = null;
+            if (fs.existsSync(skillPath)) mdPath = skillPath;
+            else if (fs.existsSync(indexPath)) mdPath = indexPath;
+            else if (fs.existsSync(namedPath)) mdPath = namedPath;
+
+            if (mdPath) {
+                const content = fs.readFileSync(mdPath, 'utf-8');
+                const { metadata } = parseFrontmatter(content);
+                items.push({
+                    name: entry.name,
+                    description: metadata.description || '',
+                    path: mdPath
+                });
+            }
+        }
+    }
+
+    return items;
+}
+
+/**
+ * 读取指定的 Agent 或 Skill 内容
+ * 支持: 直接 .md 文件、目录下的 SKILL.md/index.md/同名.md
+ */
+function readItem(dir, name) {
+    const directPath = path.join(dir, `${name}.md`);
+    if (fs.existsSync(directPath)) {
+        return fs.readFileSync(directPath, 'utf-8');
+    }
+
+    // 尝试目录下的 SKILL.md (技能约定)
+    const skillPath = path.join(dir, name, 'SKILL.md');
+    if (fs.existsSync(skillPath)) {
+        return fs.readFileSync(skillPath, 'utf-8');
+    }
+
+    const indexPath = path.join(dir, name, 'index.md');
+    if (fs.existsSync(indexPath)) {
+        return fs.readFileSync(indexPath, 'utf-8');
+    }
+
+    const namedPath = path.join(dir, name, `${name}.md`);
+    if (fs.existsSync(namedPath)) {
+        return fs.readFileSync(namedPath, 'utf-8');
+    }
+
+    return null;
+}
+
+// ============ 命令实现 ============
+
+/**
+ * bootstrap: 生成 AGENTS.md 供 Codex 使用
+ */
+function cmdBootstrap() {
+    info('初始化 Taozi for Codex...');
+
+    if (!CODEX_DIR) {
+        warn('无法确定 Codex 目录');
+        return;
+    }
+
+    const agents = listMarkdownFiles(AGENTS_DIR);
+    const skills = listMarkdownFiles(SKILLS_DIR);
+
+    // 生成 AGENTS.md 内容
+    const content = `# Taozi Agents
+
+Taozi 提供 ${agents.length} 个专家 Agent 和 ${skills.length} 个 Skill。
+
+## 使用方法
+
+使用 taozi-codex CLI 来调用 Agent 和 Skill:
+
+\`\`\`bash
+# 列出所有 Agent
+~/.codex/taozi/.codex/taozi-codex find-agents
+
+# 使用特定 Agent
+~/.codex/taozi/.codex/taozi-codex use-agent fullstack-developer
+
+# 列出所有 Skill
+~/.codex/taozi/.codex/taozi-codex find-skills
+
+# 使用特定 Skill
+~/.codex/taozi/.codex/taozi-codex use-skill typescript-patterns
+\`\`\`
+
+## 可用 Agent
+
+| Agent | 描述 |
+|-------|------|
+${agents.map(a => `| ${a.name} | ${a.description} |`).join('\n')}
+
+## 可用 Skill
+
+| Skill | 描述 |
+|-------|------|
+${skills.map(s => `| ${s.name} | ${s.description} |`).join('\n')}
+
+## Agent 分类 (10 个核心)
+
+### 执行层
+- fullstack-developer - 端到端开发
+- devops-engineer - CI/CD、容器化
+- debugger - Bug 诊断
+
+### 质量层
+- code-reviewer - 代码审查
+- testing-engineer - 测试策略
+
+### 优化层
+- performance-engineer - 性能优化
+- refactoring-specialist - 代码重构
+
+### 支撑层
+- documentation-engineer - 技术文档
+- prompt-engineer - LLM 提示优化
+- context-manager - 上下文管理
+`;
+
+    // 写入 AGENTS.md
+    const agentsPath = path.join(CODEX_DIR, 'AGENTS.md');
+    fs.writeFileSync(agentsPath, content);
+    success(`已生成: ${agentsPath}`);
+
+    log('');
+    log('Taozi for Codex 初始化完成！');
+    log('');
+    log('在 Codex 中，你可以让 AI 运行以下命令:');
+    log(`  ${colors.cyan}~/.codex/taozi/.codex/taozi-codex find-agents${colors.reset}`);
+    log(`  ${colors.cyan}~/.codex/taozi/.codex/taozi-codex use-agent <name>${colors.reset}`);
+}
+
+/**
+ * find-agents: 列出所有 Agent
+ */
+function cmdFindAgents(asJson = false) {
+    const agents = listMarkdownFiles(AGENTS_DIR);
+
+    if (agents.length === 0) {
+        warn(`未找到 Agent，请检查目录: ${AGENTS_DIR}`);
+        return;
+    }
+
+    if (asJson) {
+        console.log(JSON.stringify({ count: agents.length, agents }, null, 2));
+        return;
+    }
+
+    log('');
+    log(`${colors.cyan}可用 Agent (${agents.length} 个):${colors.reset}`);
+    log('');
+
+    agents.forEach(a => {
+        log(`  ${colors.green}${a.name}${colors.reset}`);
+        if (a.description) {
+            log(`    ${colors.dim}${a.description}${colors.reset}`);
+        }
+    });
+
+    log('');
+    log(`使用: ${colors.cyan}taozi-codex use-agent <name>${colors.reset}`);
+}
+
+/**
+ * use-agent: 输出指定 Agent 的内容
+ */
+function cmdUseAgent(name, asJson = false) {
+    if (!name) {
+        warn('请指定 Agent 名称');
+        log('使用: taozi-codex use-agent <name>');
+        return;
+    }
+
+    const content = readItem(AGENTS_DIR, name);
+
+    if (!content) {
+        warn(`未找到 Agent: ${name}`);
+        log('');
+        log('可用的 Agent:');
+        listMarkdownFiles(AGENTS_DIR).forEach(a => log(`  - ${a.name}`));
+        return;
+    }
+
+    if (asJson) {
+        console.log(JSON.stringify({ name, content }, null, 2));
+    } else {
+        console.log(content);
+    }
+}
+
+/**
+ * find-skills: 列出所有 Skill
+ */
+function cmdFindSkills(asJson = false) {
+    const skills = listMarkdownFiles(SKILLS_DIR);
+
+    if (skills.length === 0) {
+        warn(`未找到 Skill，请检查目录: ${SKILLS_DIR}`);
+        return;
+    }
+
+    if (asJson) {
+        console.log(JSON.stringify({ count: skills.length, skills }, null, 2));
+        return;
+    }
+
+    log('');
+    log(`${colors.cyan}可用 Skill (${skills.length} 个):${colors.reset}`);
+    log('');
+
+    skills.forEach(s => {
+        log(`  ${colors.green}${s.name}${colors.reset}`);
+        if (s.description) {
+            log(`    ${colors.dim}${s.description}${colors.reset}`);
+        }
+    });
+
+    log('');
+    log(`使用: ${colors.cyan}taozi-codex use-skill <name>${colors.reset}`);
+}
+
+/**
+ * use-skill: 输出指定 Skill 的内容
+ */
+function cmdUseSkill(name, asJson = false) {
+    if (!name) {
+        warn('请指定 Skill 名称');
+        log('使用: taozi-codex use-skill <name>');
+        return;
+    }
+
+    const content = readItem(SKILLS_DIR, name);
+
+    if (!content) {
+        warn(`未找到 Skill: ${name}`);
+        log('');
+        log('可用的 Skill:');
+        listMarkdownFiles(SKILLS_DIR).forEach(s => log(`  - ${s.name}`));
+        return;
+    }
+
+    if (asJson) {
+        console.log(JSON.stringify({ name, content }, null, 2));
+    } else {
+        console.log(content);
+    }
+}
+
+/**
+ * 显示帮助
+ */
+function showHelp() {
+    log(`
+${colors.cyan}Taozi CLI for Codex${colors.reset}
+
+${colors.yellow}用法:${colors.reset}
+  taozi-codex <command> [options]
+
+${colors.yellow}命令:${colors.reset}
+  bootstrap          初始化 Codex 集成，生成 ~/.codex/AGENTS.md
+  find-agents        列出所有可用的 Agent
+  use-agent <name>   输出指定 Agent 的内容
+  find-skills        列出所有可用的 Skill
+  use-skill <name>   输出指定 Skill 的内容
+
+${colors.yellow}选项:${colors.reset}
+  --json             以 JSON 格式输出
+
+${colors.yellow}示例:${colors.reset}
+  taozi-codex bootstrap
+  taozi-codex find-agents
+  taozi-codex use-agent fullstack-developer
+  taozi-codex find-skills --json
+  taozi-codex use-skill typescript-patterns
+
+${colors.yellow}环境变量:${colors.reset}
+  TAOZI_DIR          Taozi 安装目录 (默认: ~/.codex/taozi)
+`);
+}
+
+// ============ 主入口 ============
+
+const [,, command, ...args] = process.argv;
+const asJson = args.includes('--json');
+const filteredArgs = args.filter(a => a !== '--json');
+
+switch (command) {
+    case 'bootstrap':
+        cmdBootstrap();
+        break;
+
+    case 'find-agents':
+        cmdFindAgents(asJson);
+        break;
+
+    case 'use-agent':
+        cmdUseAgent(filteredArgs[0], asJson);
+        break;
+
+    case 'find-skills':
+        cmdFindSkills(asJson);
+        break;
+
+    case 'use-skill':
+        cmdUseSkill(filteredArgs[0], asJson);
+        break;
+
+    case 'help':
+    case '--help':
+    case '-h':
+        showHelp();
+        break;
+
+    default:
+        if (command) {
+            warn(`未知命令: ${command}`);
+        }
+        showHelp();
+        break;
+}

@@ -229,6 +229,25 @@ graph TB
 
 ## 输出规范
 
+### 标准化结果格式
+```typescript
+interface AgentResult {
+  agent: "documentation-engineer";
+  status: "success" | "failed" | "partial";
+  output: {
+    findings: string[];        // 文档分析
+    recommendations: string[]; // 改进建议
+    artifacts?: string[];      // 生成的文档文件
+  };
+  context: {
+    doc_type: string;          // 文档类型
+    target_audience: string;   // 目标读者
+    files_created: string[];   // 创建的文件
+  };
+}
+```
+
+### 文档创建流程
 创建文档时：
 1. 先确定目标读者
 2. 制定文档结构大纲
