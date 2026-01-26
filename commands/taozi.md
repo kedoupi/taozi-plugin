@@ -1,6 +1,6 @@
 ---
 name: taozi
-description: Taozi 2.1 智能调度 - 意图理解 + 工作流匹配 + 3 条铁律
+description: 智能调度助手
 allowed-tools: Task
 argument-hint: <任务描述>
 ---

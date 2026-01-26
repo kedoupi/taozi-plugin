@@ -1,5 +1,5 @@
 ---
-name: worktree
+name: taozi:worktree
 description: 创建 Git worktree 隔离开发环境
 allowed-tools: Bash(git:*), Bash(pnpm:*), Bash(yarn:*), Bash(npm:*)
 argument-hint: [branch-name] 分支名称
@@ -36,7 +36,7 @@ argument-hint: [branch-name] 分支名称
 REPO_NAME=$(basename $(git rev-parse --show-toplevel))
 
 # 2. 设置 worktree 路径
-WORKTREE_PATH="$HOME/.claude-worktree/$REPO_NAME/<branch-name>"
+WORKTREE_PATH="$HOME/.claude-worktrees/$REPO_NAME/<branch-name>"
 
 # 3. 创建目录
 mkdir -p $(dirname $WORKTREE_PATH)
@@ -65,7 +65,7 @@ fi
 ## 执行
 
 1. 确认或生成分支名称
-2. 创建 worktree 到 `~/.claude-worktree/<repo>/<branch>`
+2. 创建 worktree 到 `~/.claude-worktrees/<repo>/<branch>`
 3. 安装依赖（如果是 Node.js 项目）
 4. 输出新工作目录路径，提示用户后续操作
 

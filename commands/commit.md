@@ -1,5 +1,5 @@
 ---
-name: commit
+name: taozi:commit
 description: 使用 emoji + 约定式格式创建 Git 提交
 allowed-tools: Bash(git:*), Read, Grep
 ---

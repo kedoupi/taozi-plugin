@@ -6,12 +6,9 @@
   "plugins": [
     {
       "name": "taozi",
-      "source": {
-        "source": "url",
-        "url": "https://github.com/kedoupi/taozi-plugin.git"
-      },
-      "description": "Taozi 2.1 - 工作流驱动、3 条铁律、思维工具箱",
-      "version": "2.1.0"
+      "source": "./",
+      "description": "Taozi 2.1.2 - 工作流驱动、3 条铁律、思维工具箱",
+      "version": "2.1.2"
     }
   ]
 }
