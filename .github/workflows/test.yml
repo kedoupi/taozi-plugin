@@ -1,0 +1,62 @@
+name: Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: 运行测试
+        run: node tests/run-all.js
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 验证 JSON 文件
+        run: |
+          # hooks.json 必须是有效 JSON
+          node -e "JSON.parse(require('fs').readFileSync('hooks/hooks.json', 'utf8'))"
+          echo "✓ hooks.json 格式正确"
+
+          # plugin.json 必须是有效 JSON
+          node -e "JSON.parse(require('fs').readFileSync('.claude-plugin/plugin.json', 'utf8'))"
+          echo "✓ plugin.json 格式正确"
+
+      - name: 验证文件结构
+        run: |
+          # 所有 agents 必须有 .md 文件
+          for f in agents/*.md; do
+            [ -f "$f" ] && echo "✓ Agent: $f" || { echo "✗ 缺少: $f"; exit 1; }
+          done
+
+          # 所有 skills 必须有 SKILL.md
+          for d in skills/*/; do
+            [ -f "$d/SKILL.md" ] && echo "✓ Skill: $d" || { echo "✗ 缺少: $d/SKILL.md"; exit 1; }
+          done
+
+          # 所有 rules 必须有内容
+          for f in rules/*.md; do
+            size=$(wc -c < "$f")
+            [ "$size" -gt 50 ] && echo "✓ Rule: $f ($size bytes)" || { echo "✗ Rule 太短: $f"; exit 1; }
+          done
+
+          # 所有 hook 脚本必须存在
+          for f in scripts/hooks/*.js; do
+            [ -f "$f" ] && echo "✓ Hook script: $f" || { echo "✗ 缺少: $f"; exit 1; }
+          done
+
+      - name: 验证 shell 脚本
+        run: |
+          bash -n install.sh && echo "✓ install.sh 语法正确" || { echo "✗ install.sh 语法错误"; exit 1; }

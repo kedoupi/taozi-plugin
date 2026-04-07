@@ -1,0 +1,7 @@
+{
+  "min_session_length": 5,
+  "learned_skills_path": "~/.claude/taozi/learned",
+  "auto_extract": true,
+  "max_learned_items": 100,
+  "ttl_days": 90
+}

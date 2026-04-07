@@ -1,9 +1,30 @@
 {
   "name": "taozi",
-  "version": "2.1.2",
-  "description": "Taozi 2.1.2 - 工作流驱动、3 条铁律、思维工具箱",
+  "version": "3.0.0",
+  "description": "Taozi 3.0 - 工作流驱动、3 条铁律、思维工具箱、自动化 Hooks",
   "author": {
-    "name": "kedoupi"
+    "name": "kedoupi",
+    "url": "https://github.com/kedoupi"
   },
-  "keywords": ["workflow", "git", "agents", "subagent", "development", "mcp"]
+  "homepage": "https://github.com/kedoupi/taozi-plugin",
+  "repository": "https://github.com/kedoupi/taozi-plugin",
+  "license": "MIT",
+  "keywords": [
+    "claude-code",
+    "agents",
+    "skills",
+    "hooks",
+    "commands",
+    "rules",
+    "workflow",
+    "git",
+    "development",
+    "chinese",
+    "iron-rules",
+    "thinking-tools",
+    "tdd",
+    "code-review"
+  ],
+  "commands": "./commands",
+  "skills": "./skills"
 }

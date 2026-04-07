@@ -1,0 +1,56 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [{ "type": "command", "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/no-verify-guard.js\"" }],
+        "description": "阻止 git --no-verify 标志（3 铁律强制执行：调试铁律）",
+        "id": "pre:bash:no-verify"
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [{ "type": "command", "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/tmux-hint.js\"" }],
+        "description": "dev server 建议使用 tmux",
+        "id": "pre:bash:tmux-hint"
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [{ "type": "command", "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/console-warn.js\"" }],
+        "description": "编辑后检测 console.log 语句",
+        "id": "post:edit:console-warn"
+      },
+      {
+        "matcher": "Write",
+        "hooks": [{ "type": "command", "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/block-random-md.js\"" }],
+        "description": "阻止随意创建 .md 文件",
+        "id": "post:write:block-random-md"
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "*",
+        "hooks": [{ "type": "command", "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/session-start.js\"" }],
+        "description": "会话启动时加载上次上下文",
+        "id": "session:start"
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "*",
+        "hooks": [{ "type": "command", "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/session-end.js\"" }],
+        "description": "会话结束时保存状态",
+        "id": "stop:session-end"
+      }
+    ],
+    "PreCompact": [
+      {
+        "matcher": "*",
+        "hooks": [{ "type": "command", "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/pre-compact.js\"" }],
+        "description": "压缩前保存关键上下文",
+        "id": "pre:compact"
+      }
+    ]
+  }
+}

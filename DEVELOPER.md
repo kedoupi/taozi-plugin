@@ -10,6 +10,10 @@
 - [踩坑记录](#踩坑记录)
 - [开发者本地配置](#开发者本地配置)
 - [用户安装方式](#用户安装方式)
+- [Hooks 架构](#hooks-架构)
+- [Rules 架构](#rules-架构)
+- [测试框架](#测试框架)
+- [Scripts 工具库](#scripts-工具库)
 
 ---
 
@@ -46,10 +50,30 @@
 │   └── *.md
 ├── commands/                     # 斜杠命令
 │   └── *.md
+├── hooks/                        # Hook 配置
+│   └── hooks.json                # 8 个 Hook，5 个事件
+├── rules/                        # 规则文件
+│   ├── iron-rules.md             # 3 条铁律
+│   ├── coding-style.md           # 编码风格
+│   ├── git-workflow.md           # Git 工作流
+│   ├── testing.md                # 测试规范
+│   ├── security.md               # 安全规范
+│   └── performance.md            # 性能规范
+├── scripts/                      # 脚本
+│   ├── lib/utils.js              # 共享工具库
+│   └── hooks/                    # Hook 脚本（8 个）
 ├── skills/                       # 技能库
 │   └── */SKILL.md
+├── tests/                        # 测试（209 个）
+│   ├── run-all.js                # 测试运行器
+│   ├── lib/utils.test.js
+│   ├── agents/agents.test.js
+│   ├── skills/skills.test.js
+│   ├── hooks/hooks.test.js
+│   └── rules/rules.test.js
 ├── README.md                     # 用户文档
-└── DEVELOPER.md                  # 本文件
+├── DEVELOPER.md                  # 本文件
+└── CONTRIBUTING.md               # 贡献指南
 ```
 
 ---
@@ -394,6 +418,175 @@ argument-hint: [参数说明]
 
 ---
 
+## Hooks 架构
+
+### 工作原理
+
+Hooks 是 Claude Code 插件的自动化拦截机制。当特定事件触发时，Claude Code 执行对应的脚本，通过退出码决定是否允许操作继续。
+
+**退出码约定**：
+- `exit(0)` — 允许，操作继续
+- `exit(2)` — 阻止，操作被拦截（Claude 会看到 stderr 输出作为反馈）
+
+**数据流**：Claude Code 通过 stdin 传入 JSON（包含 `tool_input` 等字段），脚本通过 stdout/stderr 返回信息。
+
+### 5 个事件
+
+| 事件 | 触发时机 | 典型用途 |
+|------|---------|---------|
+| `PreToolUse` | 工具调用前 | 拦截危险命令、提供建议 |
+| `PostToolUse` | 工具调用后 | 后置检查、质量守卫 |
+| `SessionStart` | 会话启动时 | 加载上下文、恢复状态 |
+| `Stop` | 会话结束时 | 保存状态、清理资源 |
+| `PreCompact` | 上下文压缩前 | 保留关键信息 |
+
+### 8 个内置 Hook
+
+| ID | 事件 | 描述 |
+|----|------|------|
+| `pre:bash:no-verify` | PreToolUse | 阻止 `git --no-verify`（铁律 1 强制执行） |
+| `pre:bash:tmux-hint` | PreToolUse | dev server 建议使用 tmux |
+| `post:edit:console-warn` | PostToolUse | 编辑后检测 `console.log` 语句 |
+| `post:write:block-random-md` | PostToolUse | 阻止随意创建 `.md` 文件 |
+| `session:start` | SessionStart | 会话启动时加载上次上下文 |
+| `stop:session-end` | Stop | 会话结束时保存状态 |
+| `pre:compact` | PreCompact | 压缩前保存关键上下文 |
+
+### hooks.json 格式
+
+```json
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [{ "type": "command", "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/your-hook.js\"" }],
+        "description": "描述",
+        "id": "唯一标识"
+      }
+    ]
+  }
+}
+```
+
+- `matcher`：工具名匹配（支持 `|` 分隔多个，如 `"Edit|Write"`，`"*"` 匹配所有）
+- `${CLAUDE_PLUGIN_ROOT}`：插件根目录环境变量
+
+### 如何添加新 Hook
+
+1. 在 `scripts/hooks/` 创建脚本（使用 `require('../lib/utils')` 共享工具）
+2. 在 `hooks/hooks.json` 中注册
+3. 在 `tests/hooks/hooks.test.js` 添加对应测试
+
+---
+
+## Rules 架构
+
+### Rules vs Skills
+
+| 维度 | Rules | Skills |
+|------|-------|--------|
+| 性质 | 必须遵守的约束 | 按需引用的知识 |
+| 加载方式 | 对话中自动遵循 | 任务相关时自动引用 |
+| 内容 | 编码风格、安全底线、Git 规范 | 框架用法、模式参考、工具链 |
+| 违反后果 | 被视为错误行为 | 最多是缺少最佳实践 |
+
+### 6 个 Rule 文件
+
+| 文件 | 描述 |
+|------|------|
+| `iron-rules.md` | 3 条铁律：调试铁律、TDD 铁律、验证铁律 |
+| `coding-style.md` | 编码风格：不可变性优先、命名规范、函数式倾向 |
+| `git-workflow.md` | Git 规范：Conventional Commits、分支策略 |
+| `testing.md` | 测试规范：覆盖率要求、TDD 流程 |
+| `security.md` | 安全规范：输入验证、密钥管理、依赖安全 |
+| `performance.md` | 性能规范：模型选择策略、过早优化原则 |
+
+### 共通 vs 特定
+
+当前 Rules 均为语言无关的通用规范。未来可按需添加语言特定规则（如 `rules/typescript.md`），Claude 会根据项目技术栈自动应用对应规则。
+
+---
+
+## 测试框架
+
+### 零依赖设计
+
+测试框架使用纯 Node.js `assert` 模块，不依赖任何第三方测试库（jest、mocha 等）。
+
+- **运行器**：`tests/run-all.js` 自动发现并执行所有 `*.test.js` 文件
+- **API**：全局注入 `test(name, fn)` 和 `assert`
+- **运行**：`node tests/run-all.js`
+
+### 227 个测试覆盖
+
+| 测试文件 | 覆盖范围 |
+|---------|---------|
+| `lib/utils.test.js` | 共享工具库（文件操作、Git 工具、YAML 解析等） |
+| `agents/agents.test.js` | Agent 定义结构验证（frontmatter、必填字段） |
+| `skills/skills.test.js` | Skill 定义结构验证（SKILL.md 存在性、frontmatter） |
+| `hooks/hooks.test.js` | Hook 脚本验证（hooks.json 格式、脚本存在性） |
+| `rules/rules.test.js` | Rule 文件验证（文件存在性、内容非空） |
+
+### 如何添加新测试
+
+在 `tests/` 目录创建 `*.test.js` 文件：
+
+```javascript
+// tests/my-feature/my-test.test.js
+const assert = require('assert');
+const { someFunction } = require('../../scripts/lib/utils');
+
+test('功能描述', () => {
+  assert.strictEqual(someFunction('input'), 'expected');
+});
+```
+
+`test()` 和 `assert` 由 `run-all.js` 通过 `global` 注入，无需额外引入。
+
+---
+
+## Scripts 工具库
+
+### 共享工具 (`scripts/lib/utils.js`)
+
+所有 Hook 脚本共享的工具函数库，提供：
+
+| 模块 | 函数 | 用途 |
+|------|------|------|
+| 日志 | `log()`, `warn()`, `error()` | 统一前缀 `[Taozi]` 的 stderr 输出 |
+| 输入 | `readStdinJson()` | 读取 Claude Code stdin JSON |
+| 文件 | `ensureDir()`, `readFile()`, `writeFile()`, `readJson()`, `writeJson()` | 文件读写操作 |
+| 搜索 | `findFiles(dir, pattern)` | 递归文件搜索 |
+| Git | `isGitRepo()`, `getGitRoot()`, `getGitModifiedFiles()` | Git 仓库信息 |
+| 日期 | `getDateString()`, `getDateTimeString()` | ISO 格式日期字符串 |
+| 路径 | `getPluginRoot()`, `getTaoziDir()`, `getSessionsDir()` | 插件和数据目录 |
+| 解析 | `parseFrontmatter(content)` | YAML frontmatter 解析 |
+
+### Hook 脚本 (`scripts/hooks/`)
+
+每个 Hook 脚本遵循统一模式：
+
+```javascript
+#!/usr/bin/env node
+const { readStdinJson, error } = require('../lib/utils');
+
+const input = readStdinJson();
+if (!input || !input.tool_input) {
+  process.exit(0); // 无有效输入，允许继续
+}
+
+// 检查逻辑
+if (shouldBlock) {
+  error('阻止原因');
+  process.exit(2); // 阻止
+}
+
+process.exit(0); // 允许
+```
+
+---
+
 ## 相关链接
 
 - [GitHub 仓库](https://github.com/kedoupi/taozi-plugin)
@@ -401,4 +594,4 @@ argument-hint: [参数说明]
 
 ---
 
-*最后更新：2026-01-18*
+*最后更新：2026-04-07*

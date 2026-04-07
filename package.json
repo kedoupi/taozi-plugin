@@ -1,0 +1,53 @@
+{
+  "name": "taozi-universal",
+  "version": "3.0.0",
+  "description": "Taozi Plugin - 工作流驱动、3 条铁律、思维工具箱、自动化 Hooks。支持 Claude Code / OpenCode / Codex。",
+  "author": {
+    "name": "kedoupi",
+    "url": "https://github.com/kedoupi"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/kedoupi/taozi-plugin",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kedoupi/taozi-plugin.git"
+  },
+  "keywords": [
+    "claude-code",
+    "opencode",
+    "codex",
+    "plugin",
+    "agents",
+    "skills",
+    "hooks",
+    "rules",
+    "workflow",
+    "chinese",
+    "iron-rules",
+    "tdd",
+    "code-review",
+    "security",
+    "continuous-learning"
+  ],
+  "files": [
+    "agents/",
+    "commands/",
+    "hooks/",
+    "rules/",
+    "scripts/",
+    "skills/",
+    "tests/",
+    "install.sh",
+    "CONTRIBUTING.md",
+    "DEVELOPER.md",
+    "README.md"
+  ],
+  "scripts": {
+    "test": "node tests/run-all.js",
+    "lint": "node -e \"JSON.parse(require('fs').readFileSync('hooks/hooks.json','utf8'))\" && echo '✓ hooks.json valid'",
+    "install-plugin": "bash install.sh"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
