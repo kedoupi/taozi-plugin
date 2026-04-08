@@ -1,8 +1,17 @@
-# Taozi Plugin 3.1
+# Taozi Plugin 3.2
 
 智能开发工具集 - 工作流驱动、3 条铁律、思维工具箱、自动化 Hooks。
 
 支持 **Claude Code** / **OpenCode** / **Codex** 多平台。
+
+## 3.2 新特性
+
+- **5 个新 Agent**: typescript-reviewer, python-reviewer, go-reviewer, java-reviewer, chief-of-staff（共 23 个）
+- **4 个新 Command**: /security-scan, /model-route, /quality-gate, /skill-create（共 25 个）
+- **5 个新 Skill**: swift-concurrency, foundation-models, springboot-tdd, springboot-security, deep-research（共 31 个）
+- **Java Rules**: rules/java/ 语言规则（共 5 语言生态，31 个 rules 文件）
+- **MCP Configs**: mcp-configs/ 目录，GitHub/Supabase/Vercel 开箱即用
+- **语言专项审查**: 每个主流语言有独立 reviewer agent，聚焦语言特有问题
 
 ## 3.1 新特性
 
@@ -99,6 +108,10 @@ curl -fsSL https://raw.githubusercontent.com/kedoupi/taozi-plugin/main/install.s
 | `/instinct-export` | 导出学习模式 |
 | `/multi-plan` | 多 Agent 协作规划 |
 | `/multi-execute` | 多 Agent 并行执行 |
+| `/security-scan` | 独立安全扫描（OWASP/密钥/依赖漏洞） |
+| `/model-route` | 根据任务推荐最优模型 |
+| `/quality-gate` | 发布前质量门禁（构建/测试/lint/安全） |
+| `/skill-create` | 手动创建可复用 Skill |
 
 ## 工作流 (Workflows)
 
@@ -113,7 +126,12 @@ curl -fsSL https://raw.githubusercontent.com/kedoupi/taozi-plugin/main/install.s
 | refactoring | 重构, 改进, 清理 | refactoring → testing |
 | documentation | 文档, README, 注释 | documentation |
 
-## Agents (18 个)
+## Agents (23 个)
+
+### 编排层
+| Agent | 专长 | 模型 |
+|-------|------|------|
+| chief-of-staff | 高层任务编排、Agent 调度、结果汇总 | Opus |
 
 ### 执行层
 | Agent | 专长 | 模型 |
@@ -132,7 +150,11 @@ curl -fsSL https://raw.githubusercontent.com/kedoupi/taozi-plugin/main/install.s
 ### 质量层
 | Agent | 专长 | 模型 |
 |-------|------|------|
-| code-reviewer | 代码质量、安全性审查 | Sonnet |
+| code-reviewer | 代码质量、安全性审查（通用） | Sonnet |
+| typescript-reviewer | TypeScript 类型安全、any 滥用、React hooks | Sonnet |
+| python-reviewer | Python 类型注解、async 陷阱、可变默认参数 | Sonnet |
+| go-reviewer | goroutine 泄漏、error 处理、channel 死锁 | Sonnet |
+| java-reviewer | Spring 反模式、JPA N+1、依赖注入 | Sonnet |
 | testing-engineer | 测试策略、TDD、覆盖率 | Sonnet |
 | tdd-guide | TDD 循环强制、RED→GREEN→REFACTOR | Sonnet |
 | e2e-runner | Playwright E2E 测试、Page Object Model | Sonnet |
@@ -180,8 +202,13 @@ Claude 根据任务自动引用相关知识库（`skills/*/SKILL.md`）：
 | `database-migrations` | 零停机迁移/Prisma/Drizzle |
 | `security-patterns` | OWASP Top 10 中文版 |
 | `swift-patterns` | SwiftUI/actor 并发/SwiftData |
+| `swift-concurrency` | Swift 6.2 严格并发、Sendable、typed throws |
+| `foundation-models` | Apple 设备端 AI、FoundationModels 框架 |
 | `go-patterns` | goroutine/channel/interface/泛型 |
 | `python-patterns` | type hints/FastAPI/async/pytest |
+| `springboot-tdd` | JUnit 5/Mockito/Testcontainers TDD 实践 |
+| `springboot-security` | JWT/RBAC/CORS/OWASP Spring Security 配置 |
+| `deep-research` | 技术调研框架、方案对比、决策分析 |
 
 ### 工具与优化
 | Skill | 描述 |
@@ -210,10 +237,11 @@ Hooks 在特定事件触发时自动执行，拦截危险操作、提供智能�
 | Stop | `stop:session-end` | 保存会话状态 |
 | PreCompact | `pre:compact` | 压缩前保留关键上下文 |
 
-## Rules（6 个规则文件）
+## Rules（5 语言生态，31 个规则文件）
 
 Claude 在对话中自动遵循的约束规范：
 
+### 通用规则
 | 文件 | 描述 |
 |------|------|
 | `iron-rules.md` | 3 条铁律：调试、TDD、验证 |
@@ -222,6 +250,15 @@ Claude 在对话中自动遵循的约束规范：
 | `testing.md` | 测试规范：覆盖率要求、TDD 流程 |
 | `security.md` | 安全规范：输入验证、密钥管理 |
 | `performance.md` | 性能规范：模型选择、优化原则 |
+
+### 语言规则（每语言 5 文件）
+| 语言 | 规则目录 |
+|------|---------|
+| TypeScript | `rules/typescript/` |
+| Python | `rules/python/` |
+| Go | `rules/golang/` |
+| Swift | `rules/swift/` |
+| Java | `rules/java/` |
 
 ## 使用示例
 
@@ -284,6 +321,18 @@ node tests/run-all.js
 ```bash
 /plugin update taozi@kedoupi
 ```
+
+## MCP 配置
+
+`mcp-configs/` 目录提供开箱即用的 MCP Server 配置：
+
+| 配置文件 | 服务 | 用途 |
+|---------|------|------|
+| `github.json` | GitHub | Issues/PR/代码自动化 |
+| `supabase.json` | Supabase | 数据库/Auth/Storage |
+| `vercel.json` | Vercel | 部署管理/环境变量 |
+
+详见 [mcp-configs/README.md](mcp-configs/README.md)
 
 ## 文档
 
