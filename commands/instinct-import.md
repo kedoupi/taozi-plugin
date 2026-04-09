@@ -1,5 +1,5 @@
 ---
-name: taozi:instinct-import
+name: instinct-import
 description: 从 JSON 文件导入本能 — 合并外部学习记录到本地
 allowed-tools: Read, Write, Bash
 argument-hint: [JSON 文件路径]

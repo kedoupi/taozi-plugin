@@ -1,5 +1,5 @@
 ---
-name: taozi:instinct-export
+name: instinct-export
 description: 导出所有学习本能为 JSON 文件 — 支持团队间共享经验
 allowed-tools: Read, Write, Bash, Glob
 argument-hint: [导出文件路径，默认 ~/taozi-instincts.json]

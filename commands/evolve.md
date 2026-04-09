@@ -1,5 +1,5 @@
 ---
-name: taozi:evolve
+name: evolve
 description: 本能进化 — 将相关的学习模式聚类为可复用的 Skill
 allowed-tools: Read, Write, Bash, Grep, Glob
 argument-hint: [可选: 主题关键词]
@@ -49,7 +49,7 @@ find ~/.claude/taozi/learned/ -name "*.md" -o -name "*.json"
 
 ```markdown
 ---
-name: [skill-name]
+name: evolve
 description: [一句话描述这个 Skill 的能力]
 triggers:
   - [触发场景 1]

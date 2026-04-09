@@ -1,5 +1,5 @@
 ---
-name: taozi:multi-plan
+name: multi-plan
 description: 多 Agent 协作规划 — 将复杂任务分解为可并行的子任务，分配给不同 Agent
 allowed-tools: Read, Grep, Glob, Bash
 argument-hint: [任务描述]

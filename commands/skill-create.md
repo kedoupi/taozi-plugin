@@ -41,7 +41,7 @@ ls skills/ 2>/dev/null | grep -i "$SKILL_NAME"
 
 ```markdown
 ---
-name: <skill-name>
+name: skill-create
 description: <一句话描述，用于自动匹配触发>
 ---
 

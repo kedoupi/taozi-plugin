@@ -1,5 +1,5 @@
 ---
-name: taozi:instinct-status
+name: instinct-status
 description: 查看所有学习本能的状态 — 置信度、日期、分类统计
 allowed-tools: Read, Bash, Glob
 ---

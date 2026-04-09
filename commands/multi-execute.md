@@ -1,5 +1,5 @@
 ---
-name: taozi:multi-execute
+name: multi-execute
 description: 多 Agent 并行执行 — 按照计划并行调度多个 Agent 执行子任务
 allowed-tools: Read, Write, Edit, Bash, Grep, Glob
 argument-hint: [计划文件路径]
