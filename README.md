@@ -1,4 +1,4 @@
-# Taozi Plugin 3.2
+# Taozi Plugin 3.2.2
 
 智能开发工具集 - 工作流驱动、3 条铁律、思维工具箱、自动化 Hooks。
 
@@ -121,7 +121,7 @@ Claude 根据任务自动引用相关知识库：
 
 Claude 自动遵循的约束规范，覆盖通用编码规范 + TypeScript / Python / Go / Swift / Java 5 个语言生态。
 
-## Hooks（8 个自动化钩子）
+## Hooks（10 个自动化钩子）
 
 | 事件 | 描述 |
 |------|------|
@@ -129,8 +129,11 @@ Claude 自动遵循的约束规范，覆盖通用编码规范 + TypeScript / Pyt
 | PreToolUse | dev server 建议使用 tmux |
 | PostToolUse | 编辑后检测 `console.log` |
 | PostToolUse | 阻止随意创建 `.md` 文件 |
+| PostToolUse | 每编辑 15 个文件建议压缩上下文 |
 | SessionStart | 加载上次会话上下文 |
 | Stop | 保存会话状态 |
+| Stop | 会话结束后评估可学习模式 |
+| Stop | 会话结束后扫描安全问题（OWASP Top 10）|
 | PreCompact | 压缩前保留关键上下文 |
 
 ## MCP 配置

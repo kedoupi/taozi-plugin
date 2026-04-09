@@ -26,6 +26,12 @@
         "hooks": [{ "type": "command", "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/block-random-md.js\"" }],
         "description": "阻止随意创建 .md 文件",
         "id": "post:write:block-random-md"
+      },
+      {
+        "matcher": "Edit|Write",
+        "hooks": [{ "type": "command", "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/suggest-compact.js\"" }],
+        "description": "每编辑 15 个文件后建议压缩上下文",
+        "id": "post:edit:suggest-compact"
       }
     ],
     "SessionStart": [
@@ -42,6 +48,18 @@
         "hooks": [{ "type": "command", "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/session-end.js\"" }],
         "description": "会话结束时保存状态",
         "id": "stop:session-end"
+      },
+      {
+        "matcher": "*",
+        "hooks": [{ "type": "command", "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/evaluate-session.js\"" }],
+        "description": "会话结束时评估是否有值得学习的模式",
+        "id": "stop:evaluate-session"
+      },
+      {
+        "matcher": "*",
+        "hooks": [{ "type": "command", "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/security-scan.js\"" }],
+        "description": "会话结束时扫描已修改文件的安全问题（OWASP Top 10）",
+        "id": "stop:security-scan"
       }
     ],
     "PreCompact": [
