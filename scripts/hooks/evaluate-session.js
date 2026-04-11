@@ -13,7 +13,6 @@
 
 const fs = require('fs');
 const path = require('path');
-const os = require('os');
 const {
   readStdinJson,
   warn,
@@ -23,7 +22,6 @@ const {
   getDateString,
   getLearnedDir,
   isGitRepo,
-  getGitRoot,
   getGitModifiedFiles,
 } = require('../lib/utils');
 
@@ -102,8 +100,8 @@ if (existing) {
   if (Array.isArray(existing.patterns) && existing.patterns.length > 0) {
     record.patterns = existing.patterns;
   }
-  // 如果新的会话信息更丰富，更新 topicHint
-  if (existing.topicHint && existing.topicHint !== 'unknown') {
+  // 当本次会话没有拿到有效主题时，回退到当天已有主题。
+  if (record.topicHint === 'unknown' && existing.topicHint && existing.topicHint !== 'unknown') {
     record.topicHint = existing.topicHint;
   }
 }

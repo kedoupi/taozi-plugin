@@ -33,13 +33,50 @@ try {
 const lines = content.split('\n');
 const consoleLogLines = [];
 
+function stripQuotedStrings(line) {
+  let result = '';
+  let quote = null;
+  let escaped = false;
+
+  for (const char of line) {
+    if (quote) {
+      if (escaped) {
+        escaped = false;
+        result += ' ';
+        continue;
+      }
+      if (char === '\\') {
+        escaped = true;
+        result += ' ';
+        continue;
+      }
+      if (char === quote) {
+        quote = null;
+      }
+      result += ' ';
+      continue;
+    }
+
+    if (char === '"' || char === '\'' || char === '`') {
+      quote = char;
+      result += ' ';
+      continue;
+    }
+
+    result += char;
+  }
+
+  return result;
+}
+
 for (let i = 0; i < lines.length; i++) {
   const trimmed = lines[i].trim();
   // Skip comments
   if (trimmed.startsWith('//') || trimmed.startsWith('*') || trimmed.startsWith('/*')) {
     continue;
   }
-  if (/\bconsole\.log\s*\(/.test(lines[i])) {
+  const scanLine = stripQuotedStrings(lines[i]);
+  if (/\bconsole\.log\s*\(/.test(scanLine)) {
     consoleLogLines.push(i + 1);
   }
 }

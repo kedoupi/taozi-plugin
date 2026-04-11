@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 /**
  * security-scan.js
- * 会话结束时扫描已修改文件中的安全问题（OWASP Top 10 覆盖）
+ * 会话结束时扫描工作区变更文件中的安全问题（OWASP Top 10 覆盖）
  *
  * 触发: Stop event
- * 扫描 git diff 中的文件，按严重级别分组报告
+ * 扫描未暂存、已暂存和未跟踪文件，按严重级别分组报告
  * 仅报告警告，不阻断（始终 exit(0)）
  */
 
@@ -77,7 +77,7 @@ const RULES = [
     severity: SEVERITY.CRITICAL,
     patterns: [
       { regex: /mongodb:\/\/[^:]+:[^@]+@/g, desc: 'MongoDB 连接串含明文凭据' },
-      { regex: /postgres(?:ql)?\/\/[^:]+:[^@]+@/g, desc: 'PostgreSQL 连接串含明文凭据' },
+      { regex: /postgres(?:ql)?:\/\/[^:]+:[^@]+@/g, desc: 'PostgreSQL 连接串含明文凭据' },
     ],
   },
   {
@@ -261,10 +261,9 @@ const SEVERITY_ORDER = [SEVERITY.CRITICAL, SEVERITY.HIGH, SEVERITY.MEDIUM, SEVER
 
 // --- 查找行号辅助 ---
 
-function getLineNumber(content, matchStr) {
-  const idx = content.indexOf(matchStr);
-  if (idx === -1) return 0;
-  return content.substring(0, idx).split('\n').length;
+function getLineNumberFromIndex(content, index) {
+  if (index < 0) return 0;
+  return content.substring(0, index).split('\n').length;
 }
 
 // --- 执行扫描 ---
@@ -332,18 +331,22 @@ for (const filePath of modifiedFiles) {
   for (const rule of RULES) {
     for (const pattern of rule.patterns) {
       pattern.regex.lastIndex = 0;
-      const matches = content.match(pattern.regex);
-      if (!matches) continue;
-
-      for (const match of matches) {
-        const lineNum = getLineNumber(content, match);
+      let match;
+      while ((match = pattern.regex.exec(content)) !== null) {
+        const snippet = match[0];
+        const lineNum = getLineNumberFromIndex(content, match.index);
         findings[rule.severity].push({
           file: filePath,
           line: lineNum,
           rule: rule.name,
           desc: pattern.desc,
-          snippet: match.slice(0, 80),
+          snippet: snippet.slice(0, 80),
         });
+
+        // Avoid infinite loops on zero-length patterns.
+        if (match[0] === '') {
+          pattern.regex.lastIndex += 1;
+        }
       }
     }
   }

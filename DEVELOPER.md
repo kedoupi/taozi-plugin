@@ -376,7 +376,7 @@ A: `插件名@marketplace名`，例如 `taozi@kedoupi`
 ### 添加新代理
 
 1. 在 `agents/` 目录创建 `<agent-name>.md`
-2. 使用标准 YAML frontmatter：
+2. 使用简单 frontmatter（仅支持单行 `key: value`）：
 
 ```yaml
 ---
@@ -417,7 +417,7 @@ description: 描述（何时使用此 skill）
 ### 添加新命令
 
 1. 在 `commands/` 目录创建 `<command-name>.md`
-2. 使用标准 YAML frontmatter：
+2. 使用简单 frontmatter（仅支持单行 `key: value`）：
 
 ```yaml
 ---
@@ -547,7 +547,7 @@ Hooks 是 Claude Code 插件的自动化拦截机制。当特定事件触发时�
 
 | 测试文件 | 覆盖范围 |
 |---------|---------|
-| `lib/utils.test.js` | 共享工具库（文件操作、Git 工具、YAML 解析等） |
+| `lib/utils.test.js` | 共享工具库（文件操作、Git 工具、frontmatter 解析等） |
 | `agents/agents.test.js` | Agent 定义结构验证（frontmatter、必填字段） |
 | `skills/skills.test.js` | Skill 定义结构验证（SKILL.md 存在性、frontmatter） |
 | `hooks/hooks.test.js` | Hook 脚本验证（hooks.json 格式、脚本存在性） |
@@ -586,7 +586,7 @@ test('功能描述', () => {
 | Git | `isGitRepo()`, `getGitRoot()`, `getGitModifiedFiles()` | Git 仓库信息 |
 | 日期 | `getDateString()`, `getDateTimeString()` | ISO 格式日期字符串 |
 | 路径 | `getPluginRoot()`, `getTaoziDir()`, `getSessionsDir()` | 插件和数据目录 |
-| 解析 | `parseFrontmatter(content)` | YAML frontmatter 解析 |
+| 解析 | `parseFrontmatter(content)` | 扁平 frontmatter 解析（仅支持 `key: value`） |
 
 ### Hook 脚本 (`scripts/hooks/`)
 

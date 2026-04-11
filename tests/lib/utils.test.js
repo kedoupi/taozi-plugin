@@ -12,6 +12,7 @@ const {
   readJson,
   writeJson,
   findFiles,
+  getGitModifiedFiles,
   getDateString,
   getDateTimeString,
   parseFrontmatter,
@@ -80,6 +81,17 @@ test('findFiles 按模式搜索文件', () => {
   assert.ok(!jsFiles.some(f => f.endsWith('c.txt')));
 });
 
+test('getGitModifiedFiles 包含未跟踪文件', () => {
+  const repoDir = path.join(tmpBase, 'git-repo');
+  ensureDir(repoDir);
+  fs.mkdirSync(path.join(repoDir, '.git'));
+  require('child_process').execSync('git init', { cwd: repoDir, stdio: 'pipe' });
+  fs.writeFileSync(path.join(repoDir, 'new-file.txt'), 'hello', 'utf8');
+
+  const files = getGitModifiedFiles(repoDir);
+  assert.ok(files.includes('new-file.txt'));
+});
+
 test('getDateString 返回 YYYY-MM-DD 格式', () => {
   const date = getDateString();
   assert.ok(/^\d{4}-\d{2}-\d{2}$/.test(date));
@@ -101,6 +113,12 @@ test('parseFrontmatter 正确解析 YAML 前置数据', () => {
 
 test('parseFrontmatter 无前置数据返回 null', () => {
   const content = '# 没有前置数据的文件\n\n正文';
+  const fm = parseFrontmatter(content);
+  assert.strictEqual(fm, null);
+});
+
+test('parseFrontmatter 拒绝多行 YAML 结构', () => {
+  const content = '---\nname: test-agent\ntools:\n  - Bash\n---\n\n正文';
   const fm = parseFrontmatter(content);
   assert.strictEqual(fm, null);
 });

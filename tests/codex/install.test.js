@@ -124,3 +124,61 @@ test('installCodexPlugin removes stale managed links from previous installs', ()
     cleanup(codexHome);
   }
 });
+
+test('installCodexPlugin keeps previous install when unmanaged entry blocks update', () => {
+  const repoRoot = makeFixtureRepo();
+  const codexHome = makeTempDir('taozi-codex-home-');
+
+  try {
+    installCodexPlugin({ repoRoot, codexHome });
+    const installRoot = getInstallRoot(codexHome);
+    const originalManifest = fs.readFileSync(path.join(installRoot, 'install-manifest.json'), 'utf8');
+
+    fs.rmSync(path.join(codexHome, 'skills', 'taozi-plan'), { recursive: true, force: true });
+    writeFile(path.join(codexHome, 'skills', 'taozi-plan', 'SKILL.md'), '# unmanaged blocker\n');
+
+    assert.throws(() => installCodexPlugin({ repoRoot, codexHome }), /refusing to overwrite unmanaged path/);
+    assert.strictEqual(
+      fs.readFileSync(path.join(installRoot, 'install-manifest.json'), 'utf8'),
+      originalManifest,
+      'previous install should remain intact after preflight failure'
+    );
+  } finally {
+    cleanup(repoRoot);
+    cleanup(codexHome);
+  }
+});
+
+test('installCodexPlugin rejects unsafe stale manifest entries', () => {
+  const repoRoot = makeFixtureRepo();
+  const codexHome = makeTempDir('taozi-codex-home-');
+
+  try {
+    const installRoot = getInstallRoot(codexHome);
+    writeFile(
+      path.join(installRoot, 'install-manifest.json'),
+      JSON.stringify({ skillNames: ['../escape'], agentFiles: [] }, null, 2)
+    );
+
+    assert.throws(() => installCodexPlugin({ repoRoot, codexHome }), /unsafe manifest entry name/);
+  } finally {
+    cleanup(repoRoot);
+    cleanup(codexHome);
+  }
+});
+
+test('installCodexPlugin cleans temp directory after failed preflight', () => {
+  const repoRoot = makeFixtureRepo();
+  const codexHome = makeTempDir('taozi-codex-home-');
+
+  try {
+    writeFile(path.join(codexHome, 'skills', 'taozi-router', 'SKILL.md'), '# unrelated\n');
+    assert.throws(() => installCodexPlugin({ repoRoot, codexHome }), /refusing to overwrite unmanaged path/);
+
+    const pluginEntries = fs.readdirSync(path.join(codexHome, 'plugins')).filter(name => name.startsWith('.taozi-tmp-'));
+    assert.deepStrictEqual(pluginEntries, [], 'temporary install directories should be cleaned after failure');
+  } finally {
+    cleanup(repoRoot);
+    cleanup(codexHome);
+  }
+});

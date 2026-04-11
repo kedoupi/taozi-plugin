@@ -221,6 +221,30 @@ test('sync-codex preserves hand-written Codex-only files', () => {
   });
 });
 
+test('sync-codex refuses to delete paths outside repo root from manifest', () => {
+  withFixture(fixtureRoot => {
+    const manifestPath = path.join(fixtureRoot, '.codex', '.taozi-sync-agents.json');
+    fs.mkdirSync(path.dirname(manifestPath), { recursive: true });
+    fs.writeFileSync(
+      manifestPath,
+      JSON.stringify({ entries: ['../../outside-repo'] }, null, 2),
+      'utf8'
+    );
+
+    const result = spawnSync('node', [path.join(fixtureRoot, 'scripts', 'sync-codex.js')], {
+      cwd: fixtureRoot,
+      encoding: 'utf8',
+      timeout: 10000,
+    });
+
+    assert.notStrictEqual(result.status, 0, 'sync should fail on unsafe manifest entries');
+    assert(
+      (result.stderr || result.stdout).includes('outside repo root'),
+      'missing safety error for unsafe manifest entry'
+    );
+  });
+});
+
 test('generated Codex TOML files parse successfully', () => {
   runTomlValidation();
 });
