@@ -24,7 +24,7 @@ const session = {
   datetime: getDateTimeString(),
 };
 
-// Try to estimate duration from input if available
+// Persist the session id when the host provides one.
 if (input && input.session_id) {
   session.session_id = input.session_id;
 }

@@ -20,7 +20,7 @@ node scripts/sync-codex.js
 
 ## 添加新 Agent
 
-在 `agents/` 目录创建 `<agent-name>.md`，使用标准 YAML frontmatter：
+在 `agents/` 目录创建 `<agent-name>.md`，使用简单 frontmatter（仅支持单行 `key: value`）：
 
 ```yaml
 ---
@@ -53,7 +53,7 @@ model: sonnet | opus | haiku
 ## 添加新 Skill
 
 1. 在 `skills/` 下创建目录：`skills/<skill-name>/`
-2. 创建 `SKILL.md` 主文件：
+2. 创建 `SKILL.md` 主文件（仅支持单行 `key: value` frontmatter）：
 
 ```yaml
 ---

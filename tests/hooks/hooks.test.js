@@ -17,6 +17,7 @@ const HOOKS_JSON = path.join(PLUGIN_ROOT, 'hooks', 'hooks.json');
 function runHook(scriptPath, stdinData, options = {}) {
   const result = spawnSync('node', [scriptPath], {
     input: JSON.stringify(stdinData),
+    cwd: options.cwd,
     encoding: 'utf8',
     timeout: 5000,
     env: {
@@ -28,8 +29,20 @@ function runHook(scriptPath, stdinData, options = {}) {
   return {
     stdout: result.stdout || '',
     stderr: result.stderr || '',
-    status: result.status || 0,
+    status: result.status,
+    signal: result.signal,
+    error: result.error || null,
   };
+}
+
+function initGitRepo(repoPath) {
+  fs.mkdirSync(repoPath, { recursive: true });
+  const result = spawnSync('git', ['init'], {
+    cwd: repoPath,
+    encoding: 'utf8',
+    timeout: 5000,
+  });
+  assert.strictEqual(result.status, 0, result.stderr || result.stdout || 'git init failed');
 }
 
 // =====================
@@ -175,6 +188,24 @@ test('tmux-hint does not trigger on ls', () => {
   assert(!result.stderr.includes('tmux'), 'Should not mention tmux for ls');
 });
 
+test('tmux-hint does not trigger on npx prettier', () => {
+  const script = path.join(HOOKS_DIR, 'tmux-hint.js');
+  const result = runHook(script, {
+    tool_input: { command: 'npx prettier --check .' },
+  });
+  assert.strictEqual(result.status, 0, 'Should exit(0)');
+  assert(!result.stderr.includes('tmux'), 'Should not mention tmux for formatter commands');
+});
+
+test('tmux-hint does not trigger on python -m pytest', () => {
+  const script = path.join(HOOKS_DIR, 'tmux-hint.js');
+  const result = runHook(script, {
+    tool_input: { command: 'python -m pytest' },
+  });
+  assert.strictEqual(result.status, 0, 'Should exit(0)');
+  assert(!result.stderr.includes('tmux'), 'Should not mention tmux for test commands');
+});
+
 // =====================
 // 4. console-warn
 // =====================
@@ -215,6 +246,22 @@ test('console-warn skips commented console.log', () => {
     });
     assert.strictEqual(result.status, 0, 'Should exit(0)');
     assert(!result.stderr.includes('console.log'), 'Should not warn for commented lines');
+  } finally {
+    fs.unlinkSync(tmpFile);
+  }
+});
+
+test('console-warn skips console.log inside strings', () => {
+  const script = path.join(HOOKS_DIR, 'console-warn.js');
+  const tmpFile = path.join(os.tmpdir(), `test-console-warn-string-${Date.now()}.ts`);
+  fs.writeFileSync(tmpFile, 'const msg = "console.log(\\"hello\\")";\nconst x = 1;\n');
+  try {
+    const result = runHook(script, {
+      tool_input: { file_path: tmpFile },
+    });
+    assert.strictEqual(result.status, 0, 'Should exit(0)');
+    assert.strictEqual(result.signal, null, 'Should not be terminated by signal');
+    assert(!result.stderr.includes('console.log'), 'Should not warn for string literals');
   } finally {
     fs.unlinkSync(tmpFile);
   }
@@ -280,6 +327,53 @@ test('session-start runs without error', () => {
   assert.strictEqual(result.status, 0, 'Should exit(0)');
 });
 
+test('session-start ignores non-session json files', () => {
+  const script = path.join(HOOKS_DIR, 'session-start.js');
+  const taoziHome = path.join(os.tmpdir(), `taozi-session-start-filter-${Date.now()}`);
+  const sessionsDir = path.join(taoziHome, 'sessions');
+
+  try {
+    fs.mkdirSync(sessionsDir, { recursive: true });
+    fs.writeFileSync(
+      path.join(sessionsDir, 'not-a-session.json'),
+      JSON.stringify({ timestamp: Date.now() + 1000000 }),
+      'utf8'
+    );
+    fs.writeFileSync(
+      path.join(sessionsDir, 'session-real.json'),
+      JSON.stringify({ timestamp: Date.now() - 1000 }),
+      'utf8'
+    );
+
+    const result = runHook(script, {}, { env: { TAOZI_HOME: taoziHome } });
+    assert.strictEqual(result.status, 0, 'Should exit(0)');
+    assert(result.stderr.includes('Last session'), 'Should still report real session file');
+  } finally {
+    fs.rmSync(taoziHome, { recursive: true, force: true });
+  }
+});
+
+test('session-start does not print duration for current session metadata', () => {
+  const script = path.join(HOOKS_DIR, 'session-start.js');
+  const taoziHome = path.join(os.tmpdir(), `taozi-session-start-duration-${Date.now()}`);
+  const sessionsDir = path.join(taoziHome, 'sessions');
+
+  try {
+    fs.mkdirSync(sessionsDir, { recursive: true });
+    fs.writeFileSync(
+      path.join(sessionsDir, 'session-real.json'),
+      JSON.stringify({ timestamp: Date.now() }),
+      'utf8'
+    );
+
+    const result = runHook(script, {}, { env: { TAOZI_HOME: taoziHome } });
+    assert.strictEqual(result.status, 0, 'Should exit(0)');
+    assert(!result.stderr.includes('Duration:'), 'Should not print unused duration field');
+  } finally {
+    fs.rmSync(taoziHome, { recursive: true, force: true });
+  }
+});
+
 // =====================
 // 7. session-end
 // =====================
@@ -295,6 +389,167 @@ test('session-end creates session file', () => {
   assert(fs.existsSync(sessionsDir), 'Sessions directory should exist');
   const files = fs.readdirSync(sessionsDir).filter((f) => f.startsWith('session-') && f.endsWith('.json'));
   assert(files.length > 0, 'At least one session file should exist');
+});
+
+test('session-end persists session_id when provided', () => {
+  const script = path.join(HOOKS_DIR, 'session-end.js');
+  const taoziHome = path.join(os.tmpdir(), `taozi-session-end-id-${Date.now()}`);
+
+  try {
+    const result = runHook(script, { session_id: 'session-123' }, { env: { TAOZI_HOME: taoziHome } });
+    assert.strictEqual(result.status, 0, 'Should exit(0)');
+
+    const sessionsDir = path.join(taoziHome, 'sessions');
+    const files = fs.readdirSync(sessionsDir).filter((f) => f.startsWith('session-') && f.endsWith('.json'));
+    assert.strictEqual(files.length, 1, 'Should create one session file');
+
+    const session = JSON.parse(fs.readFileSync(path.join(sessionsDir, files[0]), 'utf8'));
+    assert.strictEqual(session.session_id, 'session-123');
+    assert.strictEqual(session.duration, undefined, 'Should not invent duration field');
+  } finally {
+    fs.rmSync(taoziHome, { recursive: true, force: true });
+  }
+});
+
+test('evaluate-session keeps newer topicHint when current session is more specific', () => {
+  const script = path.join(HOOKS_DIR, 'evaluate-session.js');
+  const taoziHome = path.join(os.tmpdir(), `taozi-evaluate-topic-${Date.now()}`);
+  const learnedDir = path.join(taoziHome, 'learned');
+
+  try {
+    fs.mkdirSync(learnedDir, { recursive: true });
+    const today = new Date().toISOString().split('T')[0];
+    fs.writeFileSync(
+      path.join(learnedDir, `${today}.json`),
+      JSON.stringify({ timestamp: Date.now() - 1000, topicHint: 'old topic', turnCount: 8 }, null, 2),
+      'utf8'
+    );
+
+    const result = runHook(
+      script,
+      { turn_count: 8, topic_hint: 'new topic' },
+      { env: { TAOZI_HOME: taoziHome } }
+    );
+    assert.strictEqual(result.status, 0, 'Should exit(0)');
+
+    const record = JSON.parse(fs.readFileSync(path.join(learnedDir, `${today}.json`), 'utf8'));
+    assert.strictEqual(record.topicHint, 'new topic');
+  } finally {
+    fs.rmSync(taoziHome, { recursive: true, force: true });
+  }
+});
+
+test('evaluate-session falls back to existing topicHint when current session is unknown', () => {
+  const script = path.join(HOOKS_DIR, 'evaluate-session.js');
+  const taoziHome = path.join(os.tmpdir(), `taozi-evaluate-fallback-${Date.now()}`);
+  const learnedDir = path.join(taoziHome, 'learned');
+
+  try {
+    fs.mkdirSync(learnedDir, { recursive: true });
+    const today = new Date().toISOString().split('T')[0];
+    fs.writeFileSync(
+      path.join(learnedDir, `${today}.json`),
+      JSON.stringify({ timestamp: Date.now() - 1000, topicHint: 'old topic', turnCount: 8 }, null, 2),
+      'utf8'
+    );
+
+    const result = runHook(
+      script,
+      { turn_count: 8 },
+      { env: { TAOZI_HOME: taoziHome } }
+    );
+    assert.strictEqual(result.status, 0, 'Should exit(0)');
+
+    const record = JSON.parse(fs.readFileSync(path.join(learnedDir, `${today}.json`), 'utf8'));
+    assert.strictEqual(record.topicHint, 'old topic');
+  } finally {
+    fs.rmSync(taoziHome, { recursive: true, force: true });
+  }
+});
+
+test('suggest-compact 对同一文件重复编辑不重复计数', () => {
+  const script = path.join(HOOKS_DIR, 'suggest-compact.js');
+  const taoziHome = path.join(os.tmpdir(), `taozi-suggest-repeat-${Date.now()}`);
+  const input = {
+    tool_name: 'Edit',
+    tool_input: { file_path: '/tmp/repeated.js' },
+  };
+
+  try {
+    for (let i = 0; i < 15; i++) {
+      const result = runHook(script, input, { env: { TAOZI_HOME: taoziHome } });
+      assert.strictEqual(result.status, 0, 'Should exit(0)');
+      assert(!result.stderr.includes('建议压缩上下文'), 'Should not warn for repeated edits to one file');
+    }
+  } finally {
+    fs.rmSync(taoziHome, { recursive: true, force: true });
+  }
+});
+
+test('suggest-compact 在 15 个唯一文件后提示压缩', () => {
+  const script = path.join(HOOKS_DIR, 'suggest-compact.js');
+  const taoziHome = path.join(os.tmpdir(), `taozi-suggest-unique-${Date.now()}`);
+
+  try {
+    for (let i = 0; i < 14; i++) {
+      const result = runHook(script, {
+        tool_name: 'Edit',
+        tool_input: { file_path: `/tmp/file-${i}.js` },
+      }, { env: { TAOZI_HOME: taoziHome } });
+      assert.strictEqual(result.status, 0, 'Should exit(0)');
+      assert(!result.stderr.includes('建议压缩上下文'), 'Should not warn before threshold');
+    }
+
+    const finalResult = runHook(script, {
+      tool_name: 'Write',
+      tool_input: { file_path: '/tmp/file-14.js' },
+    }, { env: { TAOZI_HOME: taoziHome } });
+    assert.strictEqual(finalResult.status, 0, 'Should exit(0)');
+    assert(finalResult.stderr.includes('建议压缩上下文'), 'Should warn after 15 unique files');
+  } finally {
+    fs.rmSync(taoziHome, { recursive: true, force: true });
+  }
+});
+
+test('security-scan 扫描未跟踪的 .env 文件', () => {
+  const script = path.join(HOOKS_DIR, 'security-scan.js');
+  const repoDir = path.join(os.tmpdir(), `taozi-security-scan-${Date.now()}`);
+
+  try {
+    initGitRepo(repoDir);
+    fs.writeFileSync(path.join(repoDir, '.env'), 'OPENAI_API_KEY=sk-abcdefghijklmnopqrstuvwxyz123456\n');
+
+    const result = runHook(script, {}, { cwd: repoDir });
+    assert.strictEqual(result.status, 0, 'Should exit(0)');
+    assert(result.stderr.includes('.env 文件提交'), 'Should flag committed .env files');
+    assert(result.stderr.includes('AI API Key'), 'Should scan untracked file contents');
+  } finally {
+    fs.rmSync(repoDir, { recursive: true, force: true });
+  }
+});
+
+test('security-scan 为重复命中报告准确行号', () => {
+  const script = path.join(HOOKS_DIR, 'security-scan.js');
+  const repoDir = path.join(os.tmpdir(), `taozi-security-lines-${Date.now()}`);
+
+  try {
+    initGitRepo(repoDir);
+    fs.writeFileSync(
+      path.join(repoDir, 'app.js'),
+      [
+        'const a = "postgres://alice:secret@db/app";',
+        'const b = "postgres://bob:secret@db/app";',
+        '',
+      ].join('\n')
+    );
+
+    const result = runHook(script, {}, { cwd: repoDir });
+    assert.strictEqual(result.status, 0, 'Should exit(0)');
+    assert(result.stderr.includes('L1 [数据库 URL 含凭据]'), 'Should report first line');
+    assert(result.stderr.includes('L2 [数据库 URL 含凭据]'), 'Should report second line');
+  } finally {
+    fs.rmSync(repoDir, { recursive: true, force: true });
+  }
 });
 
 // =====================

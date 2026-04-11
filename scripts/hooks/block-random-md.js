@@ -56,7 +56,7 @@ if (isReadme || isInAllowedDir) {
 
 if (isJunk) {
   warn('');
-  warn(`Suspicious .md file creation blocked conceptually: ${filePath}`);
+  warn(`Suspicious .md file creation detected: ${filePath}`);
   warn('  Filename looks like a junk/temp file. Avoid creating ad-hoc .md files.');
   warn('  If this is intentional, place it in docs/ or use a meaningful name.');
   warn('');

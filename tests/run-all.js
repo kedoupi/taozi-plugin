@@ -18,6 +18,7 @@ let totalTests = 0;
 let passedTests = 0;
 let failedTests = 0;
 const failures = [];
+const pendingAsyncTests = [];
 
 function test(name, fn) {
   totalTests++;
@@ -34,17 +35,22 @@ function test(name, fn) {
 }
 
 async function asyncTest(name, fn) {
-  totalTests++;
-  try {
-    await fn();
-    passedTests++;
-    process.stdout.write(`  ✓ ${name}\n`);
-  } catch (err) {
-    failedTests++;
-    failures.push({ name, error: err.message });
-    process.stdout.write(`  ✗ ${name}\n`);
-    process.stdout.write(`    ${err.message}\n`);
-  }
+  const promise = (async () => {
+    totalTests++;
+    try {
+      await fn();
+      passedTests++;
+      process.stdout.write(`  ✓ ${name}\n`);
+    } catch (err) {
+      failedTests++;
+      failures.push({ name, error: err.message });
+      process.stdout.write(`  ✗ ${name}\n`);
+      process.stdout.write(`    ${err.message}\n`);
+    }
+  })();
+
+  pendingAsyncTests.push(promise);
+  return promise;
 }
 
 // 导出给子测试文件使用
@@ -70,7 +76,7 @@ function findTestFiles(dir) {
   return files.sort();
 }
 
-function runAllTests() {
+async function runAllTests() {
   const testFiles = findTestFiles(testsDir);
 
   console.log('\n🍑 Taozi Plugin 测试套件\n');
@@ -93,6 +99,10 @@ function runAllTests() {
     delete require.cache[file];
   }
 
+  if (pendingAsyncTests.length > 0) {
+    await Promise.allSettled(pendingAsyncTests);
+  }
+
   // --- 汇总 ---
 
   console.log('\n────────────────────────────────────');
@@ -111,4 +121,7 @@ function runAllTests() {
   process.exit(0);
 }
 
-runAllTests();
+runAllTests().catch((err) => {
+  console.log(`\n✗ 测试运行器异常: ${err.message}`);
+  process.exit(1);
+});

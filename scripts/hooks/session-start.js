@@ -8,7 +8,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { readStdinJson, warn, ensureDir, readJson, getSessionsDir } = require('../lib/utils');
+const { warn, ensureDir, readJson, getSessionsDir } = require('../lib/utils');
 
 const sessionsDir = getSessionsDir();
 ensureDir(sessionsDir);
@@ -18,7 +18,7 @@ let latestSession = null;
 let latestTime = 0;
 
 try {
-  const files = fs.readdirSync(sessionsDir).filter((f) => f.endsWith('.json'));
+  const files = fs.readdirSync(sessionsDir).filter((f) => f.startsWith('session-') && f.endsWith('.json'));
 
   for (const file of files) {
     const filePath = path.join(sessionsDir, file);
@@ -39,9 +39,6 @@ if (latestSession) {
 
   warn('');
   warn(`Last session: ${dateStr} ${timeStr}`);
-  if (latestSession.duration) {
-    warn(`Duration: ${Math.round(latestSession.duration / 60)} min`);
-  }
   warn('');
 }
 

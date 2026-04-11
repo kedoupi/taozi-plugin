@@ -9,7 +9,6 @@
  */
 
 const path = require('path');
-const os = require('os');
 const {
   readStdinJson,
   warn,
@@ -25,19 +24,33 @@ const COUNTER_FILE = path.join(getTaoziDir(), 'edit-counter.json');
 // 读取当前输入
 const input = readStdinJson();
 
-// 只对 Edit 和 Write 工具触发
-if (input && input.tool_name) {
-  const toolName = input.tool_name;
-  if (toolName !== 'Edit' && toolName !== 'Write') {
-    process.exit(0);
-  }
+// 只对 Edit 和 Write 工具触发，并且需要明确文件路径。
+if (!input || !input.tool_name) {
+  process.exit(0);
+}
+
+const toolName = input.tool_name;
+if (toolName !== 'Edit' && toolName !== 'Write') {
+  process.exit(0);
+}
+
+const filePath = input.tool_input && input.tool_input.file_path
+  ? path.resolve(input.tool_input.file_path)
+  : null;
+if (!filePath) {
+  process.exit(0);
 }
 
 // 读取计数器
-const counter = readJson(COUNTER_FILE) || { count: 0, lastCompact: null };
+const counter = readJson(COUNTER_FILE) || { count: 0, lastCompact: null, files: [] };
+const seenFiles = new Set(Array.isArray(counter.files) ? counter.files : []);
 
-// 递增计数
-counter.count = (counter.count || 0) + 1;
+// 按唯一文件计数，同一文件重复编辑不重复增加。
+if (!seenFiles.has(filePath)) {
+  seenFiles.add(filePath);
+}
+counter.files = Array.from(seenFiles).sort();
+counter.count = counter.files.length;
 
 // 检查是否达到阈值
 if (counter.count >= COMPACT_INTERVAL) {
@@ -57,6 +70,7 @@ if (counter.count >= COMPACT_INTERVAL) {
   // 重置计数器
   counter.count = 0;
   counter.lastCompact = new Date().toISOString();
+  counter.files = [];
 }
 
 // 保存计数器

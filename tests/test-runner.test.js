@@ -35,3 +35,37 @@ test('run-all exits non-zero when a test file fails to load', () => {
     fs.rmSync(fixtureRoot, { recursive: true, force: true });
   }
 });
+
+test('run-all waits for asyncTest failures before exiting', () => {
+  const fixtureRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'taozi-runner-async-'));
+
+  try {
+    const fixtureTestsDir = path.join(fixtureRoot, 'tests');
+    fs.mkdirSync(fixtureTestsDir, { recursive: true });
+    fs.copyFileSync(path.join(__dirname, 'run-all.js'), path.join(fixtureTestsDir, 'run-all.js'));
+
+    fs.writeFileSync(
+      path.join(fixtureTestsDir, 'async-fail.test.js'),
+      [
+        'asyncTest("async fixture fails", async () => {',
+        '  await new Promise(resolve => setTimeout(resolve, 20));',
+        '  throw new Error("async failure");',
+        '});',
+        '',
+      ].join('\n'),
+      'utf8'
+    );
+
+    const result = spawnSync('node', [path.join(fixtureTestsDir, 'run-all.js')], {
+      cwd: fixtureRoot,
+      encoding: 'utf8',
+      timeout: 10000,
+    });
+
+    assert.strictEqual(result.status, 1, result.stderr || result.stdout || 'runner should fail for async failures');
+    assert(result.stdout.includes('async fixture fails'), 'missing async test name in output');
+    assert(result.stdout.includes('async failure'), 'missing async failure message');
+  } finally {
+    fs.rmSync(fixtureRoot, { recursive: true, force: true });
+  }
+});

@@ -33,6 +33,19 @@ function readStdinJson() {
   }
 }
 
+function execGitLines(command, cwd) {
+  try {
+    const output = execSync(command, {
+      cwd: cwd || process.cwd(),
+      encoding: 'utf8',
+      stdio: ['pipe', 'pipe', 'pipe'],
+    }).trim();
+    return output ? output.split('\n').filter(Boolean) : [];
+  } catch {
+    return [];
+  }
+}
+
 // --- 文件操作 ---
 
 function ensureDir(dirPath) {
@@ -115,16 +128,13 @@ function getGitRoot(cwd) {
 }
 
 function getGitModifiedFiles(cwd) {
-  try {
-    const output = execSync('git diff --name-only HEAD', {
-      cwd: cwd || process.cwd(),
-      encoding: 'utf8',
-      stdio: ['pipe', 'pipe', 'pipe'],
-    }).trim();
-    return output ? output.split('\n').filter(Boolean) : [];
-  } catch {
-    return [];
-  }
+  const files = new Set([
+    ...execGitLines('git diff --name-only --', cwd),
+    ...execGitLines('git diff --name-only --cached --', cwd),
+    ...execGitLines('git ls-files --others --exclude-standard', cwd),
+  ]);
+
+  return Array.from(files).sort();
 }
 
 // --- 日期工具 ---
@@ -205,10 +215,16 @@ function parseFrontmatter(content) {
 
   const frontmatter = {};
   for (const line of match[1].split('\n')) {
+    if (!line.trim()) continue;
+    // Taozi only supports flat `key: value` frontmatter fields.
+    if (/^\s/.test(line) || /^-\s/.test(line)) {
+      return null;
+    }
     const colonIdx = line.indexOf(':');
-    if (colonIdx === -1) continue;
+    if (colonIdx <= 0 || colonIdx === line.length - 1) return null;
     const key = line.slice(0, colonIdx).trim();
     const value = line.slice(colonIdx + 1).trim();
+    if (!key || !value) return null;
     frontmatter[key] = value;
   }
   return frontmatter;

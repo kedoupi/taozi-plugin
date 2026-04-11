@@ -64,10 +64,19 @@ function parseFrontmatter(content) {
 
   const frontmatter = {};
   for (const line of match[1].split('\n')) {
+    if (!line.trim()) continue;
+    if (/^\s/.test(line) || /^-\s/.test(line)) {
+      throw new Error('unsupported frontmatter: only flat key: value lines are allowed');
+    }
     const colonIdx = line.indexOf(':');
-    if (colonIdx === -1) continue;
+    if (colonIdx <= 0 || colonIdx === line.length - 1) {
+      throw new Error('unsupported frontmatter: only flat key: value lines are allowed');
+    }
     const key = line.slice(0, colonIdx).trim();
     const value = line.slice(colonIdx + 1).trim();
+    if (!key || !value) {
+      throw new Error('unsupported frontmatter: only flat key: value lines are allowed');
+    }
     frontmatter[key] = value;
   }
   return frontmatter;
@@ -119,7 +128,10 @@ function cleanupManagedEntries(manifestPath) {
   if (!manifest || !Array.isArray(manifest.entries)) return;
 
   for (const relativeEntry of manifest.entries) {
-    const absoluteEntry = path.join(ROOT, relativeEntry);
+    const absoluteEntry = path.resolve(ROOT, relativeEntry);
+    if (absoluteEntry !== ROOT && !absoluteEntry.startsWith(ROOT + path.sep)) {
+      throw new Error(`refusing to remove path outside repo root: ${relativeEntry}`);
+    }
     fs.rmSync(absoluteEntry, { recursive: true, force: true });
   }
 }
