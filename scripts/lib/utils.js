@@ -140,7 +140,16 @@ function getDateTimeString() {
 // --- Taozi 数据目录 ---
 
 function getTaoziDir() {
-  return path.join(os.homedir(), '.claude', 'taozi');
+  const envDir = process.env.TAOZI_HOME;
+  if (envDir) return path.resolve(envDir);
+
+  const modernDir = path.join(os.homedir(), '.taozi');
+  const legacyDir = path.join(os.homedir(), '.claude', 'taozi');
+
+  if (fs.existsSync(modernDir)) return modernDir;
+  if (fs.existsSync(legacyDir)) return legacyDir;
+
+  return modernDir;
 }
 
 function getSessionsDir() {
@@ -155,15 +164,22 @@ function getLearnedDir() {
 
 function getPluginRoot() {
   // 优先使用环境变量
-  const envRoot = process.env.CLAUDE_PLUGIN_ROOT;
-  if (envRoot && fs.existsSync(path.join(envRoot, 'scripts', 'lib', 'utils.js'))) {
-    return path.resolve(envRoot);
+  const envRoots = [
+    process.env.TAOZI_PLUGIN_ROOT,
+    process.env.CLAUDE_PLUGIN_ROOT,
+    process.env.CODEX_PLUGIN_ROOT,
+  ].filter(Boolean);
+
+  for (const envRoot of envRoots) {
+    if (fs.existsSync(path.join(envRoot, 'scripts', 'lib', 'utils.js'))) {
+      return path.resolve(envRoot);
+    }
   }
 
   // 从当前文件向上推导
-  const currentDir = path.dirname(__dirname);
-  if (fs.existsSync(path.join(currentDir, 'lib', 'utils.js'))) {
-    return currentDir;
+  const inferredRoot = path.resolve(__dirname, '..', '..');
+  if (fs.existsSync(path.join(inferredRoot, 'scripts', 'lib', 'utils.js'))) {
+    return inferredRoot;
   }
 
   // 常见安装路径

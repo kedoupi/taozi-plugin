@@ -6,7 +6,7 @@
  * 触发: SessionEnd (Stop event)
  * 1. 统计对话轮数
  * 2. 少于 5 轮则跳过
- * 3. 写入元数据到 ~/.claude/taozi/learned/
+ * 3. 写入元数据到 $TAOZI_HOME/learned/（默认 ~/.taozi/learned/）
  * 4. 超过 100 文件时清理旧条目
  * 5. 始终 exit(0)
  */

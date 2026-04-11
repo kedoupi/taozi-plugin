@@ -1,7 +1,7 @@
 {
   "name": "taozi-universal",
   "version": "3.2.2",
-  "description": "Taozi Plugin - 工作流驱动、3 条铁律、思维工具箱、自动化 Hooks。Claude Code 插件。",
+  "description": "Taozi Plugin - 工作流驱动、3 条铁律、思维工具箱、自动化 Hooks。支持 Claude Code 和 Codex。",
   "author": {
     "name": "kedoupi",
     "url": "https://github.com/kedoupi"
@@ -14,6 +14,7 @@
   },
   "keywords": [
     "claude-code",
+    "codex",
     "plugin",
     "agents",
     "skills",
@@ -40,6 +41,7 @@
     "README.md"
   ],
   "scripts": {
+    "sync:codex": "node scripts/sync-codex.js",
     "test": "node tests/run-all.js",
     "lint": "node -e \"JSON.parse(require('fs').readFileSync('hooks/hooks.json','utf8'))\" && echo '✓ hooks.json valid'"
   },

@@ -2,7 +2,14 @@
 
 智能开发工具集 - 工作流驱动、3 条铁律、思维工具箱、自动化 Hooks。
 
+支持两种运行时：
+
+- Claude Code：通过插件、Commands、Hooks 使用
+- Codex：通过 `AGENTS.md`、`.codex/agents/`、`.agents/skills/` 和本地插件 marketplace 使用
+
 ## 安装
+
+### Claude Code
 
 在 Claude Code 中运行：
 
@@ -16,6 +23,35 @@
 ```
 /plugin update taozi@kedoupi
 ```
+
+### Codex
+
+仓库内直接使用：
+
+```bash
+node scripts/sync-codex.js
+```
+
+然后让 Codex 在本仓库中读取：
+
+- `AGENTS.md`
+- `.codex/config.toml`
+- `.codex/agents/`
+- `.agents/skills/`
+
+如果要按本地插件方式安装，可将本仓库作为 repo marketplace 使用：
+
+```bash
+mkdir -p .agents/plugins
+# 本仓库已包含 .agents/plugins/marketplace.json
+```
+
+## 运行时映射
+
+- Claude Commands 仍然保留在 `commands/`
+- Codex 不直接复用 slash commands，而是使用共享 skills 和生成的 subagents
+- `agents/` 与 `skills/` 是单一事实来源
+- 修改后运行 `node scripts/sync-codex.js` 同步 Codex 产物
 
 ## Commands（25 个）
 
@@ -111,11 +147,11 @@
 | context-manager | 上下文优化、CLAUDE.md |
 | prompt-engineer | LLM 提示优化、AI 系统 |
 
-## Skills（31 个）
+## Skills（42 个）
 
-Claude 根据任务自动引用相关知识库：
+Claude / Codex 根据任务自动引用相关知识库：
 
-`frontend-react` · `backend-architecture` · `nextjs-advanced` · `nextjs-architecture` · `typescript-types` · `typescript-patterns` · `python-patterns` · `go-patterns` · `swift-patterns` · `swift-concurrency` · `foundation-models` · `django-patterns` · `springboot-patterns` · `springboot-tdd` · `springboot-security` · `docker-patterns` · `e2e-testing` · `api-design` · `deployment-patterns` · `database-migrations` · `security-patterns` · `sql-optimization` · `legacy-migration` · `testing-strategies` · `mcp-templates` · `git-conventions` · `code-quality-checklist` · `thinking-tools` · `continuous-learning` · `token-optimization` · `deep-research`
+`frontend-react` · `backend-architecture` · `nextjs-advanced` · `nextjs-architecture` · `typescript-types` · `typescript-patterns` · `python-patterns` · `go-patterns` · `swift-patterns` · `swift-concurrency` · `foundation-models` · `django-patterns` · `springboot-patterns` · `springboot-tdd` · `springboot-security` · `docker-patterns` · `e2e-testing` · `api-design` · `deployment-patterns` · `database-migrations` · `security-patterns` · `sql-optimization` · `legacy-migration` · `testing-strategies` · `mcp-templates` · `git-conventions` · `code-quality-checklist` · `thinking-tools` · `continuous-learning` · `token-optimization` · `deep-research` · `taozi-router` · `taozi-plan` · `taozi-tdd` · `taozi-verify` · `taozi-code-review` · `taozi-quality-gate` · `taozi-git-workflow` · `taozi-context-update` · `taozi-model-route` · `taozi-multi-agent` · `taozi-learning`
 
 ## Rules（31 个规则文件）
 
@@ -139,6 +175,13 @@ Claude 自动遵循的约束规范，覆盖通用编码规范 + TypeScript / Pyt
 ## MCP 配置
 
 `mcp-configs/` 提供开箱即用的 MCP Server 配置：GitHub · Supabase · Vercel
+
+## 开发
+
+```bash
+node scripts/sync-codex.js
+node tests/run-all.js
+```
 
 ## License
 

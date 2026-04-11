@@ -1,5 +1,8 @@
 {
   "name": "kedoupi",
+  "metadata": {
+    "description": "Kedoupi marketplace for Taozi, a workflow-driven coding assistant plugin for Claude Code and Codex."
+  },
   "owner": {
     "name": "kedoupi"
   },

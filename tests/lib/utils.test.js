@@ -15,6 +15,7 @@ const {
   getDateString,
   getDateTimeString,
   parseFrontmatter,
+  getTaoziDir,
   getPluginRoot,
 } = require('../../scripts/lib/utils');
 
@@ -106,8 +107,23 @@ test('parseFrontmatter 无前置数据返回 null', () => {
 
 test('getPluginRoot 返回有效路径或 null', () => {
   const root = getPluginRoot();
-  // 不一定总能找到，但不应抛异常
-  assert.ok(root === null || typeof root === 'string');
+  assert.strictEqual(root, path.resolve(__dirname, '../..'));
+});
+
+test('getTaoziDir 优先使用 TAOZI_HOME', () => {
+  const original = process.env.TAOZI_HOME;
+  const custom = path.join(tmpBase, 'taozi-home');
+
+  process.env.TAOZI_HOME = custom;
+  try {
+    assert.strictEqual(getTaoziDir(), custom);
+  } finally {
+    if (original === undefined) {
+      delete process.env.TAOZI_HOME;
+    } else {
+      process.env.TAOZI_HOME = original;
+    }
+  }
 });
 
 // --- 清理 ---

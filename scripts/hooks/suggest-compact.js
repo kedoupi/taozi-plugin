@@ -4,7 +4,7 @@
  * 每编辑 15 个文件后建议压缩上下文
  *
  * 触发: PostToolUse on Edit|Write
- * 使用 ~/.claude/taozi/edit-counter.json 追踪编辑次数
+ * 使用 $TAOZI_HOME/edit-counter.json 追踪编辑次数
  * 始终 exit(0)
  */
 

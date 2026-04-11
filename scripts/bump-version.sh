@@ -8,6 +8,7 @@
 #   package.json                      → .version
 #   .claude-plugin/plugin.json        → .version + .description
 #   .claude-plugin/marketplace.json   → .plugins[0].version + .plugins[0].description
+#   .codex-plugin/plugin.json         → .version + .description
 #   README.md                         → 标题 "# Taozi Plugin X.Y.Z"
 
 set -euo pipefail
@@ -44,6 +45,7 @@ ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 PACKAGE_JSON="$ROOT_DIR/package.json"
 PLUGIN_JSON="$ROOT_DIR/.claude-plugin/plugin.json"
 MARKETPLACE_JSON="$ROOT_DIR/.claude-plugin/marketplace.json"
+CODEX_PLUGIN_JSON="$ROOT_DIR/.codex-plugin/plugin.json"
 README="$ROOT_DIR/README.md"
 
 # 获取当前版本
@@ -113,6 +115,7 @@ PYEOF
 run_update "package.json"              "$PACKAGE_JSON"
 run_update ".claude-plugin/plugin.json"       "$PLUGIN_JSON"
 run_update ".claude-plugin/marketplace.json"  "$MARKETPLACE_JSON"
+run_update ".codex-plugin/plugin.json"        "$CODEX_PLUGIN_JSON"
 
 # README.md: 替换标题中的版本号
 if [[ "$DRY_RUN" == "1" ]]; then
@@ -140,6 +143,8 @@ show("plugin.json .version",     "$PLUGIN_JSON",     lambda d: d["version"])
 show("plugin.json .description", "$PLUGIN_JSON",     lambda d: d["description"])
 show("marketplace version",      "$MARKETPLACE_JSON",lambda d: d["plugins"][0]["version"])
 show("marketplace description",  "$MARKETPLACE_JSON",lambda d: d["plugins"][0]["description"])
+show("codex plugin version",     "$CODEX_PLUGIN_JSON",lambda d: d["version"])
+show("codex plugin description", "$CODEX_PLUGIN_JSON",lambda d: d["description"])
 PYEOF
 
 grep -m1 "# Taozi Plugin" "$README" || true
@@ -147,7 +152,7 @@ grep -m1 "# Taozi Plugin" "$README" || true
 if [[ "$DRY_RUN" == "0" ]]; then
   echo ""
   echo "下一步建议："
-  echo "  git add package.json .claude-plugin/ README.md"
+  echo "  git add package.json .claude-plugin/ .codex-plugin/ README.md"
   echo "  git commit -m \"chore: bump version to $NEW_VERSION\""
 
   if [[ "$AUTO_TAG" == "1" ]]; then

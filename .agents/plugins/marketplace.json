@@ -1,0 +1,20 @@
+{
+  "name": "taozi-local",
+  "interface": {
+    "displayName": "Taozi Local"
+  },
+  "plugins": [
+    {
+      "name": "taozi",
+      "source": {
+        "source": "local",
+        "path": "./"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}

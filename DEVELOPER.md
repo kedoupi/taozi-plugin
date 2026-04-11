@@ -1,12 +1,13 @@
 # Taozi 插件开发者指南
 
-本文档记录了开发 Claude Code 插件过程中踩过的所有坑，希望能帮助后来者少走弯路。
+本文档记录了开发 Taozi 在 Claude Code / Codex 双运行时下的配置方式和踩坑经验。
 
 ## 📋 目录
 
 - [核心概念](#核心概念)
 - [目录结构](#目录结构)
 - [配置文件详解](#配置文件详解)
+- [双运行时架构](#双运行时架构)
 - [踩坑记录](#踩坑记录)
 - [开发者本地配置](#开发者本地配置)
 - [用户安装方式](#用户安装方式)
@@ -14,6 +15,30 @@
 - [Rules 架构](#rules-架构)
 - [测试框架](#测试框架)
 - [Scripts 工具库](#scripts-工具库)
+
+---
+
+## 双运行时架构
+
+Taozi 现在采用“共享内容 + 运行时适配层”结构：
+
+- `agents/`：Agent 定义单一事实来源
+- `skills/`：Skill 定义单一事实来源
+- `commands/`、`hooks/`、`.claude-plugin/`：Claude Code 专用层
+- `AGENTS.md`、`.codex/`、`.codex-plugin/`、`.agents/`：Codex 专用层
+
+其中：
+
+- `.codex/agents/` 由 `agents/*.md` 生成
+- `.agents/skills/` 由 `skills/` 镜像生成
+- 同步命令：`node scripts/sync-codex.js`
+- Codex 侧高频工作流优先通过 `skills/taozi-*` 提供，不直接复制 Claude slash commands
+
+设计原则：
+
+1. 不在 Claude / Codex 两侧手工维护同一份知识
+2. 共享内容放在 `agents/` 和 `skills/`
+3. 各运行时只保留自己的入口和配置
 
 ---
 
@@ -64,7 +89,7 @@
 │   └── hooks/                    # Hook 脚本（8 个）
 ├── skills/                       # 技能库
 │   └── */SKILL.md
-├── tests/                        # 测试（209 个）
+├── tests/                        # 测试（当前 467 个）
 │   ├── run-all.js                # 测试运行器
 │   ├── lib/utils.test.js
 │   ├── agents/agents.test.js

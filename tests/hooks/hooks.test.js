@@ -14,11 +14,15 @@ const HOOKS_JSON = path.join(PLUGIN_ROOT, 'hooks', 'hooks.json');
 
 // --- Helper ---
 
-function runHook(scriptPath, stdinData) {
+function runHook(scriptPath, stdinData, options = {}) {
   const result = spawnSync('node', [scriptPath], {
     input: JSON.stringify(stdinData),
     encoding: 'utf8',
     timeout: 5000,
+    env: {
+      ...process.env,
+      ...(options.env || {}),
+    },
     stdio: ['pipe', 'pipe', 'pipe'],
   });
   return {
@@ -271,7 +275,8 @@ test('block-random-md ignores non-.md files', () => {
 
 test('session-start runs without error', () => {
   const script = path.join(HOOKS_DIR, 'session-start.js');
-  const result = runHook(script, {});
+  const taoziHome = path.join(os.tmpdir(), `taozi-session-start-${Date.now()}`);
+  const result = runHook(script, {}, { env: { TAOZI_HOME: taoziHome } });
   assert.strictEqual(result.status, 0, 'Should exit(0)');
 });
 
@@ -281,11 +286,12 @@ test('session-start runs without error', () => {
 
 test('session-end creates session file', () => {
   const script = path.join(HOOKS_DIR, 'session-end.js');
-  const result = runHook(script, {});
+  const taoziHome = path.join(os.tmpdir(), `taozi-session-end-${Date.now()}`);
+  const result = runHook(script, {}, { env: { TAOZI_HOME: taoziHome } });
   assert.strictEqual(result.status, 0, 'Should exit(0)');
 
   // Verify a session file was created
-  const sessionsDir = path.join(os.homedir(), '.claude', 'taozi', 'sessions');
+  const sessionsDir = path.join(taoziHome, 'sessions');
   assert(fs.existsSync(sessionsDir), 'Sessions directory should exist');
   const files = fs.readdirSync(sessionsDir).filter((f) => f.startsWith('session-') && f.endsWith('.json'));
   assert(files.length > 0, 'At least one session file should exist');
