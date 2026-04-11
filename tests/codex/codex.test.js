@@ -95,7 +95,8 @@ print("ok")
 }
 
 function runCodexHookCommand(command, options = {}) {
-  return spawnSync('/bin/zsh', ['-lc', command], {
+  const shell = fs.existsSync('/bin/zsh') ? '/bin/zsh' : '/bin/bash';
+  return spawnSync(shell, ['-lc', command], {
     cwd: options.cwd || ROOT,
     encoding: 'utf8',
     timeout: 10000,
