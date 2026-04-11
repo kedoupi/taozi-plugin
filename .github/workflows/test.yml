@@ -59,4 +59,11 @@ jobs:
 
       - name: 验证 shell 脚本
         run: |
-          bash -n install.sh && echo "✓ install.sh 语法正确" || { echo "✗ install.sh 语法错误"; exit 1; }
+          found=0
+          for f in scripts/*.sh; do
+            [ -f "$f" ] || continue
+            found=1
+            bash -n "$f" && echo "✓ $f 语法正确" || { echo "✗ $f 语法错误"; exit 1; }
+          done
+
+          [ "$found" -eq 1 ] || { echo "✗ 未找到 shell 脚本"; exit 1; }
