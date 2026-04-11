@@ -42,6 +42,7 @@
   ],
   "scripts": {
     "sync:codex": "node scripts/sync-codex.js",
+    "install:codex": "node scripts/install-codex.js",
     "test": "node tests/run-all.js",
     "lint": "node -e \"JSON.parse(require('fs').readFileSync('hooks/hooks.json','utf8'))\" && echo '✓ hooks.json valid'"
   },
