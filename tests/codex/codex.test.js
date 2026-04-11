@@ -94,6 +94,19 @@ print("ok")
   assert.strictEqual(result.status, 0, result.stderr || result.stdout || 'TOML validation failed');
 }
 
+function runCodexHookCommand(command, options = {}) {
+  return spawnSync('/bin/zsh', ['-lc', command], {
+    cwd: options.cwd || ROOT,
+    encoding: 'utf8',
+    timeout: 10000,
+    env: {
+      ...process.env,
+      ...(options.env || {}),
+    },
+    input: JSON.stringify(options.stdin || {}),
+  });
+}
+
 test('Codex config exists and enables hooks', () => {
   const content = fs.readFileSync(CODEX_CONFIG, 'utf8');
   assert(content.includes('[features]'), 'missing [features] table');
@@ -103,6 +116,33 @@ test('Codex config exists and enables hooks', () => {
 test('Codex hooks config is valid JSON', () => {
   const parsed = JSON.parse(fs.readFileSync(CODEX_HOOKS, 'utf8'));
   assert(parsed.hooks.PreToolUse, 'missing PreToolUse hooks');
+});
+
+test('Codex hook commands resolve Taozi hook scripts outside the current repo', () => {
+  const parsed = JSON.parse(fs.readFileSync(CODEX_HOOKS, 'utf8'));
+  const repoRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'taozi-codex-hook-repo-'));
+
+  try {
+    const init = spawnSync('git', ['init'], {
+      cwd: repoRoot,
+      encoding: 'utf8',
+      timeout: 10000,
+    });
+    assert.strictEqual(init.status, 0, init.stderr || init.stdout || 'git init failed');
+
+    for (const hookGroup of parsed.hooks.PreToolUse) {
+      for (const hook of hookGroup.hooks) {
+        const result = runCodexHookCommand(hook.command, {
+          cwd: repoRoot,
+          env: { CODEX_PLUGIN_ROOT: ROOT },
+          stdin: {},
+        });
+        assert.strictEqual(result.status, 0, result.stderr || result.stdout || `hook command failed: ${hook.command}`);
+      }
+    }
+  } finally {
+    fs.rmSync(repoRoot, { recursive: true, force: true });
+  }
 });
 
 test('Codex plugin manifest is valid and points at shared skills', () => {

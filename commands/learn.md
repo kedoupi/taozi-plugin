@@ -61,11 +61,12 @@ argument-hint: [可选：模式名称]
 
 ### 4. 保存到知识库
 
-将整理好的模式保存到 `~/.claude/taozi/learned/` 目录：
+将整理好的模式保存到 `${TAOZI_HOME:-$HOME/.taozi}/learned/` 目录：
 
 ```bash
 # 确保目录存在
-mkdir -p ~/.claude/taozi/learned
+TAOZI_DIR="${TAOZI_HOME:-$HOME/.taozi}"
+mkdir -p "$TAOZI_DIR/learned"
 
 # 保存为 Markdown 文件
 # 文件名: <category>-<name>.md
@@ -80,8 +81,8 @@ mkdir -p ~/.claude/taozi/learned
 ## 学习报告
 
 ### 提取的模式
-- **[模式 1]**: [一句话描述] → `~/.claude/taozi/learned/xxx.md`
-- **[模式 2]**: [一句话描述] → `~/.claude/taozi/learned/xxx.md`
+- **[模式 1]**: [一句话描述] → `${TAOZI_HOME:-$HOME/.taozi}/learned/xxx.md`
+- **[模式 2]**: [一句话描述] → `${TAOZI_HOME:-$HOME/.taozi}/learned/xxx.md`
 
 ### 关键洞察
 - [洞察 1]

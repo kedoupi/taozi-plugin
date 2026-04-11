@@ -53,11 +53,12 @@ pwd                                # 工作目录
 
 ### 5. 保存检查点
 
-将完整状态写入 `~/.claude/taozi/checkpoints/` 目录：
+将完整状态写入 `${TAOZI_HOME:-$HOME/.taozi}/checkpoints/` 目录：
 
 ```bash
 # 确保目录存在
-mkdir -p ~/.claude/taozi/checkpoints
+TAOZI_DIR="${TAOZI_HOME:-$HOME/.taozi}"
+mkdir -p "$TAOZI_DIR/checkpoints"
 
 # 生成文件名（日期 + 描述）
 # 格式: YYYY-MM-DD-HHMM-<description>.md
@@ -118,7 +119,7 @@ description: $ARGUMENTS
 ```markdown
 ## 检查点已保存
 
-- 文件: ~/.claude/taozi/checkpoints/<filename>.md
+- 文件: ${TAOZI_HOME:-$HOME/.taozi}/checkpoints/<filename>.md
 - 分支: <branch>
 - 进度: <已完成>/<总步骤>
 - 未提交变更: <数量>
@@ -127,7 +128,7 @@ description: $ARGUMENTS
 在新的会话中说：
 "恢复检查点 <filename>"
 或
-"查看 ~/.claude/taozi/checkpoints/ 中的检查点"
+"查看 ${TAOZI_HOME:-$HOME/.taozi}/checkpoints/ 中的检查点"
 ```
 
 ## 重要原则

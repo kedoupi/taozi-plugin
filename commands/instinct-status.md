@@ -13,11 +13,13 @@ allowed-tools: Read, Bash, Glob
 ### 1. 读取学习记录
 
 ```bash
+TAOZI_DIR="${TAOZI_HOME:-$HOME/.taozi}"
+
 # 检查目录
-ls ~/.claude/taozi/learned/
+ls "$TAOZI_DIR/learned/"
 
 # 统计文件数量
-find ~/.claude/taozi/learned/ -type f | wc -l
+find "$TAOZI_DIR/learned/" -type f | wc -l
 ```
 
 ### 2. 解析每条记录

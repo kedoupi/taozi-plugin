@@ -60,10 +60,11 @@ interface InstinctItem {
 
 ```bash
 # 确保目录存在
-mkdir -p ~/.claude/taozi/learned/
+TAOZI_DIR="${TAOZI_HOME:-$HOME/.taozi}"
+mkdir -p "$TAOZI_DIR/learned/"
 
 # 列出现有记录
-ls ~/.claude/taozi/learned/
+ls "$TAOZI_DIR/learned/"
 ```
 
 ### 4. 合并策略
@@ -79,7 +80,7 @@ ls ~/.claude/taozi/learned/
 
 ### 5. 写入记录
 
-将合并后的记录写入 `~/.claude/taozi/learned/` 目录。
+将合并后的记录写入 `${TAOZI_HOME:-$HOME/.taozi}/learned/` 目录。
 
 ### 6. 报告导入结果
 

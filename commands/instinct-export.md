@@ -14,11 +14,13 @@ argument-hint: [导出文件路径，默认 ~/taozi-instincts.json]
 ### 1. 读取所有学习记录
 
 ```bash
+TAOZI_DIR="${TAOZI_HOME:-$HOME/.taozi}"
+
 # 检查目录
-ls ~/.claude/taozi/learned/
+ls "$TAOZI_DIR/learned/"
 
 # 统计记录数
-find ~/.claude/taozi/learned/ -type f | wc -l
+find "$TAOZI_DIR/learned/" -type f | wc -l
 ```
 
 如果没有学习记录：
@@ -29,7 +31,7 @@ find ~/.claude/taozi/learned/ -type f | wc -l
 
 ### 2. 解析所有记录
 
-读取 `~/.claude/taozi/learned/` 下的所有文件，提取每条记录的完整信息。
+读取 `${TAOZI_HOME:-$HOME/.taozi}/learned/` 下的所有文件，提取每条记录的完整信息。
 
 ### 3. 打包为 JSON
 

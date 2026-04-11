@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"$(git rev-parse --show-toplevel)/scripts/hooks/no-verify-guard.js\"",
+            "command": "node -e \"const fs=require('fs'),path=require('path'),os=require('os'),cp=require('child_process');const hook='no-verify-guard.js';const roots=[];if(process.env.CODEX_PLUGIN_ROOT) roots.push(process.env.CODEX_PLUGIN_ROOT);const home=process.env.CODEX_HOME?path.resolve(process.env.CODEX_HOME):path.join(os.homedir(),'.codex');roots.push(path.join(home,'plugins','taozi'));try{roots.push(cp.execSync('git rev-parse --show-toplevel',{encoding:'utf8',stdio:['ignore','pipe','ignore']}).trim())}catch{}const root=roots.find(p=>p&&fs.existsSync(path.join(p,'scripts','hooks',hook)));if(!root){console.error('[Taozi] Unable to locate Codex hook root');process.exit(1)}require(path.join(root,'scripts','hooks',hook));\"",
             "statusMessage": "Checking forbidden git flags"
           }
         ]
@@ -16,7 +16,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"$(git rev-parse --show-toplevel)/scripts/hooks/tmux-hint.js\"",
+            "command": "node -e \"const fs=require('fs'),path=require('path'),os=require('os'),cp=require('child_process');const hook='tmux-hint.js';const roots=[];if(process.env.CODEX_PLUGIN_ROOT) roots.push(process.env.CODEX_PLUGIN_ROOT);const home=process.env.CODEX_HOME?path.resolve(process.env.CODEX_HOME):path.join(os.homedir(),'.codex');roots.push(path.join(home,'plugins','taozi'));try{roots.push(cp.execSync('git rev-parse --show-toplevel',{encoding:'utf8',stdio:['ignore','pipe','ignore']}).trim())}catch{}const root=roots.find(p=>p&&fs.existsSync(path.join(p,'scripts','hooks',hook)));if(!root){console.error('[Taozi] Unable to locate Codex hook root');process.exit(1)}require(path.join(root,'scripts','hooks',hook));\"",
             "statusMessage": "Checking long-running shell commands"
           }
         ]

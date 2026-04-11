@@ -13,14 +13,16 @@ argument-hint: [可选: 主题关键词]
 
 ### 1. 读取学习记录
 
-读取 `~/.claude/taozi/learned/` 目录下的所有学习记录：
+读取 `${TAOZI_HOME:-$HOME/.taozi}/learned/` 目录下的所有学习记录：
 
 ```bash
+TAOZI_DIR="${TAOZI_HOME:-$HOME/.taozi}"
+
 # 检查目录是否存在
-ls ~/.claude/taozi/learned/
+ls "$TAOZI_DIR/learned/"
 
 # 列出所有学习记录文件
-find ~/.claude/taozi/learned/ -name "*.md" -o -name "*.json"
+find "$TAOZI_DIR/learned/" -name "*.md" -o -name "*.json"
 ```
 
 如果没有学习记录，提示用户：
@@ -91,7 +93,7 @@ triggers:
 
 ```bash
 # 保存到项目的 skills 目录
-# 或保存到 ~/.claude/taozi/skills/ 目录
+# 或保存到 ${TAOZI_HOME:-$HOME/.taozi}/skills/ 目录
 ```
 
 ### 5. 报告进化结果

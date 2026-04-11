@@ -80,13 +80,12 @@ function runAllTests() {
     const relativePath = path.relative(testsDir, file);
     console.log(`\n📋 ${relativePath}`);
 
-    // 每个测试文件独立运行，重置计数
-    const beforeFailed = failures.length;
-
     try {
       // 加载测试文件，它会自动注册 test() 调用
       require(file);
     } catch (err) {
+      failedTests++;
+      failures.push({ name: `加载 ${relativePath}`, error: err.message });
       console.log(`  ✗ 测试文件加载失败: ${err.message}`);
     }
 
