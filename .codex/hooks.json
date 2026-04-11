@@ -1,0 +1,26 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$(git rev-parse --show-toplevel)/scripts/hooks/no-verify-guard.js\"",
+            "statusMessage": "Checking forbidden git flags"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$(git rev-parse --show-toplevel)/scripts/hooks/tmux-hint.js\"",
+            "statusMessage": "Checking long-running shell commands"
+          }
+        ]
+      }
+    ]
+  }
+}

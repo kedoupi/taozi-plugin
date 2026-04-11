@@ -12,7 +12,10 @@ cd taozi-plugin
 # 2. 运行测试验证环境
 node tests/run-all.js
 
-# 3. 按照需要配置本地插件（见 DEVELOPER.md）
+# 3. 生成 Codex 适配层
+node scripts/sync-codex.js
+
+# 4. 按照需要配置本地插件（见 DEVELOPER.md）
 ```
 
 ## 添加新 Agent
@@ -45,6 +48,7 @@ model: sonnet | opus | haiku
 - `tools` 字段控制 Agent 可用工具，按需授权最小集合
 - `model` 选择原则：`opus` 用于复杂推理，`sonnet` 用于日常任务（默认），`haiku` 用于简单查询
 - 核心内容控制在 30-50 行，详细示例迁移到 `skills/`
+- 修改 `agents/` 后运行 `node scripts/sync-codex.js`，同步 `.codex/agents/`
 
 ## 添加新 Skill
 
@@ -63,6 +67,7 @@ description: 描述（何时自动引用此 Skill）
 
 3. 如有参考资料，放入 `references/` 子目录
 4. 如有脚本模板，放入 `scripts/` 子目录
+5. 修改 `skills/` 后运行 `node scripts/sync-codex.js`，同步 `.agents/skills/`
 
 ## 添加新 Hook
 
@@ -163,7 +168,7 @@ test('功能描述', () => {
    refactor: 重构代码
    test: 添加测试
    ```
-3. **测试要求**：所有 PR 必须通过 `node tests/run-all.js`（当前 403 个测试）
+3. **测试要求**：所有 PR 必须通过 `node tests/run-all.js`（当前 470 个测试）
 4. **提交前检查**：
    - 新功能有对应测试
    - 所有测试通过
