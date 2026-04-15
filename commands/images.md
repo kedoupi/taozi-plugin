@@ -36,13 +36,15 @@ allowed-tools:
 
 ### 平台与比例
 
-| 用户说 | 比例 | GPT size | 其他 aspectRatio |
-|--------|------|----------|-----------------|
-| 小红书、种草、笔记 | 3:4 | `1024x1536` | `3:4` |
-| 公众号、推文、文章封面 | 16:9 | `1536x1024` | `16:9` |
-| 抖音、视频号、短视频封面 | 9:16 | `1024x1536` | `9:16` |
-| X、推特 | 16:9 | `1536x1024` | `16:9` |
-| 未提及平台 | 1:1 | `1024x1024` | `1:1` |
+所有模型统一使用 `aspectRatio` 参数：
+
+| 用户说 | aspectRatio |
+|--------|------------|
+| 小红书、种草、笔记 | `3:4` |
+| 公众号、推文、文章封面 | `16:9` |
+| 抖音、视频号、短视频封面 | `9:16` |
+| X、推特 | `16:9` |
+| 未提及平台 | `1:1` |
 
 ### 模型自动路由
 
@@ -50,10 +52,10 @@ allowed-tools:
 
 | 内容特征 | 模型 |
 |---------|------|
-| 真人、产品、写真、摄影感、数据图表、商业海报 | `gpt-image-1.5` |
+| 真人、产品、写真、摄影感、数据图表、商业海报 | `gemini-3-pro-image-preview` |
 | 国风、新中式、古风、水墨、汉服、国潮 | `doubao-seedream-4-5-251128` |
 | 插画、卡通、动漫、二次元、日式、漫画、手绘 | `gemini-3-pro-image-preview` |
-| 其他/通用 | `gpt-image-1.5` |
+| 其他/通用 | `gemini-3-pro-image-preview` |
 
 告知用户：选了哪个模型、什么比例、生成几张，以及原因。
 
@@ -79,8 +81,7 @@ allowed-tools:
 
 prompt: <增强后的描述>
 model: <模型ID>
-尺寸参数类型: <size 或 aspectRatio>
-尺寸参数值: <具体值>
+aspectRatio: <比例，如 3:4 / 1:1 / 16:9 / 9:16>
 quality: high
 
 步骤：
@@ -93,11 +94,7 @@ youmind call getDefaultBoard
 取 id 字段。
 
 3. 发起生图
-GPT Image 用 size：
-youmind call createChat '{"boardId":"<id>","message":"<prompt>","tools":{"imageGenerate":{"useTool":"required","size":"<size>","quality":"high","model":"<model>"}}}'
-
-其他模型用 aspectRatio：
-youmind call createChat '{"boardId":"<id>","message":"<prompt>","tools":{"imageGenerate":{"useTool":"required","aspectRatio":"<ratio>","quality":"high","model":"<model>"}}}'
+youmind call createChat '{"boardId":"<id>","message":"<prompt>","tools":{"imageGenerate":{"useTool":"required","aspectRatio":"<aspectRatio>","quality":"high","model":"<model>"}}}'
 
 取返回 id 作为 chatId。超时未返回则执行：
 youmind call listChats '{"boardId":"<id>","pageSize":3}'，取最新一条 id。

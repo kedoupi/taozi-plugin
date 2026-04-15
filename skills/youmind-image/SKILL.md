@@ -50,26 +50,24 @@ allowed-tools:
 
 | 内容类型 | 判断依据 | 模型（各厂旗舰） |
 |---------|---------|----------------|
-| 真实感/写真/产品/数据报告 | 真人、产品、写真、摄影、图表、数据 | `gpt-image-1.5` |
+| 真实感/写真/产品/数据报告 | 真人、产品、写真、摄影、图表、数据 | `gemini-3-pro-image-preview` |
 | 国风/新中式/古风/中式美学 | 国风、新中式、古风、水墨、汉服、国潮 | `doubao-seedream-4-5-251128` |
 | 插画/卡通/动漫/日式漫画 | 插画、卡通、动漫、二次元、手绘、Q版、漫画 | `gemini-3-pro-image-preview` |
-| 通用/其他 | 以上都不符合 | `gpt-image-1.5` |
+| 通用/其他 | 以上都不符合 | `gemini-3-pro-image-preview` |
 
 告知用户选了哪个模型和原因。
 
 **手动选择**（用户说"让我选"时展示）：
 
 ```
-1. GPT Image 1.5           — OpenAI 旗舰，写实/产品/数据图表最强
-2. Gemini 3 Pro Image      — Google 旗舰，插画/动漫/创意设计最强
-3. Seedream                — 字节旗舰，国风/中式美学最强
-4. Qwen Image 2.0 Pro      — 阿里旗舰，中文场景理解好
-5. 自动选择（根据内容推荐最合适的）
+1. Gemini 3 Pro Image      — Google 旗舰，写实/插画/创意设计全能
+2. Seedream                — 字节旗舰，国风/中式美学最强
+3. Qwen Image 2.0 Pro      — 阿里旗舰，中文场景理解好
+4. 自动选择（根据内容推荐最合适的）
 ```
 
 | 选项 | model 参数值 |
 |------|------------|
-| GPT Image 1.5 | `gpt-image-1.5` |
 | Gemini 3 Pro Image | `gemini-3-pro-image-preview` |
 | Seedream | `doubao-seedream-4-5-251128` |
 | Qwen Image 2.0 Pro | `qwen-image-2.0-pro` |
@@ -77,13 +75,15 @@ allowed-tools:
 
 ### ratio（比例）
 
-| 用户意图 | GPT Image size | 其他模型 aspectRatio |
-|---------|---------------|---------------------|
-| 小红书封面/竖图 | `1024x1536` | `3:4` |
-| 小红书正方形 | `1024x1024` | `1:1` |
-| 公众号封面/横图 | `1536x1024` | `16:9` |
-| 抖音/视频号封面 | `1024x1536` | `9:16` |
-| 未说明 | `1024x1024` | `1:1` |
+所有模型统一使用 `aspectRatio` 参数：
+
+| 用户意图 | aspectRatio |
+|---------|------------|
+| 小红书封面/竖图 | `3:4` |
+| 小红书正方形 | `1:1` |
+| 公众号封面/横图 | `16:9` |
+| 抖音/视频号封面 | `9:16` |
+| 未说明 | `1:1` |
 
 ---
 
@@ -106,8 +106,7 @@ allowed-tools:
 ## 参数
 - prompt: <增强后的描述>
 - model: <模型ID>
-- 尺寸参数类型: <"size" 或 "aspectRatio">
-- 尺寸参数值: <具体值，如 1024x1536 或 3:4>
+- aspectRatio: <比例，如 3:4 / 1:1 / 16:9 / 9:16>
 - quality: high
 - 语言: 图片中如需出现文字，默认使用简体中文，非必要不使用其他语言
 
@@ -121,10 +120,6 @@ youmind call getDefaultBoard
 取返回值的 id 字段作为 boardId。
 
 ### 步骤 3：发起生图
-GPT Image 系列（gpt-image-1 / gpt-image-1.5）用 size 参数：
-youmind call createChat '{"boardId":"<boardId>","message":"<prompt>","tools":{"imageGenerate":{"useTool":"required","size":"<size>","quality":"high","model":"<model>"}}}'
-
-其他模型用 aspectRatio 参数：
 youmind call createChat '{"boardId":"<boardId>","message":"<prompt>","tools":{"imageGenerate":{"useTool":"required","aspectRatio":"<aspectRatio>","quality":"high","model":"<model>"}}}'
 
 取返回值的 id 作为 chatId。
