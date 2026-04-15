@@ -39,8 +39,29 @@ allowed-tools:
 
 ### prompt（增强后）
 
-将用户的原始描述扩展为"主体 + 风格 + 氛围 + 构图 + 留白"结构。
-例：用户说"做张茶的图" → 增强为"古朴木桌上的青瓷茶具，一缕白烟升起，禅意留白，水墨淡彩风格，竹影投在宣纸上"
+按 **主体 + 背景/上下文 + 风格修饰** 结构扩展，聚焦 3-5 个核心元素，不要堆砌过多细节。
+
+#### 各类型开头与关键词
+
+| 内容类型 | 开头格式 | 推荐风格关键词 |
+|---------|---------|--------------|
+| 写实/摄影 | "A photo of..." | golden hour, depth of field, bokeh, 4K HDR, studio lighting |
+| 数据图/信息图 | "An infographic of..." | clean lines, flat design, isometric, professional design |
+| 插画/创意 | "A digital art of..." | highly detailed, vibrant colors, concept art |
+| 国风/水墨 | "A traditional Chinese ink wash painting of..." | ink style, 工笔, 写意, Song Dynasty style, misty mountains |
+| 动漫/日式 | "An anime illustration of..." | Studio Ghibli style / chibi style / cel-shaded / Makoto Shinkai style |
+| 商业海报 | "A minimalist poster of..." | bold typography, solid background, clean composition |
+
+#### 质量修饰词规则
+- **最多 2-3 个**，超量反而导致画面浑浊
+- 照片类：`4K HDR`、`by a professional photographer`
+- 艺术类：`ultra-detailed`、`masterpiece`
+- 通用：`high-quality`、`beautiful`
+
+#### 文字入图规则
+- 文字内容**限制 25 字符以内**
+- 最多 2-3 个独立短语，不要长句
+- 例：标题 "7000亿宠物经济" + 副标题 "铲屎官的隐形市场"
 
 图片中如需出现文字，默认使用简体中文，非必要不使用其他语言。
 

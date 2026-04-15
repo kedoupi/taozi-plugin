@@ -61,10 +61,21 @@ allowed-tools:
 
 ### Prompt 增强
 
-将用户的原始描述扩展为高质量 prompt：
-- 补充**主体细节**（材质、动作、表情等）
-- 补充**风格关键词**（光影、色调、构图）
-- 补充**构图说明**（留白位置、视角、层次）
+按 **主体 + 背景/上下文 + 风格修饰** 结构扩展，聚焦 3-5 个核心元素。
+
+各类型开头与推荐关键词：
+
+| 内容类型 | 开头格式 | 推荐关键词 |
+|---------|---------|-----------|
+| 写实/摄影 | "A photo of..." | golden hour, bokeh, depth of field, 4K HDR |
+| 数据图/信息图 | "An infographic of..." | clean lines, flat design, isometric |
+| 国风/水墨 | "A traditional Chinese ink wash painting of..." | ink style, 写意, Song Dynasty style |
+| 动漫/日式 | "An anime illustration of..." | chibi style, Studio Ghibli style, cel-shaded |
+| 商业海报 | "A minimalist poster of..." | bold typography, clean composition |
+
+规则：
+- 质量修饰词**最多 2-3 个**（超量反而画面浑浊）
+- 图片文字**限制 25 字符**以内，最多 2-3 个短语
 - 如需多张，每张生成略有差异的 prompt 变体
 - 图片中如需出现文字，默认使用简体中文，非必要不使用其他语言
 
