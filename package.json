@@ -1,7 +1,7 @@
 {
   "name": "taozi-universal",
-  "version": "3.2.2",
-  "description": "Taozi Plugin - 工作流驱动、3 条铁律、思维工具箱、自动化 Hooks。支持 Claude Code 和 Codex。",
+  "version": "3.3.0",
+  "description": "Taozi Plugin - 工作流驱动、3 条铁律、思维工具箱、自动化 Hooks + YouMind AI 创作能力（图片/研究/内容/PPT/网页）。支持 Claude Code 和 Codex。",
   "author": {
     "name": "kedoupi",
     "url": "https://github.com/kedoupi"
@@ -26,7 +26,11 @@
     "tdd",
     "code-review",
     "security",
-    "continuous-learning"
+    "continuous-learning",
+    "youmind",
+    "image-generation",
+    "content-creation",
+    "ai-tools"
   ],
   "files": [
     "agents/",

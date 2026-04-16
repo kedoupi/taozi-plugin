@@ -177,7 +177,32 @@ IMAGE_DONE
 
 ---
 
-**批量生图**：对每张图分别派一个独立 Agent，所有 Agent 同时启动，并行生成。
+**批量生图（风格统一）**：
+
+生成多张系列图时，主 Agent 必须先定义 **Series Style Anchor**，再派子 Agent。
+
+#### Step A：生成 Style Anchor
+
+在所有子 Agent 启动前，主 Agent 输出一段风格锚字符串，例如：
+
+```
+[Style Anchor]
+art style: clean flat design illustration
+color palette: warm orange, cream white, soft coral accents
+character: consistent proportions and line weight throughout
+outline: thick black outline, flat color fills, soft drop shadow
+typography: bold simplified Chinese, clean sans-serif
+```
+
+Style Anchor 根据用户意图生成，不同系列有不同风格。
+
+#### Step B：每个子 Agent 的 prompt = 内容描述 + Style Anchor
+
+```
+<该张图的具体内容描述>, [Style Anchor 全文], same art style as the series
+```
+
+所有图共享同一段视觉 DNA，确保风格统一。
 
 ---
 

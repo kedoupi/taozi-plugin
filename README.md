@@ -1,6 +1,6 @@
-# Taozi Plugin 3.2.2
+# Taozi Plugin 3.3.0
 
-智能开发工具集 - 工作流驱动、3 条铁律、思维工具箱、自动化 Hooks。
+智能开发工具集 - 工作流驱动、3 条铁律、思维工具箱、自动化 Hooks + YouMind AI 创作能力。
 
 仓库地址：
 
@@ -17,6 +17,26 @@ Taozi 支持两种运行时：
 
 - Node.js `>= 18`
 - 如果让 AI 帮你安装，建议明确提供 GitHub 仓库地址，让 AI 先读取仓库说明再执行安装
+
+### YouMind API Key（使用 AI 创作功能必须）
+
+`/taozi:images`、`/taozi:research`、`/taozi:content`、`/taozi:create`、`/taozi:clip`、`/taozi:ppt`、`/taozi:webpage` 这 7 个命令需要配置 YouMind API Key。
+
+**获取 Key：** 访问 [youmind.com](https://youmind.com) → 设置 → API Key → 生成
+
+**配置方式：**
+
+```bash
+# 永久配置（推荐）
+echo 'export YOUMIND_API_KEY=sk-ym-xxxxxx' >> ~/.zshrc
+source ~/.zshrc
+
+# 如果用 bash
+echo 'export YOUMIND_API_KEY=sk-ym-xxxxxx' >> ~/.bashrc
+source ~/.bashrc
+```
+
+未配置时尝试使用上述命令，会自动提示设置方法。
 
 ## 安装
 
@@ -138,7 +158,7 @@ mkdir -p .agents/plugins
 - `agents/` 与 `skills/` 是单一事实来源
 - 修改后运行 `node scripts/sync-codex.js` 同步 Codex 产物
 
-## Commands（25 个）
+## Commands（32 个）
 
 | 命令 | 功能 |
 |------|------|
@@ -167,6 +187,13 @@ mkdir -p .agents/plugins
 | `/model-route` | 根据任务推荐最优模型 |
 | `/quality-gate` | 发布前质量门禁（构建/测试/lint/安全） |
 | `/skill-create` | 手动创建可复用 Skill |
+| `/taozi:images` | AI 图片生成（Gemini 多模型，支持批量+风格锚点）|
+| `/taozi:research` | 热点研究（webSearch + 深度 research，结构化报告）|
+| `/taozi:content` | 多平台内容创作（小红书/公众号/抖音/X）|
+| `/taozi:create` | 全链路一键创作（研究 → 内容 → 配图）|
+| `/taozi:clip` | 内容采集与分析（YouTube/微信公众号/网页 URL 导入 + AI 深度分析）|
+| `/taozi:ppt` | PPT 生成（自动生成幻灯片，返回封面图与 Craft 链接）|
+| `/taozi:webpage` | 网页生成（描述 → 可访问的 CDN 链接）|
 
 ## 使用示例
 
@@ -232,20 +259,56 @@ mkdir -p .agents/plugins
 | context-manager | 上下文优化、CLAUDE.md |
 | prompt-engineer | LLM 提示优化、AI 系统 |
 
-## Skills（42 个）
+## Skills（48 个）
 
 Claude / Codex 根据任务自动引用相关知识库：
 
-`frontend-react` · `backend-architecture` · `nextjs-advanced` · `nextjs-architecture` · `typescript-types` · `typescript-patterns` · `python-patterns` · `go-patterns` · `swift-patterns` · `swift-concurrency` · `foundation-models` · `django-patterns` · `springboot-patterns` · `springboot-tdd` · `springboot-security` · `docker-patterns` · `e2e-testing` · `api-design` · `deployment-patterns` · `database-migrations` · `security-patterns` · `sql-optimization` · `legacy-migration` · `testing-strategies` · `mcp-templates` · `git-conventions` · `code-quality-checklist` · `thinking-tools` · `continuous-learning` · `token-optimization` · `deep-research` · `taozi-router` · `taozi-plan` · `taozi-tdd` · `taozi-verify` · `taozi-code-review` · `taozi-quality-gate` · `taozi-git-workflow` · `taozi-context-update` · `taozi-model-route` · `taozi-multi-agent` · `taozi-learning`
+`frontend-react` · `backend-architecture` · `nextjs-advanced` · `nextjs-architecture` · `typescript-types` · `typescript-patterns` · `python-patterns` · `go-patterns` · `swift-patterns` · `swift-concurrency` · `foundation-models` · `django-patterns` · `springboot-patterns` · `springboot-tdd` · `springboot-security` · `docker-patterns` · `e2e-testing` · `api-design` · `deployment-patterns` · `database-migrations` · `security-patterns` · `sql-optimization` · `legacy-migration` · `testing-strategies` · `mcp-templates` · `git-conventions` · `code-quality-checklist` · `thinking-tools` · `continuous-learning` · `token-optimization` · `deep-research` · `taozi-router` · `taozi-plan` · `taozi-tdd` · `taozi-verify` · `taozi-code-review` · `taozi-quality-gate` · `taozi-git-workflow` · `taozi-context-update` · `taozi-model-route` · `taozi-multi-agent` · `taozi-learning` · `youmind-image` · `youmind-research` · `youmind-content` · `youmind-clip` · `youmind-ppt` · `youmind-webpage`
+
+## YouMind AI 创作能力
+
+以下 7 个命令需要配置 `YOUMIND_API_KEY`（见安装前提）。
+
+| 命令 | 功能 | 典型用法 |
+|------|------|------|
+| `/taozi:images` | AI 图片生成 | `/taozi:images 一只猫坐在窗边，吉卜力风格` |
+| `/taozi:research` | 热点研究与分析 | `/taozi:research 分析小红书宠物赛道最新趋势` |
+| `/taozi:content` | 多平台内容创作 | `/taozi:content 帮我写一篇关于AI工具的小红书笔记` |
+| `/taozi:create` | 全链路一键创作 | `/taozi:create 做一个关于AI绘画的公众号文章，要有数据` |
+| `/taozi:clip` | URL 内容采集与分析 | `/taozi:clip https://youtube.com/... 分析视频核心观点` |
+| `/taozi:ppt` | PPT 生成 | `/taozi:ppt 2025年AI行业趋势报告` |
+| `/taozi:webpage` | 网页生成 | `/taozi:webpage 设计一个产品发布落地页` |
+
+### `/taozi:clip` 支持的内容来源
+
+| 类型 | 支持 |
+|------|------|
+| YouTube 视频 | ✅ 自动提取字幕/转录 |
+| 微信公众号文章 | ✅ |
+| 普通公开网页 | ✅（部分站点） |
+| 知乎 / 小红书 | ❌ 需要登录，无法抓取 |
+
+### 创作链路
+
+```
+/taozi:research → 研究报告（热点 + 数据 + 选题建议）
+       ↓
+/taozi:content  → 多平台内容（小红书/公众号/抖音/X）
+       ↓
+/taozi:images   → 配图生成
+```
+
+或一步到位：`/taozi:create` 自动串联以上全部步骤。
 
 ## Rules（31 个规则文件）
 
 Claude 自动遵循的约束规范，覆盖通用编码规范 + TypeScript / Python / Go / Swift / Java 5 个语言生态。
 
-## Hooks（10 个自动化钩子）
+## Hooks（11 个自动化钩子）
 
 | 事件 | 描述 |
 |------|------|
+| PreToolUse | 检测 `YOUMIND_API_KEY`，未配置时 block YouMind 命令并给出设置指引 |
 | PreToolUse | 阻止 `git --no-verify`（铁律 1） |
 | PreToolUse | dev server 建议使用 tmux |
 | PostToolUse | 编辑后检测 `console.log` |
