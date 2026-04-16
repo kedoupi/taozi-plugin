@@ -160,6 +160,8 @@ mkdir -p .agents/plugins
 
 ## Commands（32 个）
 
+### 开发工作流（25 个）
+
 | 命令 | 功能 |
 |------|------|
 | `/taozi` | 智能调度入口 - 意图识别 + 工作流匹配 |
@@ -187,15 +189,24 @@ mkdir -p .agents/plugins
 | `/model-route` | 根据任务推荐最优模型 |
 | `/quality-gate` | 发布前质量门禁（构建/测试/lint/安全） |
 | `/skill-create` | 手动创建可复用 Skill |
-| `/taozi:images` | AI 图片生成（Gemini 多模型，支持批量+风格锚点）|
-| `/taozi:research` | 热点研究（webSearch + 深度 research，结构化报告）|
-| `/taozi:content` | 多平台内容创作（小红书/公众号/抖音/X）|
+
+### YouMind AI 创作（7 个）
+
+> 需要配置 `YOUMIND_API_KEY`，详见[安装前提 → YouMind API Key](#youmind-api-key使用-ai-创作功能必须)。
+
+| 命令 | 功能 |
+|------|------|
+| `/taozi:images` | AI 图片生成（Gemini 多模型，支持批量 + 风格锚点）|
+| `/taozi:research` | 热点研究（webSearch + 深度 research，输出结构化报告）|
+| `/taozi:content` | 多平台内容创作（小红书 / 公众号 / 抖音 / X）|
 | `/taozi:create` | 全链路一键创作（研究 → 内容 → 配图）|
-| `/taozi:clip` | 内容采集与分析（YouTube/微信公众号/网页 URL 导入 + AI 深度分析）|
-| `/taozi:ppt` | PPT 生成（自动生成幻灯片，返回封面图与 Craft 链接）|
+| `/taozi:clip` | 内容采集与分析（YouTube / 微信公众号 / 网页，AI 深度分析）|
+| `/taozi:ppt` | PPT 生成（返回封面图预览 + Craft 编辑链接）|
 | `/taozi:webpage` | 网页生成（描述 → 可访问的 CDN 链接）|
 
 ## 使用示例
+
+### 开发工作流
 
 ```text
 # 工作流触发 - 自动编排
@@ -208,6 +219,25 @@ mkdir -p .agents/plugins
 /commit                  # 智能提交
 /pr                      # 创建 PR
 /cleanup                 # 清理
+```
+
+### AI 创作工作流
+
+```text
+# 研究 → 内容 → 配图（分步）
+/taozi:research 分析小红书宠物赛道最新趋势
+/taozi:content 基于上面的研究，帮我写一篇种草文
+/taozi:images 生成适合小红书风格的宠物封面图
+
+# 全链路一键触发
+/taozi:create 帮我做一个关于 AI 工具的公众号文章，要有数据支撑
+
+# 采集 URL 并分析
+/taozi:clip https://www.youtube.com/watch?v=xxx 分析视频核心观点
+
+# 一键生成 PPT / 网页
+/taozi:ppt 2025 年 AI 行业趋势报告
+/taozi:webpage 设计一个产品发布落地页
 ```
 
 ## Agents（23 个）
@@ -261,44 +291,50 @@ mkdir -p .agents/plugins
 
 ## Skills（48 个）
 
-Claude / Codex 根据任务自动引用相关知识库：
+Claude / Codex 根据任务自动引用相关知识库。
 
-`frontend-react` · `backend-architecture` · `nextjs-advanced` · `nextjs-architecture` · `typescript-types` · `typescript-patterns` · `python-patterns` · `go-patterns` · `swift-patterns` · `swift-concurrency` · `foundation-models` · `django-patterns` · `springboot-patterns` · `springboot-tdd` · `springboot-security` · `docker-patterns` · `e2e-testing` · `api-design` · `deployment-patterns` · `database-migrations` · `security-patterns` · `sql-optimization` · `legacy-migration` · `testing-strategies` · `mcp-templates` · `git-conventions` · `code-quality-checklist` · `thinking-tools` · `continuous-learning` · `token-optimization` · `deep-research` · `taozi-router` · `taozi-plan` · `taozi-tdd` · `taozi-verify` · `taozi-code-review` · `taozi-quality-gate` · `taozi-git-workflow` · `taozi-context-update` · `taozi-model-route` · `taozi-multi-agent` · `taozi-learning` · `youmind-image` · `youmind-research` · `youmind-content` · `youmind-clip` · `youmind-ppt` · `youmind-webpage`
+### 开发知识库（42 个）
 
-## YouMind AI 创作能力
+`frontend-react` · `backend-architecture` · `nextjs-advanced` · `nextjs-architecture` · `typescript-types` · `typescript-patterns` · `python-patterns` · `go-patterns` · `swift-patterns` · `swift-concurrency` · `foundation-models` · `django-patterns` · `springboot-patterns` · `springboot-tdd` · `springboot-security` · `docker-patterns` · `e2e-testing` · `api-design` · `deployment-patterns` · `database-migrations` · `security-patterns` · `sql-optimization` · `legacy-migration` · `testing-strategies` · `mcp-templates` · `git-conventions` · `code-quality-checklist` · `thinking-tools` · `continuous-learning` · `token-optimization` · `deep-research` · `taozi-router` · `taozi-plan` · `taozi-tdd` · `taozi-verify` · `taozi-code-review` · `taozi-quality-gate` · `taozi-git-workflow` · `taozi-context-update` · `taozi-model-route` · `taozi-multi-agent` · `taozi-learning`
 
-以下 7 个命令需要配置 `YOUMIND_API_KEY`（见安装前提）。
+### YouMind 创作知识库（6 个）
 
-| 命令 | 功能 | 典型用法 |
-|------|------|------|
-| `/taozi:images` | AI 图片生成 | `/taozi:images 一只猫坐在窗边，吉卜力风格` |
-| `/taozi:research` | 热点研究与分析 | `/taozi:research 分析小红书宠物赛道最新趋势` |
-| `/taozi:content` | 多平台内容创作 | `/taozi:content 帮我写一篇关于AI工具的小红书笔记` |
-| `/taozi:create` | 全链路一键创作 | `/taozi:create 做一个关于AI绘画的公众号文章，要有数据` |
-| `/taozi:clip` | URL 内容采集与分析 | `/taozi:clip https://youtube.com/... 分析视频核心观点` |
-| `/taozi:ppt` | PPT 生成 | `/taozi:ppt 2025年AI行业趋势报告` |
-| `/taozi:webpage` | 网页生成 | `/taozi:webpage 设计一个产品发布落地页` |
+`youmind-image` · `youmind-research` · `youmind-content` · `youmind-clip` · `youmind-ppt` · `youmind-webpage`
 
-### `/taozi:clip` 支持的内容来源
+## YouMind AI 创作能力（详细说明）
 
-| 类型 | 支持 |
-|------|------|
-| YouTube 视频 | ✅ 自动提取字幕/转录 |
-| 微信公众号文章 | ✅ |
-| 普通公开网页 | ✅（部分站点） |
-| 知乎 / 小红书 | ❌ 需要登录，无法抓取 |
+> 命令列表见 [Commands → YouMind AI 创作](#youmind-ai-创作7-个)，用法示例见 [使用示例 → AI 创作工作流](#ai-创作工作流)。
 
 ### 创作链路
 
 ```
 /taozi:research → 研究报告（热点 + 数据 + 选题建议）
        ↓
-/taozi:content  → 多平台内容（小红书/公众号/抖音/X）
+/taozi:content  → 多平台内容（小红书 / 公众号 / 抖音 / X）
        ↓
 /taozi:images   → 配图生成
 ```
 
 或一步到位：`/taozi:create` 自动串联以上全部步骤。
+
+### `/taozi:clip` 支持的内容来源
+
+| 来源类型 | 支持 | 说明 |
+|------|------|------|
+| YouTube 视频 | ✅ | 自动提取字幕 / 转录内容 |
+| 微信公众号文章 | ✅ | |
+| 普通公开网页 | ✅ | 部分站点 |
+| 知乎 / 小红书 | ❌ | 需要登录，无法抓取 |
+
+### `/taozi:ppt` 输出
+
+返回两个产物：
+- **封面图**：幻灯片第一页预览图 URL
+- **Craft 链接**：可在 YouMind Craft 编辑器中继续修改完整 PPT
+
+### `/taozi:webpage` 输出
+
+返回一个直接可访问的 CDN 链接，无需部署，生成即可分享。
 
 ## Rules（31 个规则文件）
 
