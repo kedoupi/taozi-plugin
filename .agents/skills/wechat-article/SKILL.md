@@ -408,16 +408,26 @@ SECTION_IMAGE_PROMPT_1: <章节标题> | <完整英文 prompt，含视觉锚点 
 SECTION_IMAGE_PROMPT_2: ...
 ```
 
-配图 prompt 模板：
+配图 prompt 构建规则：
+
+1. **读取 character.md**（优先 `wechat-articles/character.md`，其次 `~/wechat-articles/character.md`）
+2. 找到 `## 章节配图用法（16:9）` 下方的代码块，提取其完整内容作为**角色模板**
+3. 若找不到该章节、或"我的角色"部分为空注释（只有 `<!-- ... -->`），则**无角色模板**
+
+最终 prompt 结构：
 ```
 WeChat article section illustration, 16:9 landscape.
 Scene: <用 10 词描述该章节核心场景>.
-Character: a young man with a boyish expression, brown fluffy short hair, round glasses, dark blue hoodie, gray sweatpants, white sneakers.
-Cream beige background (#F5F0E8). Q-style manga illustration. Warm color palette (brown/cream/blue).
+<角色模板内容（从 character.md 提取，原样保留）>
 Visual anchors: <锚点1, 锚点2, 锚点3>. No text overlay. Not realistic.
 ```
 
-如 character.md 不存在或角色为空，则省略 Character 行，视觉锚点仍保留。
+无角色模板时省略角色行，视觉锚点仍保留：
+```
+WeChat article section illustration, 16:9 landscape.
+Scene: <用 10 词描述该章节核心场景>.
+Visual anchors: <锚点1, 锚点2, 锚点3>. No text overlay. Not realistic.
+```
 
 ### 步骤 4：保存草稿
 将完整 Markdown 写入 wechat-articles/drafts/<YYYYMMDD>-<slug>.md
