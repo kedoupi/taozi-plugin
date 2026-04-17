@@ -52,9 +52,19 @@ author: foo
 ## Hook 开发规范
 
 - `exit(0)` = 放行，`exit(2)` = 拦截（Claude 看到 stderr 作为反馈）
+- **`exit(2)` 拦截仅对 `PreToolUse` 有效**；`PostToolUse` hook 无论退出码是什么都不会拦截操作，只作为信息反馈
 - 所有 hook 脚本通过 stdin 读取 JSON，用 `require('../lib/utils').readStdinJson()`
 - 新 hook 三步走：`scripts/hooks/<name>.js` → `hooks/hooks.json` 注册 → `tests/hooks/hooks.test.js` 补测试
 - `${CLAUDE_PLUGIN_ROOT}` 是插件根目录的环境变量，在 hooks.json 命令路径中使用
+- `block-random-md` PostToolUse hook 会拦截任意 `.md` 文件写入；合法路径（`skills/*/SKILL.md`、`commands/*.md`、`agents/*.md` 等）会通过，不要尝试在其他路径创建 `.md` 文件
+
+## CI 结构检查
+
+CI (`test.yml`) 除运行 `node tests/run-all.js` 外，还有结构完整性检查：
+
+- `agents/*.md`、`skills/*/SKILL.md`、`rules/*.md`、`scripts/hooks/*.js` 每个文件**必须存在**
+- 改名或删除这些文件会触发 CI lint 失败（不是测试失败，错误信息不同）
+- 新增文件时无需担心；只有删除/改名现有文件才会触发
 
 ## 测试框架
 
@@ -64,13 +74,18 @@ author: foo
 test('描述', () => {
   assert.strictEqual(actual, expected);
 });
+
+asyncTest('异步描述', async () => {
+  const result = await someAsync();
+  assert.strictEqual(result, expected);
+});
 ```
 
-新增功能必须有对应测试。PR 要求全部测试通过。
+测试文件命名必须以 `.test.js` 结尾才会被自动发现。新增功能必须有对应测试。PR 要求全部测试通过。
 
 ## 命名与提交规范
 
 - 分支：`feat/<name>`、`fix/<name>`、`docs/<topic>`、`refactor/<name>`、`test/<name>`
 - 提交：Conventional Commits（`feat:`, `fix:`, `docs:`, `refactor:`, `test:`）
 - Command 文件名 = slash command 名称（`commands/images.md` → `/taozi:images`）
-- Skill 目录名 = skill 调用名（`skills/youmind-image/` → `youmind-image`）
+- Skill 目录名 = skill 调用名（`skills/image/` → `image`）

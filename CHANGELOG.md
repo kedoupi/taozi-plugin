@@ -4,6 +4,15 @@ All notable changes to Taozi Plugin are documented here.
 
 ---
 
+## [3.5.0] - 2026-04-17
+
+### Changed
+
+- **Skill 去厂商前缀**：7 个 `youmind-*` skill 重命名为纯能力名（`youmind-webpage` → `webpage`，`youmind-ppt` → `ppt`，`youmind-clip` → `clip`，`youmind-image` → `image`，`youmind-research` → `research`，`youmind-content` → `content`，`youmind-wechat-article` → `wechat-article`）——厂商是实现细节，不出现在名称里，便于未来换厂商或自研
+- **Command 薄包装**：6 个与 skill 重复实现逻辑的 command（webpage / ppt / clip / images / research / content）改为委托模式，逻辑收归 skill 单一事实来源，净删除约 4700 行重复代码
+
+---
+
 ## [3.4.0] - 2026-04-17
 
 ### Added

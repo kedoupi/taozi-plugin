@@ -300,7 +300,7 @@ Claude / Codex 根据任务自动引用相关知识库。
 
 ### YouMind 创作知识库（6 个）
 
-`youmind-image` · `youmind-research` · `youmind-content` · `youmind-clip` · `youmind-ppt` · `youmind-webpage`
+`image` · `research` · `content` · `clip` · `ppt` · `webpage`
 
 ## YouMind AI 创作能力（详细说明）
 
