@@ -1,5 +1,5 @@
 ---
-name: youmind-wechat-article
+name: wechat-article
 description: 微信公众号文章全链路：热点选题 → YouMind 研究 → AI 写作 → 封面图生成 → 推送草稿箱。首次运行自动初始化 wechat-articles/ 工作目录。需要 YOUMIND_API_KEY、WECHAT_APPID、WECHAT_APPSECRET 环境变量。
 triggers: "公众号文章,微信推文,发草稿箱,公众号写作,写公众号,微信公众号,WeChat article,publish to WeChat"
 allowed-tools:
@@ -385,7 +385,7 @@ youmind call generateImage '{"prompt":"<cover_prompt>, 16:9 ratio, widescreen, n
 取返回的图片 URL。
 
 ### 步骤 2：执行发布脚本
-python3 skills/youmind-wechat-article/scripts/wechat_publish.py \
+python3 skills/wechat-article/scripts/wechat_publish.py \
   --draft "<draft_path>" \
   --title "<title>" \
   --digest "<digest>" \

@@ -1,5 +1,5 @@
 ---
-name: youmind-ppt
+name: ppt
 description: AI PPT 生成。输入主题或内容，自动生成专业幻灯片，支持选择比例和质量。需要 YOUMIND_API_KEY 环境变量。
 triggers: "做个PPT,生成PPT,做幻灯片,做演示文稿,做个slides,转成PPT,文章转PPT,make slides,create presentation,generate ppt"
 allowed-tools:

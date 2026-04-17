@@ -1,5 +1,5 @@
 ---
-name: youmind-webpage
+name: webpage
 description: AI 网页生成。输入主题或内容，自动生成可分享的美观网页，直接返回可访问的 URL。需要 YOUMIND_API_KEY 环境变量。
 triggers: "做个网页,生成网页,做个页面,做个展示页,做个介绍页,生成落地页,转成网页,文章转网页,做个链接分享,make webpage,create webpage,generate page"
 allowed-tools:

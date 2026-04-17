@@ -1,9 +1,11 @@
 {
-  "generatedAt": "2026-04-17T08:19:50.429Z",
+  "generatedAt": "2026-04-17T08:42:14.866Z",
   "entries": [
     ".agents/skills/api-design",
     ".agents/skills/backend-architecture",
+    ".agents/skills/clip",
     ".agents/skills/code-quality-checklist",
+    ".agents/skills/content",
     ".agents/skills/continuous-learning",
     ".agents/skills/database-migrations",
     ".agents/skills/deep-research",
@@ -15,11 +17,14 @@
     ".agents/skills/frontend-react",
     ".agents/skills/git-conventions",
     ".agents/skills/go-patterns",
+    ".agents/skills/image",
     ".agents/skills/legacy-migration",
     ".agents/skills/mcp-templates",
     ".agents/skills/nextjs-advanced",
     ".agents/skills/nextjs-architecture",
+    ".agents/skills/ppt",
     ".agents/skills/python-patterns",
+    ".agents/skills/research",
     ".agents/skills/security-patterns",
     ".agents/skills/springboot-patterns",
     ".agents/skills/springboot-security",
@@ -43,12 +48,7 @@
     ".agents/skills/token-optimization",
     ".agents/skills/typescript-patterns",
     ".agents/skills/typescript-types",
-    ".agents/skills/youmind-clip",
-    ".agents/skills/youmind-content",
-    ".agents/skills/youmind-image",
-    ".agents/skills/youmind-ppt",
-    ".agents/skills/youmind-research",
-    ".agents/skills/youmind-webpage",
-    ".agents/skills/youmind-wechat-article"
+    ".agents/skills/webpage",
+    ".agents/skills/wechat-article"
   ]
 }

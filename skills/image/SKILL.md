@@ -1,5 +1,5 @@
 ---
-name: youmind-image
+name: image
 description: AI 图片生成。根据描述生成图片，支持自动/手动选择模型、多种比例。需要 YOUMIND_API_KEY 环境变量。
 triggers: "生成图片,画一张,做张图,配图,生图,图片生成,AI 生图,generate image,create image,make image"
 allowed-tools:

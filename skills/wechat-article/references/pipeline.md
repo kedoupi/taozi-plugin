@@ -14,7 +14,7 @@
 ## Step 2：热点抓取
 
 ```bash
-python3 skills/youmind-wechat-article/scripts/fetch_hotspots.py --limit 30
+python3 skills/wechat-article/scripts/fetch_hotspots.py --limit 30
 ```
 
 输出 JSON 热点列表，结合 `wechat-articles/history.yaml` 过滤近 7 天已发布的话题。
@@ -112,7 +112,7 @@ curl -s "<image_url>" -o /tmp/wechat_cover.jpg
 ## Step 7：发布到微信草稿箱
 
 ```bash
-python3 skills/youmind-wechat-article/scripts/wechat_publish.py \
+python3 skills/wechat-article/scripts/wechat_publish.py \
   --publish \
   --title "<标题>" \
   --content /tmp/article.md \
@@ -132,7 +132,7 @@ python3 skills/youmind-wechat-article/scripts/wechat_publish.py \
 ## Step 7.5：更新发布历史
 
 ```bash
-python3 skills/youmind-wechat-article/scripts/wechat_publish.py \
+python3 skills/wechat-article/scripts/wechat_publish.py \
   --update-history \
   --media-id "<media_id>" \
   --title "<标题>" \

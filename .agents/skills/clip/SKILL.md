@@ -1,5 +1,5 @@
 ---
-name: youmind-clip
+name: clip
 description: 内容采集与分析。输入任意 URL（YouTube 视频、微信公众号文章、网页），自动导入 YouMind 并用 AI 深度分析内容结构、核心观点和可借鉴点，为内容创作提供灵感和素材。需要 YOUMIND_API_KEY 环境变量。
 triggers: "分析这个,帮我看看这篇,采集,导入,分析这篇文章,分析这个视频,看看这个链接,借鉴,帮我拆解,clip,analyze url"
 allowed-tools:

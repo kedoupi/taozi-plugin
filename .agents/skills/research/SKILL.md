@@ -1,5 +1,5 @@
 ---
-name: youmind-research
+name: research
 description: 热点研究与调研分析。输入任意主题，自动搜索新闻、推特、财经、学术等多维度信息，输出结构化研究报告和内容创作建议。需要 YOUMIND_API_KEY 环境变量。
 triggers: "调研,分析,热点,研究,查一下,找一下,了解下,帮我看看,最新趋势,survey,research,investigate"
 allowed-tools:

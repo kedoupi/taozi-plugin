@@ -1,5 +1,5 @@
 ---
-name: youmind-content
+name: content
 description: 多平台内容创作。输入主题或研究报告，输出小红书笔记、公众号文章、抖音脚本、X推文等可直接发布的内容。支持单平台定向和多平台矩阵两种模式。
 triggers: "写篇文章,写小红书,写公众号,写脚本,生成内容,内容创作,帮我写,做成内容,内容矩阵,多平台,write content,create post"
 ---
