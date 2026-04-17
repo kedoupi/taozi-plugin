@@ -15,7 +15,7 @@ Claude Code 插件 + Codex 适配层的双运行时仓库。
 ## 关键命令
 
 ```bash
-node tests/run-all.js       # 运行全部测试（零依赖，~470 个断言）
+node tests/run-all.js       # 运行全部测试（零依赖）
 node scripts/sync-codex.js  # agents/ 或 skills/ 变更后同步 Codex 适配层
 npm run lint                # 验证 hooks/hooks.json 格式合法
 ```
@@ -37,6 +37,8 @@ node scripts/sync-codex.js
 1. `package.json` → `version`
 2. `.claude-plugin/plugin.json` → `version` + `description`
 3. `.codex-plugin/plugin.json` → `version` + `description`（当前仍需手动更新，sync-codex.js 不会自动同步）
+4. `README.md` 首行 `# Taozi Plugin X.Y.Z` → 同步
+5. `CHANGELOG.md` → 新增 `[X.Y.Z] - YYYY-MM-DD` 条目（breaking change 必须列迁移对照表）
 
 ## frontmatter 约束
 
@@ -85,8 +87,6 @@ asyncTest('异步描述', async () => {
 
 测试文件命名必须以 `.test.js` 结尾才会被自动发现。新增功能必须有对应测试。PR 要求全部测试通过。
 
-## 命名与提交规范
+## 命名规范
 
-- 分支：`feat/<name>`、`fix/<name>`、`docs/<topic>`、`refactor/<name>`、`test/<name>`
-- 提交：Conventional Commits（`feat:`, `fix:`, `docs:`, `refactor:`, `test:`）
 - Skill 目录名 = slash 触发名（`skills/image/` → `/taozi:image`，插件命名空间 `taozi:` 负责区分）
