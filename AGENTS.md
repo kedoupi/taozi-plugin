@@ -18,15 +18,15 @@ Taozi now supports both Claude Code and Codex from the same repository.
 
 ## Quick Routing
 
-- 需求不明确或要选工作流：`taozi-router`
-- 需要先拆计划：`taozi-plan`
-- 需要并行协作：`taozi-multi-agent`
-- 改完后做验证：`taozi-verify`
-- 做 review 或发布前检查：`taozi-code-review`、`taozi-quality-gate`
-- Git 提交、PR、worktree：`taozi-git-workflow`
-- 更新长期上下文：`taozi-context-update`
-- 选择模型策略：`taozi-model-route`
-- 沉淀经验和检查点：`taozi-learning`
+- 需求不明确或要选工作流：`taozi`
+- 需要先拆计划：`plan`
+- 需要并行协作：`multi-plan` / `multi-execute`
+- 改完后做验证：`verify`
+- 做 review 或发布前检查：`code-review`、`quality-gate`
+- Git 提交、PR、worktree：`git-workflow`
+- 更新长期上下文：`update-context`
+- 选择模型策略：`model-route`
+- 沉淀经验和检查点：`learning`
 
 ## Taozi State
 
@@ -36,6 +36,6 @@ Taozi now supports both Claude Code and Codex from the same repository.
 
 ## Maintenance
 
-- Keep Claude-specific files under `.claude-plugin/`, `commands/`, and `hooks/`.
+- Keep Claude-specific files under `.claude-plugin/` and `hooks/`.
 - Keep Codex-specific files under `.codex/`, `.codex-plugin/`, and `.agents/`.
 - Shared content should live in canonical source directories, then be adapted or generated for each runtime.

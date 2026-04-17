@@ -34,7 +34,6 @@
   ],
   "files": [
     "agents/",
-    "commands/",
     "hooks/",
     "rules/",
     "scripts/",

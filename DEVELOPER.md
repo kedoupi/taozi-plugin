@@ -23,8 +23,8 @@
 Taozi 现在采用“共享内容 + 运行时适配层”结构：
 
 - `agents/`：Agent 定义单一事实来源
-- `skills/`：Skill 定义单一事实来源
-- `commands/`、`hooks/`、`.claude-plugin/`：Claude Code 专用层
+- `skills/`：Skill 定义单一事实来源（承载所有 `/taozi:xxx` 触发）
+- `hooks/`、`.claude-plugin/`：Claude Code 专用层
 - `AGENTS.md`、`.codex/`、`.codex-plugin/`、`.agents/`：Codex 专用层
 
 其中：
@@ -32,7 +32,7 @@ Taozi 现在采用“共享内容 + 运行时适配层”结构：
 - `.codex/agents/` 由 `agents/*.md` 生成
 - `.agents/skills/` 由 `skills/` 镜像生成
 - 同步命令：`node scripts/sync-codex.js`
-- Codex 侧高频工作流优先通过 `skills/taozi-*` 提供，不直接复制 Claude slash commands
+- 所有 slash 触发走 `skills/*/SKILL.md`（官方 "Custom commands have been merged into skills"），不再维护 `commands/` 目录
 
 设计原则：
 
@@ -72,8 +72,6 @@ Taozi 现在采用“共享内容 + 运行时适配层”结构：
 │   ├── plugin.json               # 插件清单（必需）
 │   └── marketplace.json          # marketplace 定义（分发用）
 ├── agents/                       # 子代理定义
-│   └── *.md
-├── commands/                     # 斜杠命令
 │   └── *.md
 ├── hooks/                        # Hook 配置
 │   └── hooks.json                # 8 个 Hook，5 个事件
@@ -397,7 +395,7 @@ model: sonnet | opus | haiku
 ## 相关 Skills（如有）
 ```
 
-4. 在 `commands/taozi.md` 中注册新代理
+4. 在 `skills/taozi/SKILL.md` 中注册新代理
 
 ### 添加新 Skill
 
@@ -414,19 +412,23 @@ description: 描述（何时使用此 skill）
 3. 如有详细内容，放入 `references/` 子目录
 4. 如有脚本模板，放入 `scripts/` 子目录
 
-### 添加新命令
+### 添加新 Slash 触发（原 "命令"）
 
-1. 在 `commands/` 目录创建 `<command-name>.md`
+> 官方 Claude Code 已将 commands 合并进 skills。统一以 skill 形式提供。
+
+1. 在 `skills/` 目录创建 `<skill-name>/SKILL.md`
 2. 使用简单 frontmatter（仅支持单行 `key: value`）：
 
 ```yaml
 ---
-name: command-name
-description: 描述
+name: skill-name
+description: 描述（触发时机与用途，Claude 靠它自动匹配）
 allowed-tools: Tool1, Tool2
 argument-hint: [参数说明]
 ---
 ```
+
+3. 触发形式：`/taozi:<skill-name>`（插件命名空间 `taozi:` 由 plugin.json 自动注入）
 
 ### 代理模板规范
 

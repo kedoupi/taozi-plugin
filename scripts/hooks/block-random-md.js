@@ -43,7 +43,7 @@ const junkPatterns = [
 const isJunk = junkPatterns.some((p) => p.test(basename));
 
 // Allowlisted directories
-const allowedDirs = ['docs', 'skills', 'commands', '.claude', 'README'];
+const allowedDirs = ['docs', 'skills', '.claude', 'README'];
 const dirParts = filePath.split(path.sep);
 const isInAllowedDir = dirParts.some((part) => allowedDirs.includes(part));
 
@@ -64,7 +64,7 @@ if (isJunk) {
   // Non-junk named .md outside allowed dirs — soft warning
   warn('');
   warn(`Creating .md file: ${filePath}`);
-  warn('  Only create .md files in docs/, skills/, commands/, or .claude/ directories.');
+  warn('  Only create .md files in docs/, skills/, or .claude/ directories.');
   warn('');
 }
 

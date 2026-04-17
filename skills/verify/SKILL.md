@@ -1,30 +1,99 @@
 ---
-name: taozi-verify
-description: Taozi 验证工作流。改完代码后需要系统验证构建、测试、lint 和风险时使用。
+name: verify
+description: 运行验证循环 — 构建、测试、Lint、类型检查、安全扫描
+allowed-tools: Read, Bash, Grep, Glob
+argument-hint: [可选：文件路径或目录]
 ---
 
-# Taozi Verify
+# Verify
 
-## 目标
+在结束实现前给出可信的验证结果，而非主观认为"应该没问题"。目标: `$ARGUMENTS`（默认整个项目）。
 
-在结束实现前，给出可信的验证结果，而不是主观认为“应该没问题”。
+## 何时使用
 
-## 验证顺序
+- 改完代码准备结束
+- 准备提交、PR 或发布
+- 用户要求系统验证构建/测试/lint/风险
 
-1. 先跑最小相关验证
-2. 再跑项目级验证
-3. 如有失败，定位根因并修复
-4. 记录未能完成的验证及原因
+## 核心原则
 
-## 最小验证集
+- 任一步失败不中断，继续执行后续步骤
+- 报告必须包含所有步骤结果（PASS / FAIL / 未执行）
+- 未执行项说明原因和风险
+- 覆盖率不达标算 FAIL（默认阈值 80%）
+- 指定文件/目录时只验证相关范围
 
-- 构建或类型检查
-- 受影响模块测试
-- 必要时的 lint
-- 涉及安全或配置时补专项检查
+## 执行步骤
 
-## 输出要求
+### 1. 项目类型检测
 
-- 列出已执行验证
-- 列出通过、失败、未执行三类状态
-- 对未执行项说明原因和风险
+```bash
+[ -f "tsconfig.json" ] && echo "TypeScript"
+[ -f "pyproject.toml" ] || [ -f "setup.py" ] && echo "Python"
+[ -f "go.mod" ] && echo "Go"
+[ -f "Package.swift" ] || [ -f "*.xcodeproj" ] && echo "Swift"
+```
+
+### 2. 构建
+
+```bash
+# TypeScript: npx tsc --noEmit
+# Python:     python -m py_compile src/main.py
+# Go:         go build ./...
+# Swift:      xcodebuild build -scheme <scheme> CODE_SIGNING_ALLOWED=NO
+```
+
+### 3. 测试
+
+```bash
+# TypeScript: npx vitest run --coverage
+# Python:     pytest --cov --cov-report=term-missing
+# Go:         go test -race -cover ./...
+# Swift:      xcodebuild test -scheme <scheme> -enableCodeCoverage YES
+```
+
+### 4. Lint
+
+```bash
+# TypeScript: npx biome check . (或 eslint)
+# Python:     ruff check . && mypy .
+# Go:         golangci-lint run ./...
+# Swift:      swiftlint lint --strict
+```
+
+### 5. 类型检查
+
+```bash
+# TypeScript: npx tsc --noEmit
+# Python:     mypy --strict .
+# Go:         go vet ./...
+```
+
+### 6. 安全扫描
+
+```bash
+# TypeScript: npm audit --production
+# Python:     bandit -r . -f json; pip-audit --strict
+# Go:         gosec ./...
+# Swift:      检查 Info.plist ATS 配置、硬编码密钥
+```
+
+## 输出格式
+
+```markdown
+## 验证报告
+
+| 检查项 | 状态 | 详情 |
+|--------|------|------|
+| 构建   | PASS/FAIL | [错误摘要] |
+| 测试   | PASS/FAIL | 通过/总计, 覆盖率 X% |
+| Lint   | PASS/FAIL | 错误 X, 警告 Y |
+| 类型检查 | PASS/FAIL | 错误 X |
+| 安全扫描 | PASS/FAIL | 漏洞 X |
+
+### 需要修复的问题
+1. [问题描述] — `文件:行号`
+
+### 总体状态
+✅ 全部通过 / ❌ 存在问题需要修复
+```

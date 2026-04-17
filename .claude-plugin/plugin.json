@@ -14,7 +14,6 @@
     "agents",
     "skills",
     "hooks",
-    "commands",
     "rules",
     "workflow",
     "git",
@@ -25,6 +24,5 @@
     "tdd",
     "code-review"
   ],
-  "commands": "./commands",
   "skills": "./skills"
 }

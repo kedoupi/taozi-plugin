@@ -7,8 +7,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 Claude Code 插件 + Codex 适配层的双运行时仓库。
 
 - `agents/` + `skills/` = 单一事实来源（两个运行时共享）
-- `commands/` + `hooks/` + `.claude-plugin/` = Claude Code 专用
+- `hooks/` + `.claude-plugin/` = Claude Code 专用
 - `.codex/` + `.codex-plugin/` + `.agents/` = Codex 专用（由脚本生成，禁止手工编辑）
+
+> commands/ 目录已彻底废除 — 所有 `/taozi:xxx` 触发都通过 skills。官方文档 "Custom commands have been merged into skills"。
 
 ## 关键命令
 
@@ -38,7 +40,7 @@ node scripts/sync-codex.js
 
 ## frontmatter 约束
 
-`agents/*.md`、`commands/*.md`、`skills/*/SKILL.md` 的 frontmatter **只支持平层 `key: value` 单行格式**，`parseFrontmatter()` 不解析嵌套 YAML。错误示例：
+`agents/*.md`、`skills/*/SKILL.md` 的 frontmatter **只支持平层 `key: value` 单行格式**，`parseFrontmatter()` 不解析嵌套 YAML。错误示例：
 
 ```yaml
 # ❌ 嵌套写法会被忽略
@@ -56,7 +58,7 @@ author: foo
 - 所有 hook 脚本通过 stdin 读取 JSON，用 `require('../lib/utils').readStdinJson()`
 - 新 hook 三步走：`scripts/hooks/<name>.js` → `hooks/hooks.json` 注册 → `tests/hooks/hooks.test.js` 补测试
 - `${CLAUDE_PLUGIN_ROOT}` 是插件根目录的环境变量，在 hooks.json 命令路径中使用
-- `block-random-md` PostToolUse hook 会拦截任意 `.md` 文件写入；合法路径（`skills/*/SKILL.md`、`commands/*.md`、`agents/*.md` 等）会通过，不要尝试在其他路径创建 `.md` 文件
+- `block-random-md` PostToolUse hook 会拦截任意 `.md` 文件写入；合法路径（`skills/*/SKILL.md`、`agents/*.md`、`docs/` 等）会通过，不要尝试在其他路径创建 `.md` 文件
 
 ## CI 结构检查
 
@@ -87,5 +89,4 @@ asyncTest('异步描述', async () => {
 
 - 分支：`feat/<name>`、`fix/<name>`、`docs/<topic>`、`refactor/<name>`、`test/<name>`
 - 提交：Conventional Commits（`feat:`, `fix:`, `docs:`, `refactor:`, `test:`）
-- Command 文件名 = slash command 名称（`commands/images.md` → `/taozi:images`）
-- Skill 目录名 = skill 调用名（`skills/image/` → `image`）
+- Skill 目录名 = slash 触发名（`skills/image/` → `/taozi:image`，插件命名空间 `taozi:` 负责区分）

@@ -10,7 +10,7 @@
 
 Taozi 支持两种运行时：
 
-- Claude Code：通过插件、Commands、Hooks 使用
+- Claude Code：通过插件、Skills、Hooks 使用
 - Codex：通过仓库级运行时文件接入，读取 `AGENTS.md`、`.codex/agents/`、`.agents/skills/` 等本地配置
 
 ## 安装前提
@@ -153,50 +153,49 @@ mkdir -p .agents/plugins
 
 ## 运行时映射
 
-- Claude Commands 仍然保留在 `commands/`
-- Codex 不直接复用 slash commands，而是使用共享 skills 和生成的 subagents
+- 所有 slash 触发（`/taozi:xxx`）统一走 `skills/*/SKILL.md`，不再维护 `commands/` 目录（官方已合并）
+- Codex 复用共享 skills + 生成的 subagents
 - `agents/` 与 `skills/` 是单一事实来源
 - 修改后运行 `node scripts/sync-codex.js` 同步 Codex 产物
 
-## Commands（32 个）
+## Skills（30+ 个）
 
-### 开发工作流（25 个）
+所有 skills 触发形式统一为 `/taozi:<skill-name>`。
 
-| 命令 | 功能 |
+### 开发工作流
+
+| 触发 | 功能 |
 |------|------|
-| `/taozi` | 智能调度入口 - 意图识别 + 工作流匹配 |
-| `/commit` | emoji + 约定式 Git 提交 |
-| `/pr` | 推送分支并创建 GitHub PR |
-| `/worktree` | 创建 Git worktree 隔离开发 |
-| `/cleanup` | PR 合并后清理 worktree 和分支 |
-| `/update-context` | 更新目录 CLAUDE.md |
-| `/ultra-think` | 深度分析思考 |
-| `/plan` | 创建功能实现计划 |
-| `/tdd` | TDD 工作流 — RED→GREEN→REFACTOR |
-| `/learn` | 从会话提取可复用模式 |
-| `/checkpoint` | 保存工作状态检查点 |
-| `/verify` | 运行构建/测试/lint/安全验证 |
-| `/build-fix` | 修复构建错误 |
-| `/code-review` | 代码审查 |
-| `/harness-audit` | 审计插件配置 |
-| `/evolve` | 将学习模式聚类为 Skill |
-| `/instinct-status` | 查看已学习模式 |
-| `/instinct-import` | 导入学习模式 |
-| `/instinct-export` | 导出学习模式 |
-| `/multi-plan` | 多 Agent 协作规划 |
-| `/multi-execute` | 多 Agent 并行执行 |
-| `/security-scan` | 独立安全扫描（OWASP/密钥/依赖漏洞） |
-| `/model-route` | 根据任务推荐最优模型 |
-| `/quality-gate` | 发布前质量门禁（构建/测试/lint/安全） |
-| `/skill-create` | 手动创建可复用 Skill |
+| `/taozi:taozi` | 智能调度入口 - 意图识别 + 工作流匹配 |
+| `/taozi:git-workflow` | Git 工作流（commit / pr / worktree / cleanup 合流） |
+| `/taozi:update-context` | 更新目录 CLAUDE.md |
+| `/taozi:ultra-think` | 深度分析思考 |
+| `/taozi:plan` | 创建功能实现计划 |
+| `/taozi:tdd` | TDD 工作流 — RED→GREEN→REFACTOR |
+| `/taozi:learning` | 从会话提取可复用模式 |
+| `/taozi:checkpoint` | 保存工作状态检查点 |
+| `/taozi:verify` | 运行构建/测试/lint/安全验证 |
+| `/taozi:build-fix` | 修复构建错误 |
+| `/taozi:code-review` | 代码审查 |
+| `/taozi:harness-audit` | 审计插件配置 |
+| `/taozi:evolve` | 将学习模式聚类为 Skill |
+| `/taozi:instinct-status` | 查看已学习模式 |
+| `/taozi:instinct-import` | 导入学习模式 |
+| `/taozi:instinct-export` | 导出学习模式 |
+| `/taozi:multi-plan` | 多 Agent 协作规划 |
+| `/taozi:multi-execute` | 多 Agent 并行执行 |
+| `/taozi:security-scan` | 独立安全扫描（OWASP/密钥/依赖漏洞） |
+| `/taozi:model-route` | 根据任务推荐最优模型 |
+| `/taozi:quality-gate` | 发布前质量门禁（构建/测试/lint/安全） |
+| `/taozi:skill-create` | 手动创建可复用 Skill |
 
-### YouMind AI 创作（8 个）
+### YouMind AI 创作
 
 > 需要配置 `YOUMIND_API_KEY`，详见[安装前提 → YouMind API Key](#youmind-api-key使用-ai-创作功能必须)。
 
-| 命令 | 功能 |
+| 触发 | 功能 |
 |------|------|
-| `/taozi:images` | AI 图片生成（Gemini 多模型，支持批量 + 风格锚点）|
+| `/taozi:image` | AI 图片生成（Gemini 多模型，支持批量 + 风格锚点）|
 | `/taozi:research` | 热点研究（webSearch + 深度 research，输出结构化报告）|
 | `/taozi:content` | 多平台内容创作（小红书 / 公众号 / 抖音 / X）|
 | `/taozi:create` | 全链路一键创作（研究 → 内容 → 配图）|
@@ -304,7 +303,7 @@ Claude / Codex 根据任务自动引用相关知识库。
 
 ## YouMind AI 创作能力（详细说明）
 
-> 命令列表见 [Commands → YouMind AI 创作](#youmind-ai-创作7-个)，用法示例见 [使用示例 → AI 创作工作流](#ai-创作工作流)。
+> 触发列表见 [Skills → YouMind AI 创作](#youmind-ai-创作)，用法示例见 [使用示例 → AI 创作工作流](#ai-创作工作流)。
 
 ### 创作链路
 
