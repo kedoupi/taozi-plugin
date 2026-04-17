@@ -61,44 +61,55 @@ def _parse_simple_yaml(text):
     return result
 
 
-# ── 配置加载（从 wechat-articles/style.yaml）────────────
+# ── 配置加载（全局 ~/wechat-articles/style.yaml + 项目覆盖）────────────
 def load_config():
-    """读取 wechat-articles/style.yaml，$VAR_NAME 格式的值展开为 env var。
-    文件不存在时回退到环境变量。
+    """双层加载：先读全局 ~/wechat-articles/style.yaml，再用项目层覆盖。
+    $VAR_NAME 格式的值展开为环境变量；文件均不存在时纯回退到环境变量。
     """
+    def resolve(val):
+        if isinstance(val, str) and val.startswith("$"):
+            return os.environ.get(val[1:], "")
+        return val or ""
+
+    global_path  = os.path.join(os.path.expanduser("~"), "wechat-articles", "style.yaml")
+    project_path = os.path.join(os.getcwd(), "wechat-articles", "style.yaml")
+
+    raw = {}
+    for path in (global_path, project_path):
+        if os.path.exists(path):
+            with open(path, encoding="utf-8") as f:
+                layer = _parse_simple_yaml(f.read())
+            for key, val in layer.items():
+                if isinstance(val, dict) and isinstance(raw.get(key), dict):
+                    raw[key] = {**raw.get(key, {}), **val}
+                else:
+                    raw[key] = val
+
     config = {}
-    style_path = os.path.join(os.getcwd(), "wechat-articles", "style.yaml")
-    if os.path.exists(style_path):
-        with open(style_path, encoding="utf-8") as f:
-            raw = _parse_simple_yaml(f.read())
-
-        def resolve(val):
-            if isinstance(val, str) and val.startswith("$"):
-                return os.environ.get(val[1:], "")
-            return val or ""
-
+    if raw:
         wechat = raw.get("wechat", {}) or {}
         config["appid"]  = resolve(wechat.get("appid",  "$WECHAT_APPID"))
         config["secret"] = resolve(wechat.get("secret", "$WECHAT_APPSECRET"))
         config["author"] = wechat.get("author", "") or ""
         config["proxy"]  = resolve(raw.get("proxy", "$WECHAT_PROXY"))
-        # 封面叠字配置
+        config["theme"]  = raw.get("theme", "simple") or "simple"
         ct = raw.get("cover_text", {}) or {}
         config["cover_text"] = {
-            "enabled":           ct.get("enabled", "true") not in ("false", "0", False),
-            "font_size":         int(ct.get("font_size", 52) or 52),
-            "color":             ct.get("color", "#FFFFFF") or "#FFFFFF",
-            "shadow":            ct.get("shadow", "true") not in ("false", "0", False),
-            "position":          ct.get("position", "bottom") or "bottom",
+            "enabled":            ct.get("enabled", "true") not in ("false", "0", False),
+            "font_size":          int(ct.get("font_size", 52) or 52),
+            "color":              ct.get("color", "#FFFFFF") or "#FFFFFF",
+            "shadow":             ct.get("shadow", "true") not in ("false", "0", False),
+            "position":           ct.get("position", "bottom") or "bottom",
             "max_chars_per_line": int(ct.get("max_chars_per_line", 14) or 14),
         }
     else:
-        # 兼容 WECHAT_APPID 和 WECHAT_APP_ID 两种命名
-        config["appid"]  = os.environ.get("WECHAT_APPID") or os.environ.get("WECHAT_APP_ID", "")
-        config["secret"] = os.environ.get("WECHAT_APPSECRET") or os.environ.get("WECHAT_APP_SECRET", "")
+        config["appid"]  = ""
+        config["secret"] = ""
         config["author"] = ""
         config["proxy"]  = os.environ.get("WECHAT_PROXY", "")
-    # style.yaml 解析出的值也做兼容兜底
+        config["theme"]  = "simple"
+
+    # 环境变量兜底
     if not config.get("appid"):
         config["appid"]  = os.environ.get("WECHAT_APPID") or os.environ.get("WECHAT_APP_ID", "")
     if not config.get("secret"):
@@ -112,6 +123,7 @@ WECHAT_APPSECRET = CONFIG["secret"]
 WECHAT_PROXY     = CONFIG["proxy"]
 WECHAT_AUTHOR    = CONFIG["author"] or "作者"
 COVER_TEXT_CFG   = CONFIG.get("cover_text", {})
+DEFAULT_THEME    = CONFIG.get("theme", "simple")
 PRIMARY          = "#576b95"
 
 
@@ -163,7 +175,8 @@ def upload_image(token, image_path, retries=3):
         f'Content-Disposition: form-data; name="media"; filename="{filename}"\r\n'
         f"Content-Type: {ct}\r\n\r\n"
     ).encode() + file_data + f"\r\n--{boundary}--\r\n".encode()
-    url = f"{WECHAT_PROXY}/cgi-bin/media/uploadimg?access_token={token}"
+    base = WECHAT_PROXY if WECHAT_PROXY else "https://api.weixin.qq.com"
+    url = f"{base}/cgi-bin/media/uploadimg?access_token={token}"
     for attempt in range(retries):
         try:
             req = urllib.request.Request(
@@ -209,17 +222,31 @@ def _resize_cover(image_path):
 def _find_cjk_font():
     """按优先级查找可用的 CJK 字体，返回路径或 None。"""
     candidates = [
-        "/System/Library/Fonts/PingFang.ttc",           # macOS
-        "/System/Library/Fonts/STHeiti Medium.ttc",      # macOS fallback
+        "/System/Library/Fonts/Supplemental/PingFang.ttc",  # macOS 13+
+        "/System/Library/Fonts/PingFang.ttc",               # macOS 12 及以下
         "/System/Library/Fonts/Supplemental/Arial Unicode.ttf",
-        "/usr/share/fonts/truetype/wqy/wqy-zenhei.ttc", # Linux
+        "/System/Library/Fonts/STHeiti Medium.ttc",
+        "/usr/share/fonts/truetype/wqy/wqy-zenhei.ttc",    # Linux
         "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",
         "/usr/share/fonts/truetype/noto/NotoSansCJK-Regular.ttc",
-        "/Windows/Fonts/msyh.ttc",                       # Windows 微软雅黑
+        "/Windows/Fonts/msyh.ttc",                          # Windows
     ]
     for p in candidates:
         if os.path.exists(p):
             return p
+    # fc-list fallback（Linux 通用）
+    try:
+        import subprocess
+        out = subprocess.check_output(
+            ["fc-list", ":lang=zh", "--format=%{file}\n"],
+            stderr=subprocess.DEVNULL, timeout=3,
+        ).decode()
+        for line in out.splitlines():
+            line = line.strip()
+            if line and os.path.exists(line):
+                return line
+    except Exception:
+        pass
     return None
 
 
@@ -361,8 +388,9 @@ def inline_format(text):
     return text
 
 
-def md_to_wx_html(md):
+def md_to_wx_html(md, theme=None):
     """Markdown → 公众号 HTML（内联样式）。
+    theme 参数预留给 Phase 2 wewrite 排版引擎集成，当前忽略。
     不依赖任何外部库，不调用飞书预处理。
     """
     html_parts = []
@@ -545,19 +573,23 @@ def clean_title(title):
     return title.strip()[:64]
 
 
-def make_digest(md, max_bytes=120):
-    """生成摘要，按字节截断（微信限制120字节）"""
+def make_digest(md, max_bytes=120, max_chars=54):
+    """生成摘要，同时限制字节数（微信120字节）和字符数（54汉字）。"""
     text = re.sub(r"!\[[^\]]*\]\([^)]+\)", "", md)
     text = re.sub(r"\[([^\]]*)\]\([^)]+\)", r"\1", text)
     text = re.sub(r"[#*>`~_\-]", "", text)
     text = re.sub(r"\n+", " ", text).replace("  ", " ").strip()
+    # 先按字符数截断
+    if len(text) > max_chars:
+        text = text[:max_chars]
+    # 再按字节数截断（utf-8）
     while len(text.encode("utf-8")) > max_bytes:
         text = text[:-1]
     return text
 
 
 # ── 主流程 ────────────────────────────────────────────
-def sync(title, content_md, cover_path, image_paths=None):
+def sync(title, content_md, cover_path, image_paths=None, theme=None):
     """
     同步文章到公众号草稿箱（含图片上传）
 
@@ -566,6 +598,7 @@ def sync(title, content_md, cover_path, image_paths=None):
         content_md: Markdown 正文
         cover_path: 封面图本地路径
         image_paths: 文章内图片路径列表
+        theme: 排版主题名（默认 simple），Phase 2 接入 wewrite 后生效
     Returns:
         dict: {"media_id": "...", "title": "..."}
     """
@@ -596,7 +629,7 @@ def sync(title, content_md, cover_path, image_paths=None):
     # 去掉 Markdown 标题行（公众号标题单独设置）
     content_body = re.sub(r"^#\s+.*\n", "", content_md)
 
-    html = md_to_wx_html(content_body)
+    html = md_to_wx_html(content_body, theme=theme or DEFAULT_THEME)
     if len(html.encode("utf-8")) > 1024 * 1024:
         raise Exception("内容超过1MB，请精简")
 
@@ -644,29 +677,45 @@ def sync(title, content_md, cover_path, image_paths=None):
 
 
 # ── history.yaml 更新 ─────────────────────────────────
-def update_history(media_id, title, keywords=None):
-    """追加发布记录到 wechat-articles/history.yaml。
-    格式为简单的 YAML 列表，每条记录占若干行。
-    """
+def update_history(media_id, title, keywords=None, visual_anchors=None,
+                   framework=None, section_images=0):
+    """追加发布记录到 wechat-articles/history.yaml（safe YAML read-modify-write）。"""
     history_dir = os.path.join(os.getcwd(), "wechat-articles")
     os.makedirs(history_dir, exist_ok=True)
     history_path = os.path.join(history_dir, "history.yaml")
 
-    kw_str = ""
-    if keywords:
-        kw_list = [f'"{k.strip()}"' for k in keywords]
-        kw_str = f"\n  keywords: [{', '.join(kw_list)}]"
+    # 读取现有内容
+    data = {"articles": []}
+    if os.path.exists(history_path):
+        try:
+            import yaml as _yaml
+            with open(history_path, encoding="utf-8") as f:
+                loaded = _yaml.safe_load(f)
+            if isinstance(loaded, dict) and "articles" in loaded:
+                data = loaded
+            elif isinstance(loaded, list):
+                data = {"articles": loaded}
+        except Exception:
+            pass  # 文件损坏时重建
 
-    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    entry = (
-        f"\n- media_id: \"{media_id}\"\n"
-        f"  title: \"{title}\"\n"
-        f"  published_at: \"{now}\""
-        f"{kw_str}\n"
-    )
+    record = {
+        "date": datetime.now().strftime("%Y-%m-%d"),
+        "title": title,
+        "media_id": media_id,
+        "topic_keywords": [k.strip() for k in keywords] if keywords else [],
+        "framework": framework or "",
+        "visual_anchors": [a.strip() for a in visual_anchors] if visual_anchors else [],
+        "section_images": int(section_images),
+        "quality": {"hkr_pass": True, "notes": ""},
+        "stats": {"reads": 0, "likes": 0},
+    }
+    if not isinstance(data.get("articles"), list):
+        data["articles"] = []
+    data["articles"].append(record)
 
-    with open(history_path, "a", encoding="utf-8") as f:
-        f.write(entry)
+    import yaml as _yaml
+    with open(history_path, "w", encoding="utf-8") as f:
+        _yaml.dump(data, f, allow_unicode=True, sort_keys=False, default_flow_style=False)
 
     print(f"[history] 已写入 {history_path}", file=sys.stderr)
     return {"status": "ok", "history_path": history_path}
@@ -689,10 +738,14 @@ def main():
     parser.add_argument("--content", help="Markdown 文件路径（--publish 用）")
     parser.add_argument("--cover",   help="封面图路径")
     parser.add_argument("--images",  nargs="*", default=[], help="文章内图片路径列表")
+    parser.add_argument("--theme",   default=DEFAULT_THEME, help="排版主题（默认 simple）")
 
     # --update-history 参数
-    parser.add_argument("--media-id", help="已发布的 media_id")
-    parser.add_argument("--keywords", help="关键词，逗号分隔")
+    parser.add_argument("--media-id",       help="已发布的 media_id")
+    parser.add_argument("--keywords",       help="关键词，逗号分隔")
+    parser.add_argument("--visual-anchors", help="视觉锚点关键词，逗号分隔")
+    parser.add_argument("--framework",      help="文章结构描述")
+    parser.add_argument("--section-images", type=int, default=0, help="章节配图数量")
 
     args = parser.parse_args()
 
@@ -701,7 +754,7 @@ def main():
             parser.error("--convert 需要 --input")
         with open(args.input, encoding="utf-8") as f:
             md = f.read()
-        html = md_to_wx_html(md)
+        html = md_to_wx_html(md, theme=args.theme)
         if args.output:
             with open(args.output, "w", encoding="utf-8") as f:
                 f.write(html)
@@ -715,15 +768,22 @@ def main():
                 parser.error(f"--publish 需要 {name}")
         with open(args.content, encoding="utf-8") as f:
             content_md = f.read()
-        result = sync(args.title, content_md, args.cover, args.images or [])
+        result = sync(args.title, content_md, args.cover, args.images or [], theme=args.theme)
         print(json.dumps(result, ensure_ascii=False))
 
     elif args.update_history:
         for required_arg, name in [(args.media_id, "--media-id"), (args.title, "--title")]:
             if not required_arg:
                 parser.error(f"--update-history 需要 {name}")
-        keywords = [k for k in args.keywords.split(",")] if args.keywords else None
-        result = update_history(args.media_id, args.title, keywords)
+        keywords       = args.keywords.split(",")       if args.keywords       else None
+        visual_anchors = args.visual_anchors.split(",") if args.visual_anchors else None
+        result = update_history(
+            args.media_id, args.title,
+            keywords=keywords,
+            visual_anchors=visual_anchors,
+            framework=args.framework,
+            section_images=args.section_images,
+        )
         print(json.dumps(result, ensure_ascii=False))
 
 

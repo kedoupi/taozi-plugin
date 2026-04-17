@@ -170,6 +170,28 @@ voice: ""           # 人设，如"第一人称，8 年 AI 从业经验的老兵
 ## 我的角色
 
 <!-- 在这里填写你的角色。删除此注释并按示例格式描述即可。 -->
+
+---
+
+## 封面图用法（16:9）
+
+```
+<!-- 填写封面图 prompt 模板。AI 会以此为基础追加场景描述。示例：
+Magazine-style WeChat cover, 16:9 landscape.
+Character: <你的角色英文描述>.
+<背景和风格描述>.
+-->
+```
+
+## 章节配图用法（16:9）
+
+```
+<!-- 填写章节配图 prompt 模板。AI 会替换 Scene: 部分为章节内容。示例：
+WeChat article section illustration, 16:9 landscape.
+Character: <你的角色英文描述>.
+<背景和风格描述>.
+-->
+```
 ````
 
 创建完成后，告知用户：
@@ -319,13 +341,17 @@ else:
 
 ## 第二步：意图路由
 
-根据用户输入判断进入哪条路径：
+根据用户输入判断进入哪条路径，并同时提取主题和排版主题：
 
 | 用户输入 | 路径 |
 |---------|------|
 | 提供了明确主题（如"写一篇关于 AI Agent 的文章"）| 跳过热点，从 YouMind 研究开始（步骤 3B）|
 | 提供了完整 Markdown 内容 | 直接发布（跳到步骤 3C）|
 | 什么都没给，或只说"写公众号文章" | 全流程：热点 → 选题 → 研究 → 写作 → 发布（步骤 3A）|
+
+**同时提取排版主题**：若用户输入含 "用 X 主题"、"X 风格排版" 等字样，提取主题名作为本次 `THEME`；否则使用 style.yaml 的 `theme` 字段（默认 `simple`）。
+
+可用主题（wewrite 提供，引入后生效）：`simple`（通用简洁）、`sspai`（少数派）、`tech`（科技深色）、`minimal`（极简）、`green`（清新绿）、`elegant`（典雅）等共 16 个。
 
 ---
 
@@ -354,7 +380,7 @@ else:
 youmind --help > /dev/null 2>&1 || npm install -g @youmind-ai/cli
 
 ### 步骤 2：搜索近 48 小时热点
-youmind call webSearch '{"query":"<industry> 最新动态 热点 2024","timeRange":"48h","limit":10}'
+youmind call webSearch '{"query":"<industry> 最新动态 热点","timeRange":"48h","limit":10}'
 
 ### 步骤 3：筛选 + 生成选题
 根据搜索结果，结合公众号定位，生成 3 个候选标题，格式：
@@ -386,8 +412,12 @@ youmind call webSearch '{"query":"<主题>","limit":15}'
 提炼：核心观点 3-5 条、数据/案例 2-3 个、争议点 1-2 个
 
 ### 步骤 2：撰写文章（Markdown）
-读取写作规范：优先 `wechat-articles/playbook.md`，不存在则读 `~/wechat-articles/playbook.md`。遵循其规范撰写。
-输出：
+
+**写作前必须读取两份规范**（均优先读项目目录，其次读全局 `~/wechat-articles/`）：
+- `playbook.md`：标题规范、段落节奏、HKR 质检框架、风格禁忌
+- `references/writing-guide.md`（若存在）：de-AI 四级协议、So What 三层法、原子洞察强制框架
+
+遵循规范撰写，输出：
 - 标题（20-28 字）
 - 摘要（54 字以内）
 - 正文（1200-2500 字，微信公众号适合长度）
@@ -395,6 +425,12 @@ youmind call webSearch '{"query":"<主题>","limit":15}'
   1. 读取 `wechat-articles/character.md`（或 `~/wechat-articles/character.md`），找到 `## 封面图用法（16:9）` 下方代码块，提取其完整内容作为封面 prompt 基础
   2. 在此基础上追加本文主题相关的场景描述（10 词以内）
   3. 若 character.md 不存在或「我的角色」为空，则纯粹按文章主题和风格自由生成封面 prompt
+
+**写完后执行 L1-L4 四层终检（playbook.md 有详细说明）**：
+- L1 禁词扫描：检查 style.yaml `blacklist.words` 中的禁用词，有则替换
+- L2 节奏检查：是否有连续 3 段以上"首先…其次…最后"或 AI 排比句，有则打散
+- L3 活人感终审：通读一遍，像机器生成的句子改掉
+- L4 信息诚信：无来源的数字/案例标 "暂缺数据" 或删除，不编造
 
 ### 步骤 3：提取视觉锚点 + 生成章节配图 prompt
 
@@ -432,8 +468,24 @@ Scene: <用 10 词描述该章节核心场景>.
 Visual anchors: <锚点1, 锚点2, 锚点3>. No text overlay. Not realistic.
 ```
 
-### 步骤 4：保存草稿
-将完整 Markdown 写入 wechat-articles/drafts/<YYYYMMDD>-<slug>.md
+### 步骤 4：插入章节配图占位符 + 保存草稿
+
+在草稿 Markdown 中，将每个 H2 章节标题（最多 4 个）的**第一个段落后**插入对应占位符：
+
+```
+## 第一章标题
+
+第一段正文...
+
+![](section-1.jpg)
+
+## 第二章标题
+...
+```
+
+占位符规则：`section-1.jpg`、`section-2.jpg`…按 H2 出现顺序从 1 开始编号；超过 4 个 H2 章节时只给前 4 个插入占位符。
+
+将处理后的完整 Markdown 写入 `wechat-articles/drafts/<YYYYMMDD>-<slug>.md`。
 
 ### 步骤 5：返回结果
 DRAFT_DONE
@@ -484,6 +536,7 @@ python3 skills/wechat-article/scripts/wechat_publish.py \
   --title "<title>" \
   --content "<draft_path>" \
   --cover "/tmp/cover-<slug>.jpg" \
+  --theme "<THEME>" \
   --images wechat-articles/images/<YYYYMMDD>/section-1.jpg \
            wechat-articles/images/<YYYYMMDD>/section-2.jpg \
            ...（有几张列几张）
@@ -530,22 +583,17 @@ media_id: <草稿 media_id>
 需要调整文章、重新生成封面，还是写下一篇？
 ```
 
-同时将本次发布记录追加到 `wechat-articles/history.yaml`（扩展字段用于下次选题参考）：
+同时调用脚本追加发布记录（安全 YAML 写入，字段用于下次选题参考）：
 
-```yaml
-  - date: "<YYYY-MM-DD>"
-    title: "<title>"
-    media_id: "<media_id>"
-    topic_keywords: []          # 从标题/内容提取的关键词
-    framework: ""               # 文章结构：问题分析方案行动 / 背景观点论据结论 / 其他
-    visual_anchors: []          # 封面视觉锚点关键词（供下篇配图参考）
-    section_images: 0           # 本篇生成的章节配图数量
-    quality:
-      hkr_pass: true            # HKR 三维是否通过
-      notes: ""                 # 人工补充的质量备注
-    stats:
-      reads: 0
-      likes: 0
+```bash
+python3 skills/wechat-article/scripts/wechat_publish.py \
+  --update-history \
+  --media-id "<media_id>" \
+  --title "<title>" \
+  --keywords "<关键词1,关键词2,关键词3>" \
+  --visual-anchors "<锚点1,锚点2,锚点3>" \
+  --framework "<文章结构，如：问题分析方案行动>" \
+  --section-images <章节配图数量>
 ```
 
 ---
