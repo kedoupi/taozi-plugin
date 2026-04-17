@@ -1,4 +1,4 @@
-# Taozi Plugin 3.3.0
+# Taozi Plugin 3.4.0
 
 智能开发工具集 - 工作流驱动、3 条铁律、思维工具箱、自动化 Hooks + YouMind AI 创作能力。
 
@@ -20,7 +20,7 @@ Taozi 支持两种运行时：
 
 ### YouMind API Key（使用 AI 创作功能必须）
 
-`/taozi:images`、`/taozi:research`、`/taozi:content`、`/taozi:create`、`/taozi:clip`、`/taozi:ppt`、`/taozi:webpage` 这 7 个命令需要配置 YouMind API Key。
+`/taozi:images`、`/taozi:research`、`/taozi:content`、`/taozi:create`、`/taozi:clip`、`/taozi:ppt`、`/taozi:webpage`、`/taozi:wechat-article` 这 8 个命令需要配置 YouMind API Key。
 
 **获取 Key：** 访问 [youmind.com](https://youmind.com) → 设置 → API Key → 生成
 
@@ -190,7 +190,7 @@ mkdir -p .agents/plugins
 | `/quality-gate` | 发布前质量门禁（构建/测试/lint/安全） |
 | `/skill-create` | 手动创建可复用 Skill |
 
-### YouMind AI 创作（7 个）
+### YouMind AI 创作（8 个）
 
 > 需要配置 `YOUMIND_API_KEY`，详见[安装前提 → YouMind API Key](#youmind-api-key使用-ai-创作功能必须)。
 
@@ -203,6 +203,7 @@ mkdir -p .agents/plugins
 | `/taozi:clip` | 内容采集与分析（YouTube / 微信公众号 / 网页，AI 深度分析）|
 | `/taozi:ppt` | PPT 生成（返回封面图预览 + Craft 编辑链接）|
 | `/taozi:webpage` | 网页生成（描述 → 可访问的 CDN 链接）|
+| `/taozi:wechat-article` | 微信公众号全链路（热点选题 → 研究 → 写作 → 海报封面 → 草稿箱）|
 
 ## 使用示例
 
