@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-17T11:45:56.264Z",
+  "generatedAt": "2026-04-17T11:59:06.674Z",
   "entries": [
     ".agents/skills/api-design",
     ".agents/skills/backend-architecture",
@@ -43,6 +43,7 @@
     ".agents/skills/research",
     ".agents/skills/security-patterns",
     ".agents/skills/security-scan",
+    ".agents/skills/setup",
     ".agents/skills/skill-create",
     ".agents/skills/springboot-patterns",
     ".agents/skills/springboot-security",

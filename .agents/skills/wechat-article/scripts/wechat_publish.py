@@ -61,53 +61,96 @@ def _parse_simple_yaml(text):
     return result
 
 
-# ── 配置加载（全局 ~/wechat-articles/style.yaml + 项目覆盖）────────────
-def load_config():
-    """双层加载：先读全局 ~/wechat-articles/style.yaml，再用项目层覆盖。
-    $VAR_NAME 格式的值展开为环境变量；文件均不存在时纯回退到环境变量。
+# ── 配置加载（~/.taozi/ 四级合并）────────────────────────────────────
+def _load_yaml_file(path):
+    """读取 YAML 文件，PyYAML 不可用时降级到简单解析器。"""
+    if not os.path.exists(path):
+        return {}
+    try:
+        import yaml
+        with open(path, encoding="utf-8") as f:
+            return yaml.safe_load(f) or {}
+    except Exception:
+        try:
+            with open(path, encoding="utf-8") as f:
+                return _parse_simple_yaml(f.read())
+        except Exception:
+            return {}
+
+
+def _deep_merge(base, override):
+    """override 字段覆盖 base，dict 类型递归合并。"""
+    result = dict(base)
+    for key, val in override.items():
+        if isinstance(val, dict) and isinstance(result.get(key), dict):
+            result[key] = _deep_merge(result[key], val)
+        else:
+            result[key] = val
+    return result
+
+
+def load_taozi_config(platform: str, cwd: str = ".") -> dict:
+    """按优先级从低到高四级合并：
+    ~/.taozi/config.yaml
+    → ~/.taozi/platforms/<p>/style.yaml
+    → ./.taozi/platforms/<p>/style.yaml
+    → ./<p>/style.yaml
     """
+    HOME  = os.path.expanduser("~")
+    TAOZI = os.path.join(HOME, ".taozi")
+    cfg = {}
+    cfg = _deep_merge(cfg, _load_yaml_file(os.path.join(TAOZI, "config.yaml")))
+    cfg = _deep_merge(cfg, _load_yaml_file(
+        os.path.join(TAOZI, "platforms", platform, "style.yaml")))
+    cfg = _deep_merge(cfg, _load_yaml_file(
+        os.path.join(cwd, ".taozi", "platforms", platform, "style.yaml")))
+    cfg = _deep_merge(cfg, _load_yaml_file(
+        os.path.join(cwd, platform, "style.yaml")))
+    return cfg
+
+
+def load_brand_file(filename: str, cwd: str = ".") -> str:
+    """读取品牌文件，优先级：./.taozi/brand/ > ~/.taozi/brand/"""
+    HOME = os.path.expanduser("~")
+    for path in (
+        os.path.join(cwd, ".taozi", "brand", filename),
+        os.path.join(HOME, ".taozi", "brand", filename),
+    ):
+        if os.path.exists(path):
+            try:
+                with open(path, encoding="utf-8") as f:
+                    return f.read()
+            except Exception:
+                pass
+    return ""
+
+
+def load_config():
+    """从 ~/.taozi/ 四级配置合并读取，环境变量兜底。"""
     def resolve(val):
         if isinstance(val, str) and val.startswith("$"):
             return os.environ.get(val[1:], "")
         return val or ""
 
-    global_path  = os.path.join(os.path.expanduser("~"), "wechat-articles", "style.yaml")
-    project_path = os.path.join(os.getcwd(), "wechat-articles", "style.yaml")
-
-    raw = {}
-    for path in (global_path, project_path):
-        if os.path.exists(path):
-            with open(path, encoding="utf-8") as f:
-                layer = _parse_simple_yaml(f.read())
-            for key, val in layer.items():
-                if isinstance(val, dict) and isinstance(raw.get(key), dict):
-                    raw[key] = {**raw.get(key, {}), **val}
-                else:
-                    raw[key] = val
+    raw = load_taozi_config("wechat", os.getcwd())
 
     config = {}
-    if raw:
-        wechat = raw.get("wechat", {}) or {}
-        config["appid"]  = resolve(wechat.get("appid",  "$WECHAT_APPID"))
-        config["secret"] = resolve(wechat.get("secret", "$WECHAT_APPSECRET"))
-        config["author"] = wechat.get("author", "") or ""
-        config["proxy"]  = resolve(raw.get("proxy", "$WECHAT_PROXY"))
-        config["theme"]  = raw.get("theme", "simple") or "simple"
-        ct = raw.get("cover_text", {}) or {}
-        config["cover_text"] = {
-            "enabled":            ct.get("enabled", "true") not in ("false", "0", False),
-            "font_size":          int(ct.get("font_size", 52) or 52),
-            "color":              ct.get("color", "#FFFFFF") or "#FFFFFF",
-            "shadow":             ct.get("shadow", "true") not in ("false", "0", False),
-            "position":           ct.get("position", "bottom") or "bottom",
-            "max_chars_per_line": int(ct.get("max_chars_per_line", 14) or 14),
-        }
-    else:
-        config["appid"]  = ""
-        config["secret"] = ""
-        config["author"] = ""
-        config["proxy"]  = os.environ.get("WECHAT_PROXY", "")
-        config["theme"]  = "simple"
+    wechat = raw.get("wechat", {}) or {}
+    config["appid"]  = resolve(wechat.get("appid",  "$WECHAT_APPID"))
+    config["secret"] = resolve(wechat.get("secret", "$WECHAT_APPSECRET"))
+    config["author"] = wechat.get("author", "") or ""
+    config["proxy"]  = resolve(raw.get("proxy", "$WECHAT_PROXY"))
+    fmt = raw.get("format", {}) or {}
+    config["theme"]  = fmt.get("theme", raw.get("theme", "simple")) or "simple"
+    ct = raw.get("cover_text", {}) or {}
+    config["cover_text"] = {
+        "enabled":            ct.get("enabled", "true") not in ("false", "0", False),
+        "font_size":          int(ct.get("font_size", 52) or 52),
+        "color":              ct.get("color", "#FFFFFF") or "#FFFFFF",
+        "shadow":             ct.get("shadow", "true") not in ("false", "0", False),
+        "position":           ct.get("position", "bottom") or "bottom",
+        "max_chars_per_line": int(ct.get("max_chars_per_line", 14) or 14),
+    }
 
     # 环境变量兜底
     if not config.get("appid"):
@@ -345,7 +388,8 @@ def upload_thumb(token, image_path, title=None, retries=3):
         f'Content-Disposition: form-data; name="media"; filename="{filename}"\r\n'
         f"Content-Type: {ct}\r\n\r\n"
     ).encode() + file_data + f"\r\n--{boundary}--\r\n".encode()
-    url = f"{WECHAT_PROXY}/cgi-bin/material/add_material?access_token={token}&type=image"
+    base = WECHAT_PROXY if WECHAT_PROXY else "https://api.weixin.qq.com"
+    url = f"{base}/cgi-bin/material/add_material?access_token={token}&type=image"
     for attempt in range(retries):
         try:
             req = urllib.request.Request(
@@ -626,7 +670,7 @@ def sync(title, content_md, cover_path, image_paths=None, theme=None):
         dict: {"media_id": "...", "title": "..."}
     """
     if not WECHAT_APPID or not WECHAT_APPSECRET:
-        raise Exception("请设置 WECHAT_APPID 和 WECHAT_APPSECRET（环境变量或 wechat-articles/style.yaml）")
+        raise Exception("请设置 WECHAT_APPID 和 WECHAT_APPSECRET（环境变量或 ~/.taozi/platforms/wechat/style.yaml）")
 
     print(f"[同步] 开始: {title}", file=sys.stderr)
     token = get_access_token()
@@ -702,8 +746,8 @@ def sync(title, content_md, cover_path, image_paths=None, theme=None):
 # ── history.yaml 更新 ─────────────────────────────────
 def update_history(media_id, title, keywords=None, visual_anchors=None,
                    framework=None, section_images=0):
-    """追加发布记录到 wechat-articles/history.yaml（safe YAML read-modify-write）。"""
-    history_dir = os.path.join(os.getcwd(), "wechat-articles")
+    """追加发布记录到 wechat/history.yaml（safe YAML read-modify-write）。"""
+    history_dir = os.path.join(os.getcwd(), "wechat")
     os.makedirs(history_dir, exist_ok=True)
     history_path = os.path.join(history_dir, "history.yaml")
 
