@@ -4,6 +4,29 @@ All notable changes to Taozi Plugin are documented here.
 
 ---
 
+## [4.1.0] - 2026-04-17
+
+### Added
+
+- **`/taozi:setup` 配置向导**：交互式向导，首次使用一键创建 `~/.taozi/` 完整目录结构（config.yaml、brand/voice.md、brand/playbook.md、brand/character.md、platforms/wechat/style.yaml）
+
+### Changed
+
+- **`~/.taozi/` 四层配置体系**：`~/.taozi/config.yaml` → `~/.taozi/platforms/<platform>/style.yaml` → `./.taozi/platforms/<platform>/style.yaml` → `./<platform>/style.yaml`，高层覆盖低层
+- **`wechat-article` 路径迁移**：草稿保存至 `./wechat/drafts/`，发布历史写入 `./wechat/history.yaml`（原 `wechat-articles/` 废弃）
+- **品牌人设 `voice.md` 全链路透传**：`content` + `create` skill 自动读取 `~/.taozi/brand/voice.md` 并注入写作风格
+- **YouMind Key 统一读取**：`image`、`ppt`、`webpage`、`research`、`clip` 统一先读 `~/.taozi/config.yaml`，env var 作为 fallback
+- **`wechat_publish.py` 配置重构**：`load_config()` 替换为 `load_taozi_config()` + `load_brand_file()`，支持四层合并、PyYAML 不可用时回退 stdlib 解析器
+
+### Migration
+
+从 4.0.0 升级：
+1. 运行 `/taozi:setup` 创建 `~/.taozi/` 结构并迁移凭据
+2. `mv wechat-articles/drafts wechat/drafts && mv wechat-articles/history.yaml wechat/history.yaml`
+3. 旧 `wechat-articles/style.yaml` 凭据已迁至 `~/.taozi/platforms/wechat/style.yaml`，可删除旧目录
+
+---
+
 ## [4.0.0] - 2026-04-17
 
 ### BREAKING CHANGES
