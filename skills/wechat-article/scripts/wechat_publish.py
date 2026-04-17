@@ -366,8 +366,9 @@ def upload_thumb(token, image_path, title=None, retries=3):
 
 
 # ── Markdown → 公众号 HTML ──────────────────────────────
-def inline_format(text):
+def inline_format(text, primary=None):
     """处理内联格式：加粗、斜体、行内代码、链接→span"""
+    p = primary or PRIMARY
     text = re.sub(
         r"`([^`]+)`",
         r'<code style="background:#f6f6f6;padding:2px 6px;border-radius:3px;'
@@ -376,23 +377,45 @@ def inline_format(text):
     )
     text = re.sub(
         r"\*\*([^*]+)\*\*",
-        f'<strong style="color:{PRIMARY};font-weight:bold;">\\1</strong>',
+        f'<strong style="color:{p};font-weight:bold;">\\1</strong>',
         text,
     )
     text = re.sub(r"\*([^*]+)\*", '<em style="font-style:italic;color:#555;">\\1</em>', text)
     text = re.sub(
         r"\[([^\]]+)\]\([^)]+\)",
-        f'<span style="color:{PRIMARY};font-weight:500;">\\1</span>',
+        f'<span style="color:{p};font-weight:500;">\\1</span>',
         text,
     )
     return text
 
 
+def _load_theme_colors(theme_name):
+    """从 toolkit/loader.py 加载主题颜色，不可用时返回 None（使用全局 PRIMARY）。"""
+    try:
+        import sys as _sys
+        toolkit_dir = os.path.join(os.path.dirname(__file__), "..", "toolkit")
+        if toolkit_dir not in _sys.path:
+            _sys.path.insert(0, toolkit_dir)
+        from loader import load_theme as _load_theme
+        return _load_theme(theme_name or "simple")
+    except Exception:
+        return None
+
+
 def md_to_wx_html(md, theme=None):
     """Markdown → 公众号 HTML（内联样式）。
-    theme 参数预留给 Phase 2 wewrite 排版引擎集成，当前忽略。
-    不依赖任何外部库，不调用飞书预处理。
+    支持 toolkit/themes/*.yaml 主题（PyYAML 可用时生效）。
+    不依赖 BeautifulSoup/cssutils，降级为当前简单转换器。
     """
+    tc = _load_theme_colors(theme or DEFAULT_THEME)
+    p = tc.primary if tc else PRIMARY
+    code_bg = tc.code_bg if tc else "#f6f6f6"
+    quote_border = tc.quote_border if tc else p
+    quote_bg = tc.quote_bg if tc else "#f7f7f7"
+
+    def fmt(text):
+        return inline_format(text, primary=p)
+
     html_parts = []
     lines = md.split("\n")
     in_code_block = False
@@ -423,13 +446,13 @@ def md_to_wx_html(md, theme=None):
             for i, row_cells in enumerate(table_rows):
                 tag = "th" if i == 0 else "td"
                 bg = (
-                    f"background:{PRIMARY};color:#fff;"
+                    f"background:{p};color:#fff;"
                     if i == 0
                     else ("background:#f9f9f9;" if i % 2 == 0 else "")
                 )
                 html += "<tr>"
                 for cell in row_cells:
-                    cell_text = inline_format(cell.strip())
+                    cell_text = fmt(cell.strip())
                     html += (
                         f'<{tag} style="border:1px solid #e8e8e8;padding:8px 12px;'
                         f'text-align:left;{bg}">{cell_text}</{tag}>'
@@ -445,7 +468,7 @@ def md_to_wx_html(md, theme=None):
             if in_code_block:
                 code_text = "\n".join(code_content)
                 html_parts.append(
-                    f'<pre style="background:#f6f6f6;padding:16px;border-radius:6px;'
+                    f'<pre style="background:{code_bg};padding:16px;border-radius:6px;'
                     f'overflow-x:auto;font-size:13px;line-height:1.6;color:#333;'
                     f'font-family:Menlo,Consolas,monospace;">{code_text}</pre>'
                 )
@@ -482,33 +505,33 @@ def md_to_wx_html(md, theme=None):
             flush_list()
             html_parts.append(
                 f'<h3 style="font-size:16px;font-weight:bold;color:#333;'
-                f'padding-left:10px;border-left:3px solid {PRIMARY};'
+                f'padding-left:10px;border-left:3px solid {p};'
                 f'margin:2em 8px 0.8em 0;line-height:1.3;">'
-                f'{inline_format(stripped[4:])}</h3>'
+                f'{fmt(stripped[4:])}</h3>'
             )
         elif stripped.startswith("## "):
             flush_list()
             html_parts.append(
                 f'<h2 style="font-size:18px;font-weight:bold;color:#fff;'
-                f'background:{PRIMARY};display:table;padding:4px 16px;'
+                f'background:{p};display:table;padding:4px 16px;'
                 f'margin:2.5em auto 1.2em;text-align:center;border-radius:4px;">'
-                f'{inline_format(stripped[3:])}</h2>'
+                f'{fmt(stripped[3:])}</h2>'
             )
         elif stripped.startswith("# "):
             flush_list()
             html_parts.append(
                 f'<h1 style="font-size:22px;font-weight:bold;color:#333;'
                 f'text-align:center;margin:1.5em 8px 1.2em;'
-                f'padding-bottom:10px;border-bottom:2px solid {PRIMARY};">'
-                f'{inline_format(stripped[2:])}</h1>'
+                f'padding-bottom:10px;border-bottom:2px solid {p};">'
+                f'{fmt(stripped[2:])}</h1>'
             )
         elif stripped.startswith("> "):
             flush_list()
             html_parts.append(
-                f'<blockquote style="border-left:4px solid {PRIMARY};'
+                f'<blockquote style="border-left:4px solid {quote_border};'
                 f'padding:1em 1em 1em 1.5em;margin:1.5em 8px;color:#666;'
-                f'background:#f7f7f7;border-radius:0 6px 6px 0;font-size:14px;">'
-                f'{inline_format(stripped[2:])}</blockquote>'
+                f'background:{quote_bg};border-radius:0 6px 6px 0;font-size:14px;">'
+                f'{fmt(stripped[2:])}</blockquote>'
             )
         elif stripped.startswith("---"):
             flush_list()
@@ -525,7 +548,7 @@ def md_to_wx_html(md, theme=None):
             ol_text = re.sub(r"^\d+\.\s", "", stripped)
             list_items.append(
                 f'<li style="margin:0.2em 0;color:#333;letter-spacing:0.1em;line-height:1.8;">'
-                f'{inline_format(ol_text)}</li>'
+                f'{fmt(ol_text)}</li>'
             )
         elif stripped.startswith("- ") or stripped.startswith("* "):
             if not in_list or list_type != "ul":
@@ -534,7 +557,7 @@ def md_to_wx_html(md, theme=None):
                 list_type = "ul"
             list_items.append(
                 f'<li style="margin:0.2em 0;color:#333;letter-spacing:0.1em;line-height:1.8;">'
-                f'{inline_format(stripped[2:])}</li>'
+                f'{fmt(stripped[2:])}</li>'
             )
         elif stripped.startswith("!["):
             flush_list()
@@ -548,7 +571,7 @@ def md_to_wx_html(md, theme=None):
             flush_list()
             html_parts.append(
                 f'<p style="margin:1.5em 8px;letter-spacing:0.1em;color:#333;">'
-                f'{inline_format(stripped)}</p>'
+                f'{fmt(stripped)}</p>'
             )
 
     flush_list()
