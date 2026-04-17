@@ -1,19 +1,33 @@
 ---
-name: learn
+name: learning
 description: 从当前会话提取可复用模式并保存到知识库
 allowed-tools: Read, Write, Bash, Grep, Glob
 argument-hint: [可选：模式名称]
 ---
 
-# 学习模式
+# Learning
 
-从当前会话的对话历史中提取可复用的模式和经验，保存到知识库。
+把一次性的解决过程整理成可复用的长期经验，保存到 Taozi 知识库。
+
+## 何时使用
+
+- 刚解决一个难 bug 或完成一段复杂实现
+- 发现新的工程模式、调试路径、验证套路
+- 用户要求总结、沉淀、记录经验、保存检查点
+
+## 保存原则
+
+- 只保存真正有复用价值的模式，不保存一次性操作
+- 结论要能脱离当前会话单独理解
+- 把"问题 → 方案 → 约束 → 验证"写完整
+- 没验证透的内容要明确降低置信度
+- 模式描述要具体，包含代码示例和原因
+- 不要保存敏感信息（密码、token、私钥）
+- 已有相似模式时合并补充，而非重复创建
 
 ## 执行步骤
 
 ### 1. 回顾当前会话
-
-分析本次会话中完成的工作：
 
 - 解决了什么问题
 - 使用了什么技术方案
@@ -22,29 +36,21 @@ argument-hint: [可选：模式名称]
 
 ### 2. 提取可复用模式
 
-从会话中识别以下类型的模式：
-
-```markdown
-### 可提取的模式类型
-
 | 类型 | 说明 | 示例 |
 |------|------|------|
 | 代码模式 | 可复用的代码片段或结构 | React 组件模式、API 调用封装 |
 | 调试模式 | 问题诊断和修复的方法论 | 排查内存泄漏的步骤 |
 | 架构模式 | 系统设计的选择和原因 | 为什么选 Zustand 而非 Redux |
-| 工具使用 | 工具/库的用法技巧 | MSW mock 某个场景的写法 |
+| 工具使用 | 工具/库的用法技巧 | MSW mock 某场景的写法 |
 | 踩坑记录 | 踩过的坑和解决方案 | SwiftData 跨 actor 传值要用快照 |
-```
 
-### 3. 分析与总结
-
-对提取的模式进行结构化整理：
+### 3. 结构化整理
 
 ```markdown
 ## 模式名称: [从 $ARGUMENTS 获取或自动命名]
 
 ### 背景
-在什么场景下遇到了这个问题/需求。
+什么场景下遇到了这个问题/需求。
 
 ### 方案
 采用了什么解决方案，核心代码/步骤是什么。
@@ -53,7 +59,7 @@ argument-hint: [可选：模式名称]
 为什么选这个方案，其他方案的 trade-off 是什么。
 
 ### 适用场景
-什么情况下可以复用这个模式。
+什么情况下可以复用。
 
 ### 注意事项
 使用时需要注意什么，有什么限制。
@@ -61,18 +67,15 @@ argument-hint: [可选：模式名称]
 
 ### 4. 保存到知识库
 
-将整理好的模式保存到 `${TAOZI_HOME:-$HOME/.taozi}/learned/` 目录：
-
 ```bash
-# 确保目录存在
+# 数据目录优先级: $TAOZI_HOME > ~/.taozi > ~/.claude/taozi
 TAOZI_DIR="${TAOZI_HOME:-$HOME/.taozi}"
 mkdir -p "$TAOZI_DIR/learned"
 
-# 保存为 Markdown 文件
 # 文件名: <category>-<name>.md
-# 例如: pattern-react-form-handling.md
-# 例如: debugging-memory-leak-swift.md
-# 例如: architecture-state-management.md
+# 例: pattern-react-form-handling.md
+#     debugging-memory-leak-swift.md
+#     architecture-state-management.md
 ```
 
 ### 5. 报告总结
@@ -81,22 +84,12 @@ mkdir -p "$TAOZI_DIR/learned"
 ## 学习报告
 
 ### 提取的模式
-- **[模式 1]**: [一句话描述] → `${TAOZI_HOME:-$HOME/.taozi}/learned/xxx.md`
-- **[模式 2]**: [一句话描述] → `${TAOZI_HOME:-$HOME/.taozi}/learned/xxx.md`
+- **[模式 1]**: [一句话描述] → `<path>/xxx.md`
 
 ### 关键洞察
 - [洞察 1]
-- [洞察 2]
 
 ### 后续建议
-- [可以在哪些项目中复用]
+- [可在哪些项目中复用]
 - [需要进一步深入学习的点]
 ```
-
-## 重要原则
-
-- 只保存真正有复用价值的模式，不保存一次性操作
-- 模式描述要具体，包含代码示例和原因说明
-- 如果 `$ARGUMENTS` 指定了模式名称，优先提取该方面的内容
-- 不要保存敏感信息（密码、token、私钥）
-- 已有相似模式时，合并补充而非重复创建

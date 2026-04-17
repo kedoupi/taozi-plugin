@@ -5,15 +5,27 @@ allowed-tools: Read, Grep, Glob, Bash
 argument-hint: [任务描述]
 ---
 
-# Taozi Multi-Plan - 多 Agent 协作规划
+# Multi-Plan
 
-将复杂任务分解为可并行执行的子任务图，分配给最适合的 Agent，生成结构化的执行计划。
+将复杂任务 `$ARGUMENTS` 分解为可并行执行的子任务图，分配给最适合的 Agent。
+
+## 何时使用
+
+- 任务跨多个模块或层次
+- 既要实现，又要测试、审查、文档同步
+- 用户明确要求并行、多代理、分工协作
+
+## 拆分原则
+
+- 子任务要有清晰输入和输出
+- 写入范围尽量互不重叠
+- 阻塞主路径的工作不要轻易外包
+- 审查和验证任务适合并行跟进
+- 子任务粒度：一个 Agent 可在单次执行中完成
 
 ## 执行步骤
 
 ### 1. 理解任务
-
-分析 `$ARGUMENTS` 中的任务描述：
 
 ```
 解析维度:
@@ -26,29 +38,18 @@ argument-hint: [任务描述]
 ### 2. 读取项目上下文
 
 ```bash
-# 了解项目结构
 ls -la
-# 查看技术栈
 cat package.json 2>/dev/null || cat Cargo.toml 2>/dev/null || cat go.mod 2>/dev/null
-# 查看现有代码组织
 find src -type f -name "*.ts" -o -name "*.tsx" | head -30
 ```
 
 ### 3. 任务分解
 
-将任务拆分为可独立执行的子任务：
-
-```
-分解原则:
-- 每个子任务有明确的输入和输出
-- 子任务粒度: 一个 Agent 可在单次执行中完成
-- 识别子任务间的依赖关系
-- 标注哪些子任务可以并行执行
-```
+- 识别必须串行的关键路径
+- 找出可以并行的探索、实现、验证任务
+- 指定每个子任务的责任范围
 
 ### 4. Agent 分配
-
-根据子任务特点选择最合适的 Agent：
 
 | Agent | 适用场景 |
 |-------|---------|
@@ -68,7 +69,7 @@ find src -type f -name "*.ts" -o -name "*.tsx" | head -30
 
 ### 5. 生成执行计划
 
-输出计划文件到 `.claude/multi-plan.md`：
+输出到 `.claude/multi-plan.md`：
 
 ```markdown
 # 多 Agent 执行计划
@@ -83,33 +84,20 @@ $ARGUMENTS
   - Agent: fullstack-developer
   - 输入: [依赖的文件/信息]
   - 输出: [交付物]
-  - 预计文件: [涉及的文件路径]
+  - 预计文件: [涉及文件路径]
 
 - **T2**: [任务描述]
   - Agent: tdd-guide
-  - 输入: [依赖的文件/信息]
-  - 输出: [交付物]
-  - 预计文件: [涉及的文件路径]
+  - 输入 / 输出 / 文件
 
 ### Group B (依赖 Group A)
 - **T3**: [任务描述]
   - Agent: fullstack-developer
   - 依赖: T1, T2
-  - 输入: [依赖的文件/信息]
-  - 输出: [交付物]
 
 ### Group C (依赖 Group B)
-- **T4**: [任务描述]
-  - Agent: code-reviewer
-  - 依赖: T3
-  - 输入: [所有变更文件]
-  - 输出: [审查报告]
-
-- **T5**: [任务描述]
-  - Agent: doc-updater
-  - 依赖: T3
-  - 输入: [所有变更文件]
-  - 输出: [更新的文档]
+- **T4**: 代码审查 — Agent: code-reviewer, 依赖: T3
+- **T5**: 文档同步 — Agent: doc-updater, 依赖: T3
 
 ## 执行依赖图
 T1 ──┐
@@ -126,17 +114,12 @@ T2 ──┘         └──→ T5
 
 1. 生成 `.claude/multi-plan.md` 执行计划文件
 2. 输出摘要到控制台
-3. 提示用户运行 `/multi-execute .claude/multi-plan.md` 开始执行
+3. 提示用户运行 `/taozi:multi-execute .claude/multi-plan.md` 开始执行
 
 ## 使用示例
 
 ```bash
-# 复杂功能开发
-/multi-plan 实现用户认证系统，包括注册、登录、JWT、权限控制
-
-# 系统优化
-/multi-plan 优化首页加载性能，从 3s 降到 1s 以内
-
-# 全面的代码改进
-/multi-plan 对支付模块做全面重构，包括类型安全、测试覆盖、文档更新
+/taozi:multi-plan 实现用户认证系统，包括注册、登录、JWT、权限控制
+/taozi:multi-plan 优化首页加载性能，从 3s 降到 1s 以内
+/taozi:multi-plan 对支付模块做全面重构，包括类型安全、测试覆盖、文档更新
 ```
