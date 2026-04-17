@@ -20,7 +20,7 @@ Taozi 支持两种运行时：
 
 ### YouMind API Key（使用 AI 创作功能必须）
 
-`/taozi:images`、`/taozi:research`、`/taozi:content`、`/taozi:create`、`/taozi:clip`、`/taozi:ppt`、`/taozi:webpage`、`/taozi:wechat-article` 这 8 个命令需要配置 YouMind API Key。
+`/taozi:image`、`/taozi:research`、`/taozi:content`、`/taozi:create`、`/taozi:clip`、`/taozi:ppt`、`/taozi:webpage`、`/taozi:wechat-article` 这 8 个 skill 需要配置 YouMind API Key。
 
 **获取 Key：** 访问 [youmind.com](https://youmind.com) → 设置 → API Key → 生成
 
@@ -209,16 +209,16 @@ mkdir -p .agents/plugins
 ### 开发工作流
 
 ```text
-# 工作流触发 - 自动编排
-/taozi 实现用户登录功能          # → feature-development 工作流
-/taozi 修复支付流程的报错        # → bug-fixing 工作流
-/taozi 审查最近的代码变更        # → code-review 工作流
+# 工作流触发 - 自动编排（智能路由）
+/taozi:taozi 实现用户登录功能          # → feature-development 工作流
+/taozi:taozi 修复支付流程的报错        # → bug-fixing 工作流
+/taozi:taozi 审查最近的代码变更        # → code-review 工作流
 
-# Git 工作流
-/worktree feat/login    # 创建隔离开发环境
-/commit                  # 智能提交
-/pr                      # 创建 PR
-/cleanup                 # 清理
+# Git 工作流（commit / pr / worktree / cleanup 已合流到 git-workflow skill）
+/taozi:git-workflow worktree feat/login   # 隔离环境
+/taozi:git-workflow commit                # 智能提交
+/taozi:git-workflow pr                    # 创建 PR
+/taozi:git-workflow cleanup               # PR 合并后清理
 ```
 
 ### AI 创作工作流
@@ -227,7 +227,7 @@ mkdir -p .agents/plugins
 # 研究 → 内容 → 配图（分步）
 /taozi:research 分析小红书宠物赛道最新趋势
 /taozi:content 基于上面的研究，帮我写一篇种草文
-/taozi:images 生成适合小红书风格的宠物封面图
+/taozi:image 生成适合小红书风格的宠物封面图
 
 # 全链路一键触发
 /taozi:create 帮我做一个关于 AI 工具的公众号文章，要有数据支撑
@@ -289,17 +289,21 @@ mkdir -p .agents/plugins
 | context-manager | 上下文优化、CLAUDE.md |
 | prompt-engineer | LLM 提示优化、AI 系统 |
 
-## Skills（48 个）
+## Skills（61 个）
 
-Claude / Codex 根据任务自动引用相关知识库。
+Claude / Codex 根据任务自动引用相关知识库；同时 `/taozi:<name>` 手动触发工作流类 skill。
 
-### 开发知识库（42 个）
+### 工作流 Skills（23 个，带 `/taozi:` 触发）
 
-`frontend-react` · `backend-architecture` · `nextjs-advanced` · `nextjs-architecture` · `typescript-types` · `typescript-patterns` · `python-patterns` · `go-patterns` · `swift-patterns` · `swift-concurrency` · `foundation-models` · `django-patterns` · `springboot-patterns` · `springboot-tdd` · `springboot-security` · `docker-patterns` · `e2e-testing` · `api-design` · `deployment-patterns` · `database-migrations` · `security-patterns` · `sql-optimization` · `legacy-migration` · `testing-strategies` · `mcp-templates` · `git-conventions` · `code-quality-checklist` · `thinking-tools` · `continuous-learning` · `token-optimization` · `deep-research` · `taozi-router` · `taozi-plan` · `taozi-tdd` · `taozi-verify` · `taozi-code-review` · `taozi-quality-gate` · `taozi-git-workflow` · `taozi-context-update` · `taozi-model-route` · `taozi-multi-agent` · `taozi-learning`
+`taozi` · `plan` · `tdd` · `verify` · `code-review` · `quality-gate` · `git-workflow` · `update-context` · `model-route` · `learning` · `multi-plan` · `multi-execute` · `build-fix` · `checkpoint` · `ultra-think` · `create` · `evolve` · `harness-audit` · `instinct-status` · `instinct-import` · `instinct-export` · `skill-create` · `security-scan`
 
-### YouMind 创作知识库（6 个）
+### 开发知识库（31 个，自动引用）
 
-`image` · `research` · `content` · `clip` · `ppt` · `webpage`
+`frontend-react` · `backend-architecture` · `nextjs-advanced` · `nextjs-architecture` · `typescript-types` · `typescript-patterns` · `python-patterns` · `go-patterns` · `swift-patterns` · `swift-concurrency` · `foundation-models` · `django-patterns` · `springboot-patterns` · `springboot-tdd` · `springboot-security` · `docker-patterns` · `e2e-testing` · `api-design` · `deployment-patterns` · `database-migrations` · `security-patterns` · `sql-optimization` · `legacy-migration` · `testing-strategies` · `mcp-templates` · `git-conventions` · `code-quality-checklist` · `thinking-tools` · `continuous-learning` · `token-optimization` · `deep-research`
+
+### YouMind 创作 Skills（7 个）
+
+`image` · `research` · `content` · `clip` · `ppt` · `webpage` · `wechat-article`
 
 ## YouMind AI 创作能力（详细说明）
 
@@ -312,7 +316,7 @@ Claude / Codex 根据任务自动引用相关知识库。
        ↓
 /taozi:content  → 多平台内容（小红书 / 公众号 / 抖音 / X）
        ↓
-/taozi:images   → 配图生成
+/taozi:image    → 配图生成
 ```
 
 或一步到位：`/taozi:create` 自动串联以上全部步骤。
