@@ -4,6 +4,43 @@ All notable changes to Taozi Plugin are documented here.
 
 ---
 
+## [4.0.0] - 2026-04-17
+
+### BREAKING CHANGES
+
+- **commands/ 目录彻底废除**：官方 Claude Code "Custom commands have been merged into skills"，所有 `/taozi:xxx` 触发统一走 `skills/*/SKILL.md`
+- **11 个 skill 去 `taozi-` 前缀**（插件命名空间 `taozi:` 已负责区分，前缀冗余）
+
+  | 旧触发 | 新触发 |
+  |---|---|
+  | `/taozi:taozi-plan` | `/taozi:plan` |
+  | `/taozi:taozi-verify` | `/taozi:verify` |
+  | `/taozi:taozi-code-review` | `/taozi:code-review` |
+  | `/taozi:taozi-quality-gate` | `/taozi:quality-gate` |
+  | `/taozi:taozi-tdd` | `/taozi:tdd` |
+  | `/taozi:taozi-model-route` | `/taozi:model-route` |
+  | `/taozi:taozi-context-update` | `/taozi:update-context` |
+  | `/taozi:taozi-router` | `/taozi:taozi` |
+  | `/taozi:taozi-multi-agent` | `/taozi:multi-plan` |
+  | `/taozi:taozi-git-workflow` | `/taozi:git-workflow` |
+  | `/taozi:taozi-learning` | `/taozi:learning` |
+
+### Changed
+
+- **33 个 command 全量迁移至 skills**（分 3 个 PR 渐进）：
+  - Phase 1：删除 7 个已薄包装 command（clip/content/images/ppt/research/webpage/wechat-article）
+  - Phase 2：11 个 skill 去前缀 + 14 个 C 类 command 合并（plan/verify/code-review/quality-gate/tdd/model-route/update-context/taozi/multi-plan/learn/commit+pr+cleanup+worktree）
+  - Phase 3：新建 12 个 D 类 skill（build-fix/checkpoint/create/evolve/harness-audit/instinct-{export,import,status}/multi-execute/security-scan/skill-create/ultra-think）
+- `.claude-plugin/plugin.json` 移除 `"commands": "./commands"` 字段
+- `scripts/hooks/block-random-md.js` allowedDirs 移除 `'commands'`
+- 文档同步：CLAUDE.md / README.md / DEVELOPER.md / AGENTS.md / package.json
+
+### 升级指南
+
+用户只需在脑子里把 `/taozi:taozi-*` 读作 `/taozi:*` 即可（去掉多余的 `taozi-` 前缀）；`/taozi:taozi-router` 改成 `/taozi:taozi`。所有原功能保留，仅触发路径变更。
+
+---
+
 ## [3.5.0] - 2026-04-17
 
 ### Changed
