@@ -563,3 +563,71 @@ test('pre-compact outputs context reminder', () => {
   assert(result.stderr.includes('Pre-Compact'), 'Should include pre-compact header');
   assert(result.stderr.includes('Active file paths'), 'Should mention active file paths');
 });
+
+// =====================
+// 9. wechat-key-check
+// =====================
+
+test('wechat-key-check allows non-wechat commands', () => {
+  const script = path.join(HOOKS_DIR, 'wechat-key-check.js');
+  const result = runHook(script, {
+    tool_input: { command: 'curl https://api.example.com/data' },
+  });
+  assert.strictEqual(result.status, 0, 'Should exit(0) for non-WeChat commands');
+});
+
+test('wechat-key-check allows when both credentials configured', () => {
+  const script = path.join(HOOKS_DIR, 'wechat-key-check.js');
+  const result = runHook(
+    script,
+    { tool_input: { command: 'curl https://api.weixin.qq.com/cgi-bin/stable_token' } },
+    { env: { WECHAT_APPID: 'wx_test123', WECHAT_APPSECRET: 'secret_test456' } }
+  );
+  assert.strictEqual(result.status, 0, 'Should exit(0) when both env vars are set');
+});
+
+test('wechat-key-check blocks when WECHAT_APPID missing', () => {
+  const script = path.join(HOOKS_DIR, 'wechat-key-check.js');
+  const result = runHook(
+    script,
+    { tool_input: { command: 'curl https://api.weixin.qq.com/cgi-bin/stable_token' } },
+    { env: { WECHAT_APPID: '', WECHAT_APPSECRET: 'secret_test456' } }
+  );
+  assert.strictEqual(result.status, 2, 'Should exit(2) when WECHAT_APPID is missing');
+  assert(result.stderr.includes('WECHAT_APPID'), 'Should mention missing variable');
+});
+
+test('wechat-key-check blocks when WECHAT_APPSECRET missing', () => {
+  const script = path.join(HOOKS_DIR, 'wechat-key-check.js');
+  const result = runHook(
+    script,
+    { tool_input: { command: 'curl https://api.weixin.qq.com/cgi-bin/stable_token' } },
+    { env: { WECHAT_APPID: 'wx_test123', WECHAT_APPSECRET: '' } }
+  );
+  assert.strictEqual(result.status, 2, 'Should exit(2) when WECHAT_APPSECRET is missing');
+  assert(result.stderr.includes('WECHAT_APPSECRET'), 'Should mention missing variable');
+});
+
+test('wechat-key-check blocks when both credentials missing', () => {
+  const script = path.join(HOOKS_DIR, 'wechat-key-check.js');
+  const result = runHook(
+    script,
+    { tool_input: { command: 'python3 wechat_publish.py --url https://api.weixin.qq.com/draft/add' } },
+    { env: { WECHAT_APPID: '', WECHAT_APPSECRET: '' } }
+  );
+  assert.strictEqual(result.status, 2, 'Should exit(2) when both env vars are missing');
+  assert(result.stderr.includes('WECHAT_APPID'), 'Should list WECHAT_APPID in missing');
+  assert(result.stderr.includes('WECHAT_APPSECRET'), 'Should list WECHAT_APPSECRET in missing');
+});
+
+test('wechat-key-check handles missing tool_input gracefully', () => {
+  const script = path.join(HOOKS_DIR, 'wechat-key-check.js');
+  const result = runHook(script, { some_other_key: true });
+  assert.strictEqual(result.status, 0, 'Should exit(0) for missing tool_input');
+});
+
+test('wechat-key-check handles empty input gracefully', () => {
+  const script = path.join(HOOKS_DIR, 'wechat-key-check.js');
+  const result = runHook(script, {});
+  assert.strictEqual(result.status, 0, 'Should exit(0) for empty input');
+});

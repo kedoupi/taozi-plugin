@@ -9,6 +9,12 @@
       },
       {
         "matcher": "Bash",
+        "hooks": [{ "type": "command", "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/wechat-key-check.js\"" }],
+        "description": "微信 API 命令执行前检查 WECHAT_APPID / WECHAT_APPSECRET，未配置则 block 并给出设置指引",
+        "id": "pre:bash:wechat-key-check"
+      },
+      {
+        "matcher": "Bash",
         "hooks": [{ "type": "command", "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/no-verify-guard.js\"" }],
         "description": "阻止 git --no-verify 标志（3 铁律强制执行：调试铁律）",
         "id": "pre:bash:no-verify"

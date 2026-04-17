@@ -1,0 +1,76 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## 项目架构
+
+Claude Code 插件 + Codex 适配层的双运行时仓库。
+
+- `agents/` + `skills/` = 单一事实来源（两个运行时共享）
+- `commands/` + `hooks/` + `.claude-plugin/` = Claude Code 专用
+- `.codex/` + `.codex-plugin/` + `.agents/` = Codex 专用（由脚本生成，禁止手工编辑）
+
+## 关键命令
+
+```bash
+node tests/run-all.js       # 运行全部测试（零依赖，~470 个断言）
+node scripts/sync-codex.js  # agents/ 或 skills/ 变更后同步 Codex 适配层
+npm run lint                # 验证 hooks/hooks.json 格式合法
+```
+
+## 修改 agents/ 或 skills/ 后必须做
+
+改动 `agents/*.md` 或 `skills/*/SKILL.md` 后，必须紧跟运行：
+
+```bash
+node scripts/sync-codex.js
+```
+
+否则 `.codex/agents/` 和 `.agents/skills/` 会与源码不一致。
+
+## 发版检查单
+
+升版本时必须同步这三处，否则 Codex 侧会显示旧版本：
+
+1. `package.json` → `version`
+2. `.claude-plugin/plugin.json` → `version` + `description`
+3. `.codex-plugin/plugin.json` → `version` + `description`（当前仍需手动更新，sync-codex.js 不会自动同步）
+
+## frontmatter 约束
+
+`agents/*.md`、`commands/*.md`、`skills/*/SKILL.md` 的 frontmatter **只支持平层 `key: value` 单行格式**，`parseFrontmatter()` 不解析嵌套 YAML。错误示例：
+
+```yaml
+# ❌ 嵌套写法会被忽略
+author:
+  name: foo
+
+# ✅ 正确
+author: foo
+```
+
+## Hook 开发规范
+
+- `exit(0)` = 放行，`exit(2)` = 拦截（Claude 看到 stderr 作为反馈）
+- 所有 hook 脚本通过 stdin 读取 JSON，用 `require('../lib/utils').readStdinJson()`
+- 新 hook 三步走：`scripts/hooks/<name>.js` → `hooks/hooks.json` 注册 → `tests/hooks/hooks.test.js` 补测试
+- `${CLAUDE_PLUGIN_ROOT}` 是插件根目录的环境变量，在 hooks.json 命令路径中使用
+
+## 测试框架
+
+零依赖，`run-all.js` 通过 `global` 注入 `test()` 和 `assert`，测试文件无需额外引入：
+
+```js
+test('描述', () => {
+  assert.strictEqual(actual, expected);
+});
+```
+
+新增功能必须有对应测试。PR 要求全部测试通过。
+
+## 命名与提交规范
+
+- 分支：`feat/<name>`、`fix/<name>`、`docs/<topic>`、`refactor/<name>`、`test/<name>`
+- 提交：Conventional Commits（`feat:`, `fix:`, `docs:`, `refactor:`, `test:`）
+- Command 文件名 = slash command 名称（`commands/images.md` → `/taozi:images`）
+- Skill 目录名 = skill 调用名（`skills/youmind-image/` → `youmind-image`）

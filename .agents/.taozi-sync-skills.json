@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-11T06:13:32.424Z",
+  "generatedAt": "2026-04-17T08:19:50.429Z",
   "entries": [
     ".agents/skills/api-design",
     ".agents/skills/backend-architecture",
@@ -42,6 +42,13 @@
     ".agents/skills/thinking-tools",
     ".agents/skills/token-optimization",
     ".agents/skills/typescript-patterns",
-    ".agents/skills/typescript-types"
+    ".agents/skills/typescript-types",
+    ".agents/skills/youmind-clip",
+    ".agents/skills/youmind-content",
+    ".agents/skills/youmind-image",
+    ".agents/skills/youmind-ppt",
+    ".agents/skills/youmind-research",
+    ".agents/skills/youmind-webpage",
+    ".agents/skills/youmind-wechat-article"
   ]
 }
