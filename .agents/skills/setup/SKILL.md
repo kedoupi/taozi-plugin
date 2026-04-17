@@ -13,7 +13,7 @@ allowed-tools:
 
 # Taozi 配置向导
 
-交互式引导创建 `~/.taozi/` 全局配置。一次配置，`/taozi:wechat-article`、`/taozi:content` 等所有内容 skill 共享品牌信息和凭据。
+交互式引导创建 `~/.taozi/` 全局配置。一次配置，`/taozi:wechat`、`/taozi:xiaohongshu`、`/taozi:content` 等所有内容 skill 共享品牌信息和凭据。
 
 ---
 
@@ -280,7 +280,7 @@ format:
   📎 填写 ~/.taozi/brand/character.md 中的「我的角色」→ 封面图出现固定角色
   📎 可在任意项目建 ./.taozi/brand/voice.md 覆盖全局人设
 
-现在可以运行：/taozi:wechat-article
+现在可以运行：/taozi:wechat · /taozi:xiaohongshu
 ```
 
 若选择了微信并配置了真实 AppID/Secret，额外提示 IP 白名单：

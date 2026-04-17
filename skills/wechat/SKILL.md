@@ -1,5 +1,5 @@
 ---
-name: wechat-article
+name: wechat
 description: 微信公众号文章全链路：热点选题 → YouMind 研究 → AI 写作 → 封面图生成 → 推送草稿箱。依赖 ~/.taozi/ 全局配置（运行 /taozi:setup 初始化），草稿和历史记录存于项目 ./wechat/ 目录。
 triggers: "公众号文章,微信推文,发草稿箱,公众号写作,写公众号,微信公众号,WeChat article,publish to WeChat"
 allowed-tools:

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-17T12:18:28.772Z",
+  "generatedAt": "2026-04-17T16:47:03.548Z",
   "entries": [
     ".agents/skills/api-design",
     ".agents/skills/backend-architecture",
@@ -10,7 +10,6 @@
     ".agents/skills/code-review",
     ".agents/skills/content",
     ".agents/skills/continuous-learning",
-    ".agents/skills/create",
     ".agents/skills/database-migrations",
     ".agents/skills/deep-research",
     ".agents/skills/deployment-patterns",
@@ -62,6 +61,7 @@
     ".agents/skills/update-context",
     ".agents/skills/verify",
     ".agents/skills/webpage",
-    ".agents/skills/wechat-article"
+    ".agents/skills/wechat",
+    ".agents/skills/xiaohongshu"
   ]
 }
