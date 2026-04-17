@@ -391,7 +391,10 @@ youmind call webSearch '{"query":"<主题>","limit":15}'
 - 标题（20-28 字）
 - 摘要（54 字以内）
 - 正文（1200-2500 字，微信公众号适合长度）
-- 封面图生成 prompt（英文，16:9，无人脸；若 `wechat-articles/character.md` 或 `~/wechat-articles/character.md` 存在且「我的角色」部分非空，则将角色描述融入 prompt）
+- 封面图生成 prompt（英文，16:9，无人脸）：
+  1. 读取 `wechat-articles/character.md`（或 `~/wechat-articles/character.md`），找到 `## 封面图用法（16:9）` 下方代码块，提取其完整内容作为封面 prompt 基础
+  2. 在此基础上追加本文主题相关的场景描述（10 词以内）
+  3. 若 character.md 不存在或「我的角色」为空，则纯粹按文章主题和风格自由生成封面 prompt
 
 ### 步骤 3：提取视觉锚点 + 生成章节配图 prompt
 
