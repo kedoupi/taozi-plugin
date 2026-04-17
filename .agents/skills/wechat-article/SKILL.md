@@ -1,11 +1,13 @@
 ---
 name: wechat-article
-description: 微信公众号文章全链路：热点选题 → YouMind 研究 → AI 写作 → 封面图生成 → 推送草稿箱。首次运行自动初始化 wechat-articles/ 工作目录。需要 YOUMIND_API_KEY、WECHAT_APPID、WECHAT_APPSECRET 环境变量。
+description: 微信公众号文章全链路：热点选题 → YouMind 研究 → AI 写作 → 封面图生成 → 推送草稿箱。支持全局配置（~/wechat-articles/）+ 项目覆盖（./wechat-articles/），首次运行自动初始化。需要 YOUMIND_API_KEY、WECHAT_APPID、WECHAT_APPSECRET 环境变量。
 triggers: "公众号文章,微信推文,发草稿箱,公众号写作,写公众号,微信公众号,WeChat article,publish to WeChat"
 allowed-tools:
   - Bash([ -n "$YOUMIND_API_KEY" ]*)
   - Bash([ -d "wechat-articles" ]*)
+  - Bash([ -d "$HOME/wechat-articles" ]*)
   - Bash([ -f "wechat-articles/style.yaml" ]*)
+  - Bash([ -f "$HOME/wechat-articles/style.yaml" ]*)
   - Bash(python3 *)
 ---
 
@@ -18,28 +20,29 @@ allowed-tools:
 
 ## 第一步：初始化 + 配置检查
 
-用 bash 检查 `wechat-articles/` 目录是否存在：
+分三个阶段依次执行。
+
+---
+
+### 阶段 1：检查全局目录
 
 ```bash
-[ -d "wechat-articles" ] && echo "exists" || echo "not_found"
+[ -d "$HOME/wechat-articles" ] && echo "global_exists" || echo "global_missing"
 ```
 
-### 情况 A：目录不存在
-
-立刻创建以下文件结构，然后停止，告知用户填写 style.yaml：
+**全局目录不存在** → 立刻创建 `~/wechat-articles/` 并写入以下三个文件，然后停止：
 
 ```bash
-mkdir -p wechat-articles/corpus wechat-articles/lessons
-touch wechat-articles/corpus/.gitkeep wechat-articles/lessons/.gitkeep
+mkdir -p "$HOME/wechat-articles"
 ```
 
-**style.yaml 内容**（原样写入 `wechat-articles/style.yaml`）：
+**`~/wechat-articles/style.yaml` 内容**（原样写入）：
 
 ```yaml
 # ============================================================
-# 微信公众号配置 — 由 /taozi:wechat-article 自动生成
+# 微信公众号全局配置 — 由 /taozi:wechat-article 自动生成
+# 此文件保存在 ~/wechat-articles/，所有项目共享
 # 凭据优先读环境变量，直接在此填写则覆盖环境变量
-# 填写必填项后，告诉我要写什么主题就可以开始了
 # ============================================================
 
 # 【必填】微信公众号 API 凭据
@@ -91,16 +94,16 @@ voice: ""           # 人设，如"第一人称，8 年 AI 从业经验的老兵
 # 封面图风格（不填则 AI 根据标题发挥）
 # cover_style: "科技感，深色调，极简几何，无人脸"
 
-# 封面图固定角色：在 wechat-articles/character.md 中定义（参考 references/character-template.md）
+# 封面图固定角色：在 ~/wechat-articles/character.md 中定义（参考 references/character-template.md）
 # 文件存在 → 每张封面都会包含该角色；文件不存在 → AI 自由发挥
 
 # YouMind 知识库打通
-# youmind:
+# youmind_boards:
 #   source_boards: []   # 写作时搜索这些 Board 的素材
 #   save_board: ""      # 发布后归档到这个 Board
 ```
 
-**playbook.md 内容**（写入 `wechat-articles/playbook.md`）：
+**`~/wechat-articles/playbook.md` 内容**（原样写入）：
 
 ```markdown
 # 写作手册
@@ -138,26 +141,7 @@ voice: ""           # 人设，如"第一人称，8 年 AI 从业经验的老兵
 - 不写没有具体数据支撑的大词
 ```
 
-**history.yaml 内容**（写入 `wechat-articles/history.yaml`）：
-
-```yaml
-# 发布历史 — 由 /taozi:wechat-article 自动维护
-# 每次发布后自动追加一条记录
-# stats 字段可手动填入数据（用于优化未来选题）
-articles: []
-
-# 格式参考：
-# articles:
-#   - date: "2026-04-17"
-#     title: "文章标题"
-#     media_id: "xxx"
-#     topic_keywords: ["关键词1", "关键词2"]
-#     stats:
-#       reads: 0
-#       likes: 0
-```
-
-**character.md 内容**（写入 `wechat-articles/character.md`）：
+**`~/wechat-articles/character.md` 内容**（原样写入）：
 
 ````markdown
 # 封面角色设定
@@ -191,19 +175,22 @@ articles: []
 创建完成后，告知用户：
 
 ```
-✅ 已创建 wechat-articles/ 工作目录
+✅ 已创建全局配置目录 ~/wechat-articles/
 
-请打开 wechat-articles/style.yaml，填写必填项：
+请打开 ~/wechat-articles/style.yaml，填写必填项：
 - wechat.appid 和 wechat.secret（微信开发者平台获取）
 - youmind.api_key（YouMind 设置页获取）
 - name、industry、target_audience、tone、voice
+
+配置一次，所有项目共享。
+每个项目可在 ./wechat-articles/style.yaml 中覆盖部分字段（只写需要覆盖的）。
 
 ⚠️  微信 IP 白名单（需配置，否则发布失败）：
 1. 运行 `curl -s https://ifconfig.me` 获取本机公网 IP
 2. 登录 https://developers.weixin.qq.com/platform → 公众号 → 基础信息 → API IP 白名单 → 编辑 → 添加 IP
 （有代理服务器可在 style.yaml 的 proxy 字段填入，无需配白名单）
 
-📎 可选：wechat-articles/character.md 已创建
+📎 可选：~/wechat-articles/character.md 已创建
    → 填写「我的角色」部分可为每张封面图设定固定 IP 角色
    → 保持空白则 AI 自由发挥，不影响发布流程
 
@@ -212,56 +199,110 @@ articles: []
 
 **停止执行，等待用户反馈。**
 
+**全局目录已存在** → 继续阶段 2。
+
 ---
 
-### 情况 B：目录已存在
+### 阶段 2：检查项目目录
 
-读取 `wechat-articles/style.yaml`，用以下 python3 脚本解析凭据（`$VAR_NAME` 展开为 env var 值）：
+```bash
+[ -d "wechat-articles" ] && echo "project_exists" || echo "project_missing"
+```
+
+**项目目录不存在** → 创建项目目录结构（不创建 style.yaml，草稿和历史按项目隔离）：
+
+```bash
+mkdir -p wechat-articles/drafts wechat-articles/corpus wechat-articles/lessons
+touch wechat-articles/corpus/.gitkeep wechat-articles/lessons/.gitkeep
+```
+
+**`wechat-articles/history.yaml` 内容**（写入）：
+
+```yaml
+# 发布历史 — 由 /taozi:wechat-article 自动维护
+# 每次发布后自动追加一条记录
+# stats 字段可手动填入数据（用于优化未来选题）
+articles: []
+
+# 格式参考：
+# articles:
+#   - date: "2026-04-17"
+#     title: "文章标题"
+#     media_id: "xxx"
+#     topic_keywords: ["关键词1", "关键词2"]
+#     stats:
+#       reads: 0
+#       likes: 0
+```
+
+告知用户：
+
+```
+✅ 已创建项目目录 ./wechat-articles/（草稿和历史记录存于此）
+   使用全局配置 ~/wechat-articles/style.yaml
+   如需为本项目定制风格，可创建 ./wechat-articles/style.yaml（只写需覆盖的字段）
+```
+
+**项目目录已存在** → 继续阶段 3。
+
+---
+
+### 阶段 3：读取并合并配置
+
+用以下 python3 脚本读取全局 + 项目配置，项目字段覆盖全局字段：
 
 ```bash
 python3 -c "
 import os, sys
-try:
-    import yaml
-except ImportError:
-    # yaml 不可用时做基础解析
-    yaml = None
+
+HOME = os.path.expanduser('~')
+GLOBAL_CFG = os.path.join(HOME, 'wechat-articles', 'style.yaml')
+PROJECT_CFG = 'wechat-articles/style.yaml'
 
 def expand(val):
     if isinstance(val, str) and val.startswith('\$'):
         return os.environ.get(val[1:], '') or ''
     return val or ''
 
-with open('wechat-articles/style.yaml') as f:
-    content = f.read()
+def load_yaml(path):
+    try:
+        import yaml
+        with open(path) as f:
+            return yaml.safe_load(f) or {}
+    except Exception:
+        return {}
 
-if yaml:
-    cfg = yaml.safe_load(content)
-else:
-    cfg = {}
+cfg = load_yaml(GLOBAL_CFG)
+if os.path.exists(PROJECT_CFG):
+    proj = load_yaml(PROJECT_CFG)
+    for key, val in proj.items():
+        if isinstance(val, dict) and isinstance(cfg.get(key), dict):
+            cfg[key] = {**cfg.get(key, {}), **val}
+        else:
+            cfg[key] = val
 
-wechat = cfg.get('wechat', {}) if cfg else {}
-youmind = cfg.get('youmind', {}) if cfg else {}
+wechat  = cfg.get('wechat', {})
+youmind = cfg.get('youmind', {})
 
-appid  = expand(wechat.get('appid', '\$WECHAT_APPID'))
+appid  = expand(wechat.get('appid',  '\$WECHAT_APPID'))
 secret = expand(wechat.get('secret', '\$WECHAT_APPSECRET'))
 apikey = expand(youmind.get('api_key', '\$YOUMIND_API_KEY'))
 
-name     = cfg.get('name', '') if cfg else ''
-industry = cfg.get('industry', '') if cfg else ''
-audience = cfg.get('target_audience', '') if cfg else ''
-tone     = cfg.get('tone', '') if cfg else ''
-voice    = cfg.get('voice', '') if cfg else ''
+name     = cfg.get('name', '')
+industry = cfg.get('industry', '')
+audience = cfg.get('target_audience', '')
+tone     = cfg.get('tone', '')
+voice    = cfg.get('voice', '')
 
 missing = []
-if not appid:  missing.append('wechat.appid')
-if not secret: missing.append('wechat.secret')
-if not apikey: missing.append('youmind.api_key')
-if not name:   missing.append('name')
-if not industry:  missing.append('industry')
-if not audience:  missing.append('target_audience')
-if not tone:   missing.append('tone')
-if not voice:  missing.append('voice')
+if not appid:    missing.append('wechat.appid')
+if not secret:   missing.append('wechat.secret')
+if not apikey:   missing.append('youmind.api_key')
+if not name:     missing.append('name')
+if not industry: missing.append('industry')
+if not audience: missing.append('target_audience')
+if not tone:     missing.append('tone')
+if not voice:    missing.append('voice')
 
 if missing:
     print('MISSING:' + ','.join(missing))
@@ -272,7 +313,7 @@ else:
 "
 ```
 
-如果输出含 `MISSING:`，提示用户补填对应字段，停止执行。
+如果输出含 `MISSING:`，提示用户在 `~/wechat-articles/style.yaml` 中补填对应字段，停止执行。
 
 ---
 
@@ -345,61 +386,103 @@ youmind call webSearch '{"query":"<主题>","limit":15}'
 提炼：核心观点 3-5 条、数据/案例 2-3 个、争议点 1-2 个
 
 ### 步骤 2：撰写文章（Markdown）
-遵循 wechat-articles/playbook.md 的写作规范。
+读取写作规范：优先 `wechat-articles/playbook.md`，不存在则读 `~/wechat-articles/playbook.md`。遵循其规范撰写。
 输出：
 - 标题（20-28 字）
 - 摘要（54 字以内）
 - 正文（1200-2500 字，微信公众号适合长度）
-- 封面图生成 prompt（英文，16:9，无人脸）
+- 封面图生成 prompt（英文，16:9，无人脸；若 `wechat-articles/character.md` 或 `~/wechat-articles/character.md` 存在且「我的角色」部分非空，则将角色描述融入 prompt）
 
-### 步骤 3：保存草稿
+### 步骤 3：提取视觉锚点 + 生成章节配图 prompt
+
+从封面图 prompt 中提取 3 个风格关键词作为**视觉锚点**（如 `manga / cream beige / Q-style`），
+所有章节配图必须包含这些锚点，确保风格统一。
+
+读取角色文件（优先 `wechat-articles/character.md`，其次 `~/wechat-articles/character.md`），
+提取"章节配图用法（16:9）"模板。
+
+为文章每个 H2 章节（最多 4 个）生成一条配图 prompt，格式：
+
+```
+SECTION_IMAGE_PROMPT_1: <章节标题> | <完整英文 prompt，含视觉锚点 + 角色模板 + 章节场景描述>
+SECTION_IMAGE_PROMPT_2: ...
+```
+
+配图 prompt 模板：
+```
+WeChat article section illustration, 16:9 landscape.
+Scene: <用 10 词描述该章节核心场景>.
+Character: a young man with a boyish expression, brown fluffy short hair, round glasses, dark blue hoodie, gray sweatpants, white sneakers.
+Cream beige background (#F5F0E8). Q-style manga illustration. Warm color palette (brown/cream/blue).
+Visual anchors: <锚点1, 锚点2, 锚点3>. No text overlay. Not realistic.
+```
+
+如 character.md 不存在或角色为空，则省略 Character 行，视觉锚点仍保留。
+
+### 步骤 4：保存草稿
 将完整 Markdown 写入 wechat-articles/drafts/<YYYYMMDD>-<slug>.md
 
-### 步骤 4：返回结果
+### 步骤 5：返回结果
 DRAFT_DONE
 title: <标题>
 digest: <摘要>
 draft_path: wechat-articles/drafts/<文件名>
 cover_prompt: <封面图 prompt>
+visual_anchors: <锚点1,锚点2,锚点3>
+section_count: <章节数，最多4>
+SECTION_IMAGE_PROMPT_1: <章节标题> | <prompt>
+SECTION_IMAGE_PROMPT_2: ...（有几个写几个）
 ```
 
-**子 Agent C — 封面图 + 微信发布**
+**子 Agent C — 封面图 + 章节配图 + 微信发布**
 
 ```
-你是发布 agent，负责生成封面图并推送到微信草稿箱。
+你是发布 agent，负责生成封面图、章节配图，并推送到微信草稿箱。
 
 ## 参数
 - draft_path: <草稿文件路径>
 - title: <标题>
 - digest: <摘要>
 - cover_prompt: <封面图 prompt>
-- appid: <WECHAT_APPID>
-- secret: <WECHAT_APPSECRET>
-- author: <author>
-- proxy: <proxy 或空>
+- section_prompts: [<SECTION_IMAGE_PROMPT_1>, <SECTION_IMAGE_PROMPT_2>, ...]（从写作 agent 传入）
 
 ## 执行步骤
 
 ### 步骤 1：生成封面图（YouMind）
 youmind call generateImage '{"prompt":"<cover_prompt>, 16:9 ratio, widescreen, no faces, no text","width":900,"height":506}'
-取返回的图片 URL。
+下载到本地 /tmp/cover-<slug>.jpg。
 
-### 步骤 2：执行发布脚本
+### 步骤 2：批量生成章节配图（最多 4 张，并行调用）
+对每个 section_prompt，调用：
+youmind call generateImage '{"prompt":"<section_prompt>","width":900,"height":506}'
+下载到 wechat-articles/images/<YYYYMMDD>/section-<n>.jpg。
+
+目录不存在时先创建：
+mkdir -p wechat-articles/images/<YYYYMMDD>/
+
+注意：章节配图数 > 4 时只取前 4 个。
+
+### 步骤 3：执行发布脚本
+source ~/.config/env/wechat/kedoupi-mp.env 2>/dev/null || true
+source ~/.config/env/productivity/youmind.env 2>/dev/null || true
+
 python3 skills/wechat-article/scripts/wechat_publish.py \
-  --draft "<draft_path>" \
+  --publish \
   --title "<title>" \
-  --digest "<digest>" \
-  --cover-url "<image_url>" \
-  --appid "<appid>" \
-  --secret "<secret>" \
-  --author "<author>" \
-  --proxy "<proxy>"
+  --content "<draft_path>" \
+  --cover "/tmp/cover-<slug>.jpg" \
+  --images wechat-articles/images/<YYYYMMDD>/section-1.jpg \
+           wechat-articles/images/<YYYYMMDD>/section-2.jpg \
+           ...（有几张列几张）
 
-### 步骤 3：返回结果
+脚本会自动从 style.yaml 读取凭据，封面图自动完成 900×383 裁切 + 标题叠字。
+
+### 步骤 4：返回结果
 WECHAT_DRAFT_DONE
 title: <标题>
 digest: <摘要>
 cover_url: <封面图 URL>
+section_images: <生成的章节配图数量>
 media_id: <草稿 media_id>
 ```
 
@@ -434,13 +517,19 @@ media_id: <草稿 media_id>
 需要调整文章、重新生成封面，还是写下一篇？
 ```
 
-同时将本次发布记录追加到 `wechat-articles/history.yaml`：
+同时将本次发布记录追加到 `wechat-articles/history.yaml`（扩展字段用于下次选题参考）：
 
 ```yaml
   - date: "<YYYY-MM-DD>"
     title: "<title>"
     media_id: "<media_id>"
-    topic_keywords: []
+    topic_keywords: []          # 从标题/内容提取的关键词
+    framework: ""               # 文章结构：问题分析方案行动 / 背景观点论据结论 / 其他
+    visual_anchors: []          # 封面视觉锚点关键词（供下篇配图参考）
+    section_images: 0           # 本篇生成的章节配图数量
+    quality:
+      hkr_pass: true            # HKR 三维是否通过
+      notes: ""                 # 人工补充的质量备注
     stats:
       reads: 0
       likes: 0

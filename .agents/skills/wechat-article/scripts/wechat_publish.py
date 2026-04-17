@@ -82,6 +82,16 @@ def load_config():
         config["secret"] = resolve(wechat.get("secret", "$WECHAT_APPSECRET"))
         config["author"] = wechat.get("author", "") or ""
         config["proxy"]  = resolve(raw.get("proxy", "$WECHAT_PROXY"))
+        # 封面叠字配置
+        ct = raw.get("cover_text", {}) or {}
+        config["cover_text"] = {
+            "enabled":           ct.get("enabled", "true") not in ("false", "0", False),
+            "font_size":         int(ct.get("font_size", 52) or 52),
+            "color":             ct.get("color", "#FFFFFF") or "#FFFFFF",
+            "shadow":            ct.get("shadow", "true") not in ("false", "0", False),
+            "position":          ct.get("position", "bottom") or "bottom",
+            "max_chars_per_line": int(ct.get("max_chars_per_line", 14) or 14),
+        }
     else:
         # 兼容 WECHAT_APPID 和 WECHAT_APP_ID 两种命名
         config["appid"]  = os.environ.get("WECHAT_APPID") or os.environ.get("WECHAT_APP_ID", "")
@@ -96,12 +106,13 @@ def load_config():
     return config
 
 
-CONFIG          = load_config()
-WECHAT_APPID    = CONFIG["appid"]
+CONFIG           = load_config()
+WECHAT_APPID     = CONFIG["appid"]
 WECHAT_APPSECRET = CONFIG["secret"]
-WECHAT_PROXY    = CONFIG["proxy"]
-WECHAT_AUTHOR   = CONFIG["author"] or "作者"
-PRIMARY         = "#576b95"
+WECHAT_PROXY     = CONFIG["proxy"]
+WECHAT_AUTHOR    = CONFIG["author"] or "作者"
+COVER_TEXT_CFG   = CONFIG.get("cover_text", {})
+PRIMARY          = "#576b95"
 
 
 # ── 微信 API ──────────────────────────────────────────
@@ -195,11 +206,113 @@ def _resize_cover(image_path):
         return data, fname, ct
 
 
-def upload_thumb(token, image_path, retries=3):
-    """上传封面图，返回 thumb_media_id（带重试）。自动裁切到 900×383。"""
+def _find_cjk_font():
+    """按优先级查找可用的 CJK 字体，返回路径或 None。"""
+    candidates = [
+        "/System/Library/Fonts/PingFang.ttc",           # macOS
+        "/System/Library/Fonts/STHeiti Medium.ttc",      # macOS fallback
+        "/System/Library/Fonts/Supplemental/Arial Unicode.ttf",
+        "/usr/share/fonts/truetype/wqy/wqy-zenhei.ttc", # Linux
+        "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",
+        "/usr/share/fonts/truetype/noto/NotoSansCJK-Regular.ttc",
+        "/Windows/Fonts/msyh.ttc",                       # Windows 微软雅黑
+    ]
+    for p in candidates:
+        if os.path.exists(p):
+            return p
+    return None
+
+
+def _hex_to_rgb(hex_color):
+    h = hex_color.lstrip("#")
+    return tuple(int(h[i:i+2], 16) for i in (0, 2, 4))
+
+
+def overlay_title_on_cover(img_bytes, title, cfg=None):
+    """在封面图上叠加标题文字，返回新的 JPEG bytes。
+    cfg 从 style.yaml cover_text 段读取。Pillow 不可用时原样返回。
+    """
+    if cfg is None:
+        cfg = COVER_TEXT_CFG
+    if not cfg.get("enabled", True):
+        return img_bytes
+
+    try:
+        from PIL import Image, ImageDraw, ImageFont
+        import io, textwrap
+    except ImportError:
+        return img_bytes
+
+    img = Image.open(io.BytesIO(img_bytes)).convert("RGBA")
+    W, H = img.size
+
+    font_size     = cfg.get("font_size", 52)
+    text_color    = _hex_to_rgb(cfg.get("color", "#FFFFFF"))
+    use_shadow    = cfg.get("shadow", True)
+    position      = cfg.get("position", "bottom")  # top/center/bottom
+    max_chars     = cfg.get("max_chars_per_line", 14)
+
+    # 加载字体
+    font_path = _find_cjk_font()
+    try:
+        font = ImageFont.truetype(font_path, font_size) if font_path else ImageFont.load_default()
+    except Exception:
+        font = ImageFont.load_default()
+
+    # 文字换行
+    lines = textwrap.wrap(title, width=max_chars) or [title]
+    line_h = font_size + 10
+    text_block_h = len(lines) * line_h
+    pad = 40  # 文字区边距
+
+    # 确定文字区 Y 起点
+    if position == "top":
+        text_y_start = pad
+    elif position == "center":
+        text_y_start = (H - text_block_h) // 2
+    else:  # bottom
+        text_y_start = H - text_block_h - pad * 2
+
+    # 半透明渐变遮罩（底部区域）
+    overlay = Image.new("RGBA", img.size, (0, 0, 0, 0))
+    draw_overlay = ImageDraw.Draw(overlay)
+    grad_top = max(0, text_y_start - pad)
+    for y in range(grad_top, H):
+        alpha = int(160 * (y - grad_top) / max(1, H - grad_top))
+        draw_overlay.line([(0, y), (W, y)], fill=(0, 0, 0, min(alpha, 160)))
+    img = Image.alpha_composite(img, overlay)
+
+    # 绘制文字
+    draw = ImageDraw.Draw(img)
+    for i, line in enumerate(lines):
+        try:
+            bbox = font.getbbox(line)
+            tw = bbox[2] - bbox[0]
+        except AttributeError:
+            tw = len(line) * font_size * 0.6
+        x = (W - tw) // 2
+        y = text_y_start + i * line_h
+
+        if use_shadow:
+            for dx, dy in [(2, 2), (2, -2), (-2, 2), (-2, -2)]:
+                draw.text((x + dx, y + dy), line, font=font, fill=(0, 0, 0, 180))
+        draw.text((x, y), line, font=font, fill=(*text_color, 255))
+
+    # 转回 JPEG bytes
+    out = io.BytesIO()
+    img.convert("RGB").save(out, "JPEG", quality=92)
+    return out.getvalue()
+
+
+def upload_thumb(token, image_path, title=None, retries=3):
+    """上传封面图，返回 thumb_media_id（带重试）。自动裁切到 900×383，可叠标题文字。"""
     import time as _time
     boundary = "----WebKitFormBoundary7MA4YWxkTrZu0gW"
     file_data, filename, ct = _resize_cover(image_path)
+    if title:
+        file_data = overlay_title_on_cover(file_data, title)
+        filename = "cover_titled.jpg"
+        ct = "image/jpeg"
     body = (
         f"--{boundary}\r\n"
         f'Content-Disposition: form-data; name="media"; filename="{filename}"\r\n'
@@ -463,8 +576,8 @@ def sync(title, content_md, cover_path, image_paths=None):
     token = get_access_token()
     print("[同步] token OK", file=sys.stderr)
 
-    # 上传封面图（自动裁切到 900×383）
-    thumb_media_id = upload_thumb(token, cover_path)
+    # 上传封面图（自动裁切到 900×383，叠标题文字）
+    thumb_media_id = upload_thumb(token, cover_path, title=title)
     # 仅当正文内容引用了封面文件名时才额外上传为内嵌图
     cover_basename = os.path.basename(cover_path)
     if f"({cover_basename})" in content_md:
