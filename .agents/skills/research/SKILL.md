@@ -3,7 +3,7 @@ name: research
 description: 热点研究与调研分析。输入任意主题，自动搜索新闻、推特、财经、学术等多维度信息，输出结构化研究报告和内容创作建议。需要 YOUMIND_API_KEY 环境变量。
 triggers: "调研,分析,热点,研究,查一下,找一下,了解下,帮我看看,最新趋势,survey,research,investigate"
 allowed-tools:
-  - Bash([ -n "$YOUMIND_API_KEY" ]*)
+  - Bash(python3 *)
 ---
 
 # YouMind 热点研究
@@ -16,10 +16,27 @@ allowed-tools:
 ## 第一步：检查环境
 
 ```bash
-[ -n "$YOUMIND_API_KEY" ] && echo "已配置" || echo "未配置"
+python3 -c "
+import os
+key = os.environ.get('YOUMIND_API_KEY', '')
+if not key:
+    cfg = os.path.join(os.path.expanduser('~'), '.taozi', 'config.yaml')
+    if os.path.exists(cfg):
+        try:
+            import yaml
+            d = yaml.safe_load(open(cfg)) or {}
+            v = (d.get('youmind') or {}).get('api_key', '')
+            if v and not v.startswith('\$'):
+                key = v
+            elif v and v.startswith('\$'):
+                key = os.environ.get(v[1:], '')
+        except Exception:
+            pass
+print('OK' if key else 'MISSING')
+"
 ```
 
-未配置时告知用户设置 `YOUMIND_API_KEY=sk-ym-xxx`，停止执行。
+如果输出 `MISSING`，提示用户运行 `/taozi:setup` 配置 YouMind API Key，停止执行。
 
 ---
 

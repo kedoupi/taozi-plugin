@@ -2,7 +2,9 @@
 name: create
 description: 内容全链路 — 一句话触发：热点研究 → 确定选题 → 生成多平台内容 → 配图建议。需要 YOUMIND_API_KEY。
 argument-hint: <内容主题，如"做一个关于AI工具的小红书内容，要有数据支撑">
-allowed-tools: Bash([ -n "$YOUMIND_API_KEY" ]*)
+allowed-tools:
+  - Bash(python3 *)
+  - Bash([ -d "$HOME/.taozi" ]*)
 ---
 
 # Create
@@ -21,13 +23,51 @@ allowed-tools: Bash([ -n "$YOUMIND_API_KEY" ]*)
 研究热点 → 确定选题 → 生成内容 → 配图建议 → （可选）生图
 ```
 
-## 第一步：环境检查
+## 第一步：环境检查 + 品牌读取
 
 ```bash
-[ -n "$YOUMIND_API_KEY" ] && echo "ok" || echo "missing"
+python3 -c "
+import os
+key = os.environ.get('YOUMIND_API_KEY', '')
+if not key:
+    cfg = os.path.join(os.path.expanduser('~'), '.taozi', 'config.yaml')
+    if os.path.exists(cfg):
+        try:
+            import yaml
+            d = yaml.safe_load(open(cfg)) or {}
+            v = (d.get('youmind') or {}).get('api_key', '')
+            if v and not v.startswith('\$'):
+                key = v
+            elif v and v.startswith('\$'):
+                key = os.environ.get(v[1:], '')
+        except Exception:
+            pass
+print('OK' if key else 'MISSING')
+"
 ```
 
-未配置时告知用户设置 `YOUMIND_API_KEY=sk-ym-xxx`，停止执行。
+如果输出 `MISSING`，提示用户运行 `/taozi:setup` 配置 YouMind API Key，停止执行。
+
+同时读取品牌文件（后续步骤使用）：
+
+```bash
+python3 -c "
+import os
+HOME = os.path.expanduser('~')
+
+def read_brand(filename):
+    for base in ('.taozi/brand', os.path.join(HOME, '.taozi', 'brand')):
+        p = os.path.join(base, filename)
+        if os.path.exists(p):
+            with open(p) as f: return f.read()
+    return ''
+
+voice = read_brand('voice.md')
+print('VOICE_FOUND:' + ('yes' if voice else 'no'))
+"
+```
+
+将 `voice.md` 内容（若存在）作为写作人设上下文传入第三步。
 
 ## 第二步：解析完整意图
 

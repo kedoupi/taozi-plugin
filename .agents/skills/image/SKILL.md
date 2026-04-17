@@ -3,7 +3,7 @@ name: image
 description: AI 图片生成。根据描述生成图片，支持自动/手动选择模型、多种比例。需要 YOUMIND_API_KEY 环境变量。
 triggers: "生成图片,画一张,做张图,配图,生图,图片生成,AI 生图,generate image,create image,make image"
 allowed-tools:
-  - Bash([ -n "$YOUMIND_API_KEY" ]*)
+  - Bash(python3 *)
 ---
 
 # AI 图片生成
@@ -16,10 +16,28 @@ allowed-tools:
 ## 第一步：检查环境
 
 ```bash
-[ -n "$YOUMIND_API_KEY" ] && echo "已配置" || echo "未配置"
+python3 -c "
+import os
+key = os.environ.get('YOUMIND_API_KEY', '')
+if not key:
+    import os.path
+    cfg = os.path.join(os.path.expanduser('~'), '.taozi', 'config.yaml')
+    if os.path.exists(cfg):
+        try:
+            import yaml
+            d = yaml.safe_load(open(cfg)) or {}
+            v = (d.get('youmind') or {}).get('api_key', '')
+            if v and not v.startswith('\$'):
+                key = v
+            elif v and v.startswith('\$'):
+                key = os.environ.get(v[1:], '')
+        except Exception:
+            pass
+print('OK' if key else 'MISSING')
+"
 ```
 
-未配置时告知用户设置 `YOUMIND_API_KEY=sk-ym-xxx`，停止执行。
+如果输出 `MISSING`，提示用户运行 `/taozi:setup` 配置 YouMind API Key，停止执行。
 
 ---
 

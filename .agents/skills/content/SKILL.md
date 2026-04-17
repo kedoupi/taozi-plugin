@@ -1,12 +1,35 @@
 ---
 name: content
-description: 多平台内容创作。输入主题或研究报告，输出小红书笔记、公众号文章、抖音脚本、X推文等可直接发布的内容。支持单平台定向和多平台矩阵两种模式。
+description: 多平台内容创作。输入主题或研究报告，输出小红书笔记、公众号文章、抖音脚本、X推文等可直接发布的内容。支持单平台定向和多平台矩阵两种模式。自动读取 ~/.taozi/brand/voice.md 品牌人设。
 triggers: "写篇文章,写小红书,写公众号,写脚本,生成内容,内容创作,帮我写,做成内容,内容矩阵,多平台,write content,create post"
+allowed-tools:
+  - Bash(python3 *)
 ---
 
 # 多平台内容创作
 
 ---
+
+## 第零步：读取品牌人设（可选）
+
+```bash
+python3 -c "
+import os
+HOME = os.path.expanduser('~')
+
+def read_brand(filename):
+    for base in ('.taozi/brand', os.path.join(HOME, '.taozi', 'brand')):
+        p = os.path.join(base, filename)
+        if os.path.exists(p):
+            with open(p) as f: return f.read()
+    return ''
+
+voice = read_brand('voice.md')
+print('VOICE:' + ('found' if voice else 'not_found'))
+"
+```
+
+若 `voice.md` 存在，将其内容作为写作人设和禁用词约束加入后续生成步骤（覆盖默认风格规范）。不存在则按平台默认风格生成，无需停止。
 
 ## 第一步：解析创作意图
 
