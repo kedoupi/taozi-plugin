@@ -1,4 +1,4 @@
-# Taozi Plugin 4.1.0
+# Taozi Plugin 4.2.0
 
 智能开发工具集 - 工作流驱动、3 条铁律、思维工具箱、自动化 Hooks + YouMind AI 创作能力。
 
@@ -20,7 +20,7 @@ Taozi 支持两种运行时：
 
 ### YouMind API Key（使用 AI 创作功能必须）
 
-`/taozi:image`、`/taozi:research`、`/taozi:content`、`/taozi:create`、`/taozi:clip`、`/taozi:ppt`、`/taozi:webpage`、`/taozi:wechat-article` 这 8 个 skill 需要配置 YouMind API Key。
+`/taozi:image`、`/taozi:research`、`/taozi:content`、`/taozi:clip`、`/taozi:ppt`、`/taozi:webpage`、`/taozi:wechat`、`/taozi:xiaohongshu` 这 8 个 skill 需要配置 YouMind API Key。
 
 **获取 Key：** 访问 [youmind.com](https://youmind.com) → 设置 → API Key → 生成
 
@@ -198,11 +198,11 @@ mkdir -p .agents/plugins
 | `/taozi:image` | AI 图片生成（Gemini 多模型，支持批量 + 风格锚点）|
 | `/taozi:research` | 热点研究（webSearch + 深度 research，输出结构化报告）|
 | `/taozi:content` | 多平台内容创作（小红书 / 公众号 / 抖音 / X）|
-| `/taozi:create` | 全链路一键创作（研究 → 内容 → 配图）|
 | `/taozi:clip` | 内容采集与分析（YouTube / 微信公众号 / 网页，AI 深度分析）|
 | `/taozi:ppt` | PPT 生成（返回封面图预览 + Craft 编辑链接）|
 | `/taozi:webpage` | 网页生成（描述 → 可访问的 CDN 链接）|
-| `/taozi:wechat-article` | 微信公众号全链路（热点选题 → 研究 → 写作 → 海报封面 → 草稿箱）|
+| `/taozi:wechat` | 微信公众号全链路（热点选题 → 研究 → 写作 → 封面图 → 草稿箱）|
+| `/taozi:xiaohongshu` | 小红书全链路（热点选题 → 研究 → 正文 → 话题标签 → AI 多图配套）|
 
 ## 使用示例
 
@@ -229,8 +229,9 @@ mkdir -p .agents/plugins
 /taozi:content 基于上面的研究，帮我写一篇种草文
 /taozi:image 生成适合小红书风格的宠物封面图
 
-# 全链路一键触发
-/taozi:create 帮我做一个关于 AI 工具的公众号文章，要有数据支撑
+# 平台专项创作
+/taozi:wechat 帮我做一个关于 AI 工具的公众号文章，要有数据支撑
+/taozi:xiaohongshu 分享一个 AI 工具测评，走信息密集风格
 
 # 采集 URL 并分析
 /taozi:clip https://www.youtube.com/watch?v=xxx 分析视频核心观点
@@ -293,17 +294,17 @@ mkdir -p .agents/plugins
 
 Claude / Codex 根据任务自动引用相关知识库；同时 `/taozi:<name>` 手动触发工作流类 skill。
 
-### 工作流 Skills（23 个，带 `/taozi:` 触发）
+### 工作流 Skills（22 个，带 `/taozi:` 触发）
 
-`taozi` · `plan` · `tdd` · `verify` · `code-review` · `quality-gate` · `git-workflow` · `update-context` · `model-route` · `learning` · `multi-plan` · `multi-execute` · `build-fix` · `checkpoint` · `ultra-think` · `create` · `evolve` · `harness-audit` · `instinct-status` · `instinct-import` · `instinct-export` · `skill-create` · `security-scan`
+`taozi` · `plan` · `tdd` · `verify` · `code-review` · `quality-gate` · `git-workflow` · `update-context` · `model-route` · `learning` · `multi-plan` · `multi-execute` · `build-fix` · `checkpoint` · `ultra-think` · `evolve` · `harness-audit` · `instinct-status` · `instinct-import` · `instinct-export` · `skill-create` · `security-scan`
 
 ### 开发知识库（31 个，自动引用）
 
 `frontend-react` · `backend-architecture` · `nextjs-advanced` · `nextjs-architecture` · `typescript-types` · `typescript-patterns` · `python-patterns` · `go-patterns` · `swift-patterns` · `swift-concurrency` · `foundation-models` · `django-patterns` · `springboot-patterns` · `springboot-tdd` · `springboot-security` · `docker-patterns` · `e2e-testing` · `api-design` · `deployment-patterns` · `database-migrations` · `security-patterns` · `sql-optimization` · `legacy-migration` · `testing-strategies` · `mcp-templates` · `git-conventions` · `code-quality-checklist` · `thinking-tools` · `continuous-learning` · `token-optimization` · `deep-research`
 
-### YouMind 创作 Skills（7 个）
+### YouMind 创作 Skills（8 个）
 
-`image` · `research` · `content` · `clip` · `ppt` · `webpage` · `wechat-article`
+`image` · `research` · `content` · `clip` · `ppt` · `webpage` · `wechat` · `xiaohongshu`
 
 ## YouMind AI 创作能力（详细说明）
 
@@ -319,7 +320,7 @@ Claude / Codex 根据任务自动引用相关知识库；同时 `/taozi:<name>` 
 /taozi:image    → 配图生成
 ```
 
-或一步到位：`/taozi:create` 自动串联以上全部步骤。
+或按平台触发：`/taozi:wechat`（公众号）、`/taozi:xiaohongshu`（小红书）。
 
 ### `/taozi:clip` 支持的内容来源
 

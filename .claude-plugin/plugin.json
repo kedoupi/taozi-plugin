@@ -1,7 +1,7 @@
 {
   "name": "taozi",
-  "version": "4.1.0",
-  "description": "Taozi 4.1.0 - 新增 /taozi:setup 配置向导；~/.taozi/ 四层配置体系；品牌人设 voice.md 全链路透传；YouMind Key 统一读取。工作流驱动、3 条铁律、自动化 Hooks + YouMind AI 创作能力。支持 Claude Code 和 Codex。",
+  "version": "4.2.0",
+  "description": "Taozi 4.2.0 - 新增 /taozi:xiaohongshu 小红书全链路；wechat-article 改名为 wechat；移除 create（通用调度走 /taozi）。工作流驱动、3 条铁律、自动化 Hooks + YouMind AI 创作能力。支持 Claude Code 和 Codex。",
   "author": {
     "name": "kedoupi",
     "url": "https://github.com/kedoupi"

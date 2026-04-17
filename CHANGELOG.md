@@ -4,6 +4,19 @@ All notable changes to Taozi Plugin are documented here.
 
 ---
 
+## [4.2.0] - 2026-04-18
+
+### Added
+
+- **`/taozi:xiaohongshu`**：小红书全链路 skill（热点选题 → YouMind 研究 → 正文/标题/话题标签 → AI 多图生成，视觉一致性通过封面图 --ref 机制保证）
+
+### Changed
+
+- **`wechat-article` → `wechat`**：skill 名与平台名对齐，触发改为 `/taozi:wechat`
+- **删除 `create` skill**：全能式全链路入口不再维护，通用调度走 `/taozi`，平台专项走 `/taozi:wechat` / `/taozi:xiaohongshu`
+
+---
+
 ## [4.1.0] - 2026-04-17
 
 ### Added

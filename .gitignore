@@ -1,7 +1,7 @@
 .worktrees/
 .private-journal/
 .claude/
-wechat/
+/wechat/
 **/__pycache__/
 *.pyc
 *.pyo
