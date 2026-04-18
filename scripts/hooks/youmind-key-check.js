@@ -22,9 +22,24 @@ if (!isYouMindCommand) {
   process.exit(0);
 }
 
-// 检查 API Key 是否已配置
-const apiKey = process.env.YOUMIND_API_KEY;
-if (apiKey && apiKey.trim().length > 0) {
+// 从 ~/.taozi/config.yaml 读取 youmind.api_key（优先），回退 process.env
+function loadYamlApiKey() {
+  const fs = require('fs');
+  const os = require('os');
+  const yamlPath = `${os.homedir()}/.taozi/config.yaml`;
+  try {
+    const text = fs.readFileSync(yamlPath, 'utf8');
+    const m = text.match(/^\s+api_key\s*:\s*(.+)$/m);
+    if (!m) return '';
+    const val = m[1].trim();
+    const envRef = val.match(/^\$([A-Z0-9_]+)$/);
+    return envRef ? (process.env[envRef[1]] || '') : val;
+  } catch (_) { return ''; }
+}
+
+// 检查 API Key 是否已配置：YAML 优先，回退标准环境变量
+const apiKey = loadYamlApiKey() || process.env.YOUMIND_API_KEY || '';
+if (apiKey.trim().length > 0) {
   process.exit(0);
 }
 

@@ -4,8 +4,8 @@
  * 会话结束时评估是否有值得学习的模式
  *
  * 触发: SessionEnd (Stop event)
- * 1. 统计对话轮数
- * 2. 少于 5 轮则跳过
+ * 1. 读取会话元数据（Stop 事件不含 conversation/turn_count，无法门控）
+ * 2. 检查 git 变更
  * 3. 写入元数据到 $TAOZI_HOME/learned/（默认 ~/.taozi/learned/）
  * 4. 超过 100 文件时清理旧条目
  * 5. 始终 exit(0)
@@ -31,47 +31,16 @@ const input = readStdinJson();
 const learnedDir = getLearnedDir();
 ensureDir(learnedDir);
 
-// --- 1. 统计对话轮数 ---
-// input 来自 SessionEnd hook，包含会话信息
-// 尝试从 input 中计算用户消息数
-let turnCount = 0;
+// --- 1. 读取元数据 ---
+// Stop 事件不提供 conversation 或 turn_count，用 session_id 作为标识
 let topicHint = 'unknown';
+const turnCount = 0; // Stop 事件无法获得轮数，作为元数据保留但不用于门控
 
-if (input) {
-  // 如果有 conversation 历史，计算用户消息数
-  if (Array.isArray(input.conversation)) {
-    turnCount = input.conversation.filter(
-      (msg) => msg.role === 'user'
-    ).length;
-  } else if (typeof input.turn_count === 'number') {
-    turnCount = input.turn_count;
-  } else {
-    // 无法判断轮数，宁可跳过也不写垃圾记录
-    turnCount = 0;
-  }
-
-  // 尝试提取主题提示
-  if (input.topic_hint) {
-    topicHint = input.topic_hint;
-  } else if (Array.isArray(input.conversation) && input.conversation.length > 0) {
-    // 取第一条用户消息的前 80 字符作为主题提示
-    const firstUserMsg = input.conversation.find((m) => m.role === 'user');
-    if (firstUserMsg && firstUserMsg.content) {
-      const content = typeof firstUserMsg.content === 'string'
-        ? firstUserMsg.content
-        : JSON.stringify(firstUserMsg.content);
-      topicHint = content.slice(0, 80).replace(/\n/g, ' ');
-    }
-  }
+if (input && input.topic_hint) {
+  topicHint = input.topic_hint;
 }
 
-// --- 2. 少于 5 轮则跳过 ---
-if (turnCount < 5) {
-  warn(`[Learn] 会话仅 ${turnCount} 轮对话，跳过学习评估`);
-  process.exit(0);
-}
-
-// --- 3. 检查 git 变更 ---
+// --- 2. 检查 git 变更 ---
 let hasGitChanges = false;
 const cwd = process.cwd();
 if (isGitRepo(cwd)) {
@@ -79,7 +48,7 @@ if (isGitRepo(cwd)) {
   hasGitChanges = modified.length > 0;
 }
 
-// --- 4. 写入学习记录 ---
+// --- 3. 写入学习记录 ---
 const dateStr = getDateString();
 const filePath = path.join(learnedDir, `${dateStr}.json`);
 
@@ -109,7 +78,7 @@ if (existing) {
 writeJson(filePath, record);
 warn(`[Learn] 会话已记录: ${turnCount} 轮, topic: ${topicHint.slice(0, 40)}`);
 
-// --- 5. 清理旧条目 ---
+// --- 4. 清理旧条目 ---
 try {
   const files = fs.readdirSync(learnedDir)
     .filter((f) => f.endsWith('.json'))

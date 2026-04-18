@@ -171,6 +171,17 @@ mkdir -p "$HOME/.taozi/brand"
 
 ---
 
+## compatible_styles
+
+<!-- image skill 加角色时只从此列表选 Style，避免角色与风格冲突。
+     留空时默认使用：[warm, vector-illustration, flat design]
+     示例：[warm, hand-drawn, vector-illustration, watercolor]
+-->
+
+compatible_styles: []
+
+---
+
 ## 封面图用法（16:9）
 
 ```
@@ -240,7 +251,10 @@ format:
   length: "1200-2500"
   digest_limit: 54
   cover_ratio: "16:9"
-  theme: "simple"    # simple | sspai | minimal | tech-modern | github
+  theme: "newspaper"    # simple | sspai | minimal | tech-modern | github | newspaper
+
+# 【可选】配色方案（影响封面和配图的颜色风格；留空则由 image skill 根据风格自动决定）
+# palette: "warm orange, cream white, soft coral"
 
 # 封面叠字（可选）
 # cover_text:

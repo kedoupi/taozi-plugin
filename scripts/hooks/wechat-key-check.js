@@ -22,18 +22,45 @@ if (!isWeChatCommand) {
   process.exit(0);
 }
 
-// 检查必要凭据是否均已配置
-const appid  = process.env.WECHAT_APPID;
-const secret = process.env.WECHAT_APPSECRET;
+// 解析 $VAR 引用（与 wechat_publish.py 的 resolve() 对齐）
+function resolveEnvRef(val) {
+  if (!val) return '';
+  const m = String(val).match(/^\$([A-Z0-9_]+)$/);
+  if (m) return process.env[m[1]] || '';
+  return val;
+}
 
-if (appid && appid.trim().length > 0 && secret && secret.trim().length > 0) {
+// 从 ~/.taozi/platforms/wechat/style.yaml 读取凭据（优先），回退到 process.env
+function loadYamlCreds() {
+  const os = require('os');
+  const fs = require('fs');
+  const yamlPath = `${os.homedir()}/.taozi/platforms/wechat/style.yaml`;
+  try {
+    const text = fs.readFileSync(yamlPath, 'utf8');
+    const appidMatch  = text.match(/^\s+appid\s*:\s*(.+)$/m);
+    const secretMatch = text.match(/^\s+secret\s*:\s*(.+)$/m);
+    return {
+      appid:  resolveEnvRef(appidMatch  ? appidMatch[1].trim()  : ''),
+      secret: resolveEnvRef(secretMatch ? secretMatch[1].trim() : ''),
+    };
+  } catch (_) {
+    return { appid: '', secret: '' };
+  }
+}
+
+// 检查必要凭据：YAML 优先，回退标准环境变量
+const yamlCreds = loadYamlCreds();
+const appid  = yamlCreds.appid  || process.env.WECHAT_APPID  || '';
+const secret = yamlCreds.secret || process.env.WECHAT_APPSECRET || '';
+
+if (appid.trim().length > 0 && secret.trim().length > 0) {
   process.exit(0);
 }
 
 // 未配置，拦截并给出清晰的设置指引
 const missing = [];
-if (!appid  || appid.trim().length  === 0) missing.push('WECHAT_APPID');
-if (!secret || secret.trim().length === 0) missing.push('WECHAT_APPSECRET');
+if (!appid.trim())  missing.push('WECHAT_APPID');
+if (!secret.trim()) missing.push('WECHAT_APPSECRET');
 
 error('');
 error('╔══════════════════════════════════════════════════════╗');

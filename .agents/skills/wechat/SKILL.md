@@ -262,10 +262,9 @@ youmind call webSearch '{"query":"<主题>","limit":15}'
 - 标题（20-28 字）
 - 摘要（54 字以内）
 - 正文（1200-2500 字，微信公众号适合长度）
-- 封面图生成 prompt（英文，16:9，无人脸）：
-  1. 读取 `~/.taozi/brand/character.md`（优先 `./.taozi/brand/character.md`），找到 `## 封面图用法（16:9）` 下方代码块，提取其完整内容作为封面 prompt 基础
-  2. 在此基础上追加本文主题相关的场景描述（10 词以内）
-  3. 若 character.md 不存在或「我的角色」为空，则纯粹按文章主题和风格自由生成封面 prompt
+- 文章类型判断（article_type）：从正文内容判断类型，输出 `opinion | tech | tutorial | storytelling | knowledge` 之一
+- 封面场景描述（cover_scene，英文，10词以内）：描述文章主题对应的视觉场景，**不包含角色或风格修饰词**（这部分由 Sub-agent C 决策）
+  示例：`vast digital network cityscape, glowing connections`（科技文）；`person at crossroads, sunrise ahead`（观点文）
 
 **写完后执行 L1-L4 四层终检（playbook.md 有详细说明）**：
 - L1 禁词扫描：检查 style.yaml `blacklist.words` 中的禁用词，有则替换
@@ -273,11 +272,11 @@ youmind call webSearch '{"query":"<主题>","limit":15}'
 - L3 活人感终审：通读一遍，像机器生成的句子改掉
 - L4 信息诚信：无来源的数字/案例标 "暂缺数据" 或删除，不编造
 
-### 步骤 3：章节类型识别 + 生成章节配图 prompt
+### 步骤 3：章节类型识别 + 输出配图元数据
 
-对每个 H2 章节（最多 4 个），先判断章节类型：
+对每个 H2 章节（最多 4 个），判断章节类型并输出元数据（**不生成完整 prompt，由 Sub-agent C 的图片决策层组装**）：
 
-**数据图表型（section_type: infographic）**：章节中含以下任一特征 → 优先推荐信息图
+**数据图表型（section_type: infographic）**：章节中含以下任一特征
 - 含具体数字/百分比/统计数据
 - 含对比（A vs B、优劣、前后）
 - 含流程/步骤（3步以上）
@@ -286,26 +285,15 @@ youmind call webSearch '{"query":"<主题>","limit":15}'
 
 **插画型（section_type: illustration）**：其余章节（场景描述、概念解释、情感表达等）
 
----
-
-**对 infographic 章节**：读取 `skills/wechat/references/infographic-styles.md` 的**章节类型→信息图推荐规则**，自动选择最匹配的 layout + style 组合，生成信息图 prompt：
-
+输出格式（**每个章节一行**）：
 ```
-SECTION_IMAGE_PROMPT_N: <章节标题> | infographic | layout=<layout> | style=<style> | <章节核心数据/结构，中文，50字以内>
+SECTION_IMAGE_META_N: <章节标题> | <section_type: illustration|infographic> | <章节核心内容，中文，50字以内>
 ```
 
-**对 illustration 章节**：从封面图 prompt 中提取 3 个视觉锚点，读取 character.md 角色模板（优先 `./.taozi/brand/character.md`，其次 `~/.taozi/brand/character.md`），生成插画 prompt：
-
+示例：
 ```
-SECTION_IMAGE_PROMPT_N: <章节标题> | illustration | <完整英文 prompt，含视觉锚点 + 角色模板 + 章节场景描述>
-```
-
-插画 prompt 结构（同原有规则）：
-```
-WeChat article section illustration, 16:9 landscape.
-Scene: <用 10 词描述该章节核心场景>.
-<角色模板内容（从 character.md 提取，原样保留，若无则省略）>
-Visual anchors: <锚点1, 锚点2, 锚点3>. No text overlay. Not realistic.
+SECTION_IMAGE_META_1: AI 时代的就业变局 | illustration | AI 替代部分岗位，新型人机协作工作涌现，技能迁移成为关键
+SECTION_IMAGE_META_2: 五大高危职业 | infographic | 数据录入员、电话客服、流水线工人被替代率分别为 99%/97%/94%
 ```
 
 ### 步骤 4：插入章节配图占位符 + 保存草稿
@@ -331,13 +319,13 @@ Visual anchors: <锚点1, 锚点2, 锚点3>. No text overlay. Not realistic.
 DRAFT_DONE
 title: <标题>
 digest: <摘要>
+article_type: <opinion|tech|tutorial|storytelling|knowledge>
 draft_path: wechat/drafts/<文件名>
-cover_prompt: <封面图 prompt>
-visual_anchors: <锚点1,锚点2,锚点3>
+cover_scene: <封面场景描述，英文，10词以内，描述文章主题视觉场景>
 section_count: <章节数，最多4>
-SECTION_IMAGE_PROMPT_1: <章节标题> | illustration | <英文 prompt>
-SECTION_IMAGE_PROMPT_2: <章节标题> | infographic | layout=bento-grid | style=corporate-memphis | <中文数据摘要>
-...（有几个写几个，类型字段 illustration 或 infographic）
+SECTION_IMAGE_META_1: <章节标题> | illustration | <章节核心内容，中文，50字>
+SECTION_IMAGE_META_2: <章节标题> | infographic | <章节核心数据，中文，50字>
+...（有几个写几个）
 ```
 
 **子 Agent C — 封面图 + 章节配图 + 微信发布（后台执行，`run_in_background: true`）**
@@ -353,48 +341,110 @@ SECTION_IMAGE_PROMPT_2: <章节标题> | infographic | layout=bento-grid | style
 - draft_path: <草稿文件路径>
 - title: <标题>
 - digest: <摘要>
-- cover_prompt: <封面图 prompt>
-- section_prompts: [<SECTION_IMAGE_PROMPT_1>, <SECTION_IMAGE_PROMPT_2>, ...]（从写作 agent 传入）
+- article_type: <opinion|tech|tutorial|storytelling|knowledge>
+- cover_scene: <封面场景描述，英文，10词>
+- section_metas: [<SECTION_IMAGE_META_1>, <SECTION_IMAGE_META_2>, ...]
 - theme: <THEME>
-- visual_anchors: <锚点>
 
 ## 执行步骤
 
-### 步骤 1：生成封面图（YouMind，串行）
-youmind call generateImage '{"prompt":"<cover_prompt>, 16:9 ratio, widescreen, no faces, no text","width":900,"height":506}'
-下载到本地 /tmp/cover-<slug>.jpg。
+### 步骤 0：读取品牌配置（角色 + 配色）
 
-### 步骤 2：并行生成章节配图（最多 4 张）
+```bash
+python3 -c "
+import os, re
+HOME = os.path.expanduser('~')
+
+def read_brand(filename):
+    for base in ('.taozi/brand', os.path.join(HOME, '.taozi', 'brand')):
+        path = os.path.join(base, filename)
+        if os.path.exists(path):
+            with open(path) as f:
+                return f.read()
+    return ''
+
+def read_platform(filename):
+    path = os.path.join(HOME, '.taozi', 'platforms', 'wechat', filename)
+    try:
+        with open(path) as f:
+            return f.read()
+    except:
+        return ''
+
+char = read_brand('character.md')
+print('CHARACTER_EXISTS:' + ('yes' if char else 'no'))
+if char:
+    print('CHARACTER_CONTENT:' + char[:500])
+
+style = read_platform('style.yaml')
+m = re.search(r'palette\s*:\s*[^\S\n]*([^\n#]+)', style)
+palette = m.group(1).strip().strip(chr(34)).strip(chr(39)) if m else ''
+print('PALETTE:' + palette)
+"
+```
+
+从输出提取：
+- `character`：character.md 中描述角色外形的核心段落（第一个非标题段落，或 `## 角色描述` 下的内容）
+- `compatible_styles`：character.md 中 `compatible_styles:` 行的值（如不存在，默认 `[warm, vector-illustration, flat design]`）
+- `palette`：style.yaml 中 `palette:` 的值（如不存在或为空则忽略，由 image skill 根据风格自动决定）
+
+### 步骤 1：决策配图风格（基于 image skill 的 Context Mode 规则）
+
+读取 `skills/image/SKILL.md` 中的 **上下文感知模式：决策规则** 部分，理解角色注入规则和 article_type → 风格映射。
+
+**封面图决策**：
+- image_role: cover，article_type: <传入值>，character: <步骤0读取值>
+- 如 character 存在：在 prompt 最前加角色锚点，从 compatible_styles 选封面风格
+- 如 character 不存在：按 article_type 推荐的封面关键词生成 prompt
+- 封面 prompt 结构：`<角色锚点（如有）>, <cover_scene>, <风格关键词>, <palette（如有，追加 color palette: ...）>, widescreen 16:9, no text overlay, high quality`
+
+**章节配图决策**（对每个 SECTION_IMAGE_META_N）：
+解析 `<section_title> | <section_type> | <section_content>`
+
+- illustration 类型：
+  - 如 character 存在：角色锚点 + 章节场景 + 从 compatible_styles 选 Style
+  - 如不存在：从 article_type 对应风格 + 章节内容语义组装 prompt
+  - prompt 结构：`<角色锚点（如有）>, WeChat article illustration, <章节场景>, <风格关键词>, <palette（如有，追加 color palette: ...）>, 16:9, no text overlay`
+
+- infographic 类型：
+  - 读取 `skills/infographic/references/layouts.md` 和 `styles.md` 的内容类型推荐表
+  - 根据 section_content 特征自动选 layout + style（参考推荐表）
+  - 按 infographic prompt 模板组装（`Create a professional infographic ... Layout: ... Style: ... Content: <section_content>`）
+  - **不注入角色**
+
+### 步骤 2：生成封面图（串行）
 
 先创建图片目录：
 ```bash
 mkdir -p wechat/images/<YYYYMMDD>/
 ```
 
-解析每个 section_prompt 的类型（`illustration` 或 `infographic`），各派一个独立子 agent：
+派一个子 agent：
+```
+目标保存路径：/tmp/cover-<slug>.jpg
 
-**illustration 类型**的子 agent：
+1. 安装 CLI（如未安装）：youmind --help > /dev/null 2>&1 || npm install -g @youmind-ai/cli
+2. youmind call getDefaultBoard → boardId
+3. youmind call createChat '{"boardId":"<boardId>","message":"<封面 prompt>","tools":{"imageGenerate":{"useTool":"required","aspectRatio":"16:9","quality":"high","model":"gemini-3-pro-image-preview"}}}'
+4. 每 5 秒 getChat 轮询，status=completed 后 listMessages 提取图片 URL
+5. 下载到 /tmp/cover-<slug>.jpg
+6. 输出：SAVED: /tmp/cover-<slug>.jpg
+```
+
+### 步骤 3：并行生成章节配图（最多 4 张）
+
+对每个章节（最多 4 个），各派一个独立子 agent：
+
 ```
 目标保存路径：wechat/images/<YYYYMMDD>/section-<n>.jpg
 
-1. 调用 generateImage：
-   youmind call generateImage '{"prompt":"<英文 prompt>","width":900,"height":506}'
-2. 将返回的图片 URL 下载保存到 wechat/images/<YYYYMMDD>/section-<n>.jpg
-3. 验证文件存在且大小 > 0：ls -la wechat/images/<YYYYMMDD>/section-<n>.jpg
-4. 最后输出一行：SAVED: wechat/images/<YYYYMMDD>/section-<n>.jpg
-```
-
-**infographic 类型**的子 agent：
-```
-目标保存路径：wechat/images/<YYYYMMDD>/section-<n>.jpg
-
-1. 读取 skills/wechat/references/infographic-styles.md 中对应 layout 和 style 的定义
-2. 按文件中的 Prompt 组装模板，将 {LAYOUT_GUIDELINES} + {STYLE_GUIDELINES} + {CONTENT}（中文数据摘要）组装成完整 prompt
-3. 调用 generateImage：
-   youmind call generateImage '{"prompt":"<组装好的 infographic prompt>","width":900,"height":506}'
-4. 将返回的图片 URL 下载保存到 wechat/images/<YYYYMMDD>/section-<n>.jpg
-5. 验证文件存在且大小 > 0：ls -la wechat/images/<YYYYMMDD>/section-<n>.jpg
-6. 最后输出一行：SAVED: wechat/images/<YYYYMMDD>/section-<n>.jpg
+1. 安装 CLI（如未安装）：youmind --help > /dev/null 2>&1 || npm install -g @youmind-ai/cli
+2. youmind call getDefaultBoard → boardId
+3. youmind call createChat '{"boardId":"<boardId>","message":"<步骤1决策的完整 prompt>","tools":{"imageGenerate":{"useTool":"required","aspectRatio":"16:9","quality":"high","model":"gemini-3-pro-image-preview"}}}'
+4. 每 5 秒 getChat 轮询，status=completed 后 listMessages 提取图片 URL
+5. 下载到 wechat/images/<YYYYMMDD>/section-<n>.jpg
+6. 验证：ls -la wechat/images/<YYYYMMDD>/section-<n>.jpg
+7. 输出：SAVED: wechat/images/<YYYYMMDD>/section-<n>.jpg
 ```
 
 同时发出所有子 agent，**等所有子 agent 均返回结果后**进入下一步。

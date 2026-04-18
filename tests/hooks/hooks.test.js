@@ -483,7 +483,7 @@ test('evaluate-session falls back to existing topicHint when current session is 
   }
 });
 
-test('evaluate-session 无法判断轮数时不写 learned 记录', () => {
+test('evaluate-session Stop 事件无 turn_count 时仍写 learned 记录', () => {
   const script = path.join(HOOKS_DIR, 'evaluate-session.js');
   const taoziHome = path.join(os.tmpdir(), `taozi-evaluate-no-turn-${Date.now()}`);
   const learnedDir = path.join(taoziHome, 'learned');
@@ -493,7 +493,8 @@ test('evaluate-session 无法判断轮数时不写 learned 记录', () => {
     const result = runHook(script, {}, { env: { TAOZI_HOME: taoziHome } });
     assert.strictEqual(result.status, 0, 'Should exit(0)');
     const files = fs.readdirSync(learnedDir);
-    assert.strictEqual(files.length, 0, 'Should not write learned record when turnCount is unknown');
+    // Stop 事件不含 conversation/turn_count，但仍写记录（不做轮数门控）
+    assert.strictEqual(files.length, 1, 'Should write learned record regardless of turnCount');
   } finally {
     fs.rmSync(taoziHome, { recursive: true, force: true });
   }

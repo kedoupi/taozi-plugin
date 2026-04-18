@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-18T03:29:14.930Z",
+  "generatedAt": "2026-04-18T06:53:49.156Z",
   "entries": [
     ".agents/skills/api-design",
     ".agents/skills/backend-architecture",
@@ -24,6 +24,7 @@
     ".agents/skills/go-patterns",
     ".agents/skills/harness-audit",
     ".agents/skills/image",
+    ".agents/skills/infographic",
     ".agents/skills/instinct-export",
     ".agents/skills/instinct-import",
     ".agents/skills/instinct-status",

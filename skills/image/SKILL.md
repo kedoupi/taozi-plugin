@@ -8,8 +8,81 @@ allowed-tools:
 
 # AI 图片生成
 
-主 agent 只负责三件事：**环境检查 → 理解意图 → 派 Agent**。
+主 agent 只负责三件事：**环境检查 → 理解意图/决策 → 派 Agent**。
 所有 YouMind API 调用全部在子 Agent 内完成，主对话始终不阻塞。
+
+---
+
+## 工作模式
+
+**模式一：上下文感知模式（Context Mode）**
+由 wechat / xiaohongshu / 其他 skill 传入结构化上下文时使用。自主决策所有视觉参数，不需要用户确认。跳过"第二步"，直接用下方决策逻辑组装 prompt 后进入"第三步"派 Agent。
+
+**模式二：直接模式（Direct Mode）**
+用户直接描述图片需求时，走"第一步 → 第二步 → 第三步 → 第四步"完整流程。
+
+---
+
+## 上下文感知模式：决策规则
+
+### 输入 context 格式
+
+```
+platform:          wechat | xiaohongshu | generic
+article_type:      opinion | tech | tutorial | storytelling | knowledge
+image_role:        cover | body
+section_type:      illustration | infographic     （仅 body 时有效）
+section_content:   "..."                          （章节核心内容，100字内）
+character:         "..."                          （来自 character.md，可为空）
+compatible_styles: [...]                          （来自 character.md，可为空）
+palette:           "..."                          （来自 style.yaml，可为空）
+```
+
+### 角色注入规则
+
+| image_role | section_type | character 存在? | 处理 |
+|-----------|-------------|----------------|------|
+| cover | — | ✅ | **必须**注入角色锚点；从 compatible_styles 白名单选 Style |
+| cover | — | ❌ | 按 article_type 选封面预设 |
+| body | illustration | ✅ | 注入角色锚点；从 compatible_styles 选 Style |
+| body | illustration | ❌ | 按 section_content 语义选 scene 风格 |
+| body | infographic | 任意 | **不加角色**；读 `skills/infographic/references/layouts.md` 和 `styles.md` 选 Layout × Style |
+
+**角色锚点格式**（注入到 prompt 最前面）：
+```
+<character 描述原文>, consistent character design throughout.
+```
+
+compatible_styles 为空时，默认从 `[warm, vector-illustration, flat design]` 选择。
+
+### article_type → 封面风格推荐
+
+| article_type | 推荐封面关键词 | 推荐 Mood |
+|-------------|-------------|---------|
+| opinion | editorial, screen-print aesthetic, bold composition | bold |
+| tech | blueprint, minimal, clean tech illustration | balanced |
+| tutorial | warm illustration, friendly vector, inviting scene | balanced |
+| storytelling | painterly, atmospheric, warm color story scene | warm |
+| knowledge | flat vector, macaron palette, educational illustration | balanced |
+
+### 平台尺寸规则
+
+| 场景 | 尺寸 | aspectRatio | 备注 |
+|------|------|------------|------|
+| wechat 封面 | 900 × 383 px | `16:9` | 发布脚本负责裁切+叠标题，不叠字 |
+| wechat 正文配图 | 800 px 宽 | `16:9` | 高度自适应 |
+| xiaohongshu 封面 | 1242 × 1660 px | `3:4` | 首选竖版比例 |
+| xiaohongshu 正文 | 1080 × 1080 px | `1:1` | 方版 |
+
+### Prompt 组装（Context Mode）
+
+```
+[角色锚点，如有]
+<场景/内容语义描述>，<风格关键词>，<调性修饰词>，
+high quality, no text overlay, Simplified Chinese style
+```
+
+组装完成后直接跳到**第三步：立刻派 Agent**，aspectRatio 按平台尺寸规则确定，model 按直接模式的自动路由规则选择。
 
 ---
 
@@ -106,13 +179,15 @@ print('OK' if key else 'MISSING')
 
 所有模型统一使用 `aspectRatio` 参数：
 
-| 用户意图 | aspectRatio |
-|---------|------------|
-| 小红书封面/竖图 | `3:4` |
-| 小红书正方形 | `1:1` |
-| 公众号封面/横图 | `16:9` |
-| 抖音/视频号封面 | `9:16` |
-| 未说明 | `1:1` |
+| 用户意图 | aspectRatio | 参考尺寸 |
+|---------|------------|---------|
+| 小红书封面/竖图 | `3:4` | 1242×1660 |
+| 小红书正方形/配图 | `1:1` | 1080×1080 |
+| 小红书沉浸/竖屏 | `9:16` | 1242×2208 |
+| 公众号封面 | `16:9` | 900×383（发布脚本裁切）|
+| 公众号正文配图 | `16:9` | 800px 宽自适应 |
+| 抖音/视频号封面 | `9:16` | — |
+| 未说明 | `1:1` | — |
 
 ---
 
