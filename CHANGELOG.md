@@ -4,6 +4,41 @@ All notable changes to Taozi Plugin are documented here.
 
 ---
 
+## [4.5.0] - 2026-04-18
+
+### Added
+
+- **`skills/infographic/` 独立 skill**：从 wechat/xiaohongshu 两份重复定义合并而来，14 种布局（新增 iceberg / bridge / winding-roadmap / circular-flow）× 15 种风格（新增 xhs 独有 warm / minimal / notion / study-notes / screen-print），统一路径 `skills/infographic/references/`
+- **image skill Context Mode**：新增内容感知配图中枢；wechat/xiaohongshu 传入结构化 context（platform / article_type / image_role / section_type / character / compatible_styles / palette），image skill 自主决策风格、角色注入、尺寸，不再需要用户确认风格
+- **角色锚点注入规则**：封面图有 character.md → 必须注入角色锚点；body infographic → 不注入角色；body illustration + character → 注入；compatible_styles 为空时默认 `[warm, vector-illustration, flat design]`
+- **wechat sub-agent C 品牌配置读取**：Step 0 读取 `character.md`（角色 + compatible_styles）+ `style.yaml`（palette），palette 注入封面和 illustration 类型 prompt
+- **setup skill `compatible_styles` 字段**：character.md 模板新增 `compatible_styles` 字段，引导用户约束 image skill 可选风格范围
+- **三层测试体系**（新增 29 个测试，总计 643 个）：
+  - Layer 1 规则回归：`tests/skills/image-rules.test.js`（19 条）
+  - Layer 2 Python3 集成：`tests/integration/brand-reader.test.js`（4 条）
+  - Layer 3 Mock CLI：`tests/fixtures/mock-youmind.js` + `tests/integration/image-pipeline.test.js`（3 条）
+  - Layer 4 E2E 框架：`tests/e2e/youmind-api.test.js`（3 条，无 API key 自动跳过）
+
+### Fixed
+
+- **xiaohongshu `--ref cover_url` 无效代码**：YouMind createChat API 无 ref 参数，改用 Style Anchor 文字注入实现系列视觉一致性
+- **xiaohongshu 用户手动选风格**：移除 A/B/C 确认步骤，由 image skill Context Mode 自主决策
+- **xiaohongshu infographic Style Anchor 冲突**：infographic 类型有独立 layout+style 指令，不再叠加 Style Anchor，避免风格矛盾
+- **`dashboard-dark` 不存在风格名**：styles.md 推荐表次选项改为正确名称 `corporate-memphis-dark`
+- **compatible_styles 默认值三处不一致**：image / wechat / xiaohongshu 统一为 `[warm, vector-illustration, flat design]`
+- **setup 默认主题 `simple`**：改为 `newspaper`，与 wechat skill 的 fallback 默认值对齐
+- **layouts.md 多方对比路由缺失**：新增"含多方对比（3+ 方）→ dashboard/bento-grid"条目，修复 5 款工具横评错误路由到 `binary-comparison`
+- **wechat-key-check / youmind-key-check 仅检查 env**：改为优先读 `~/.taozi/` YAML 配置并解析 `$VAR` 引用，匹配 Python 脚本的实际读取逻辑
+- **evaluate-session.js 永久死代码**：Stop 事件从不提供 `turn_count`，移除 `turnCount < 5` 判断门，改为每次 Stop 均写 learned 记录
+
+### Changed
+
+- **wechat 配图流程重构**：sub-agent B 改为输出 `article_type` + `SECTION_IMAGE_META_N`（含 section_type 和内容摘要），sub-agent C 读取品牌配置后应用 Context Mode 规则生图，封面 `aspectRatio: 16:9`（900×383），正文 `aspectRatio: 16:9`（800px 宽）
+- **xiaohongshu 配图流程重构**：封面 `aspectRatio: 3:4`（1242×1660），正文 `aspectRatio: 1:1`（1080×1080），illustration 注入 Style Anchor，infographic 独立走 layouts/styles 推荐表
+- **旧引用文件迁移**：`skills/xiaohongshu/references/xhs-card-styles.md` 和 `skills/wechat/references/infographic-styles.md` 已删除，内容并入 `skills/infographic/references/`
+
+---
+
 ## [4.4.1] - 2026-04-18
 
 ### Fixed

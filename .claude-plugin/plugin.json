@@ -1,7 +1,7 @@
 {
   "name": "taozi",
-  "version": "4.4.1",
-  "description": "Taozi 4.4.1 - wechat 配图发布健壮性修复（图片占位符残留、多轮漂移、uuid boundary）。superpowers Iron Law 注入 skill 顶部防漂移。",
+  "version": "4.5.0",
+  "description": "Taozi 4.5.0 - 内容感知配图中枢：image skill Context Mode、独立 infographic skill（14 布局×15 风格）、角色锚点注入、Style Anchor 一致性、三层测试体系。",
   "author": {
     "name": "kedoupi",
     "url": "https://github.com/kedoupi"

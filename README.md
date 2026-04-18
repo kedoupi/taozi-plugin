@@ -1,4 +1,4 @@
-# Taozi Plugin 4.4.1
+# Taozi Plugin 4.5.0
 
 智能开发工具集 - 工作流驱动、3 条铁律、思维工具箱、自动化 Hooks + YouMind AI 创作能力。
 
@@ -20,7 +20,7 @@ Taozi 支持两种运行时：
 
 ### YouMind API Key（使用 AI 创作功能必须）
 
-`/taozi:image`、`/taozi:research`、`/taozi:content`、`/taozi:clip`、`/taozi:ppt`、`/taozi:webpage`、`/taozi:wechat`、`/taozi:xiaohongshu` 这 8 个 skill 需要配置 YouMind API Key。
+`/taozi:image`、`/taozi:infographic`、`/taozi:research`、`/taozi:content`、`/taozi:clip`、`/taozi:ppt`、`/taozi:webpage`、`/taozi:wechat`、`/taozi:xiaohongshu` 这 9 个 skill 需要配置 YouMind API Key。
 
 **获取 Key：** 访问 [youmind.com](https://youmind.com) → 设置 → API Key → 生成
 
@@ -195,14 +195,15 @@ mkdir -p .agents/plugins
 
 | 触发 | 功能 |
 |------|------|
-| `/taozi:image` | AI 图片生成（Gemini 多模型，支持批量 + 风格锚点）|
+| `/taozi:image` | AI 图片生成（Context Mode 内容感知，自动决策风格/角色/尺寸；Gemini 多模型，批量 + Style Anchor 系列一致性）|
+| `/taozi:infographic` | 专业信息图生成（14 种布局 × 15 种风格，自动匹配内容结构，wechat/xiaohongshu 共用）|
 | `/taozi:research` | 热点研究（webSearch + 深度 research，输出结构化报告）|
 | `/taozi:content` | 多平台内容创作（小红书 / 公众号 / 抖音 / X）|
 | `/taozi:clip` | 内容采集与分析（YouTube / 微信公众号 / 网页，AI 深度分析）|
 | `/taozi:ppt` | PPT 生成（返回封面图预览 + Craft 编辑链接）|
 | `/taozi:webpage` | 网页生成（描述 → 可访问的 CDN 链接）|
-| `/taozi:wechat` | 微信公众号全链路（热点选题 → 研究 → 写作 → 信息图/插画章节配图 → 草稿箱，newspaper 主题，后台生图）|
-| `/taozi:xiaohongshu` | 小红书全链路（热点选题 → 研究 → 正文 → 12风格×8布局配图卡片，Smart Confirm 风格选择，后台生图）|
+| `/taozi:wechat` | 微信公众号全链路（热点选题 → 研究 → 写作 → 章节配图 → 草稿箱；image Context Mode 自主决策风格，封面 900×383，角色锚点注入）|
+| `/taozi:xiaohongshu` | 小红书全链路（热点选题 → 研究 → 正文 → 配图；image Context Mode 自主决策风格，封面 3:4，正文 1:1，Style Anchor 视觉一致性）|
 
 ## 使用示例
 
@@ -290,7 +291,7 @@ mkdir -p .agents/plugins
 | context-manager | 上下文优化、CLAUDE.md |
 | prompt-engineer | LLM 提示优化、AI 系统 |
 
-## Skills（62 个）
+## Skills（63 个）
 
 Claude / Codex 根据任务自动引用相关知识库；同时 `/taozi:<name>` 手动触发工作流类 skill。
 
@@ -302,9 +303,9 @@ Claude / Codex 根据任务自动引用相关知识库；同时 `/taozi:<name>` 
 
 `frontend-react` · `backend-architecture` · `nextjs-advanced` · `nextjs-architecture` · `typescript-types` · `typescript-patterns` · `python-patterns` · `go-patterns` · `swift-patterns` · `swift-concurrency` · `foundation-models` · `django-patterns` · `springboot-patterns` · `springboot-tdd` · `springboot-security` · `docker-patterns` · `e2e-testing` · `api-design` · `deployment-patterns` · `database-migrations` · `security-patterns` · `sql-optimization` · `legacy-migration` · `testing-strategies` · `mcp-templates` · `git-conventions` · `code-quality-checklist` · `thinking-tools` · `continuous-learning` · `token-optimization` · `deep-research`
 
-### YouMind 创作 Skills（8 个）
+### YouMind 创作 Skills（9 个）
 
-`image` · `research` · `content` · `clip` · `ppt` · `webpage` · `wechat` · `xiaohongshu`
+`image` · `infographic` · `research` · `content` · `clip` · `ppt` · `webpage` · `wechat` · `xiaohongshu`
 
 ## YouMind AI 创作能力（详细说明）
 
