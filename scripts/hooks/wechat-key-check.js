@@ -16,8 +16,8 @@ if (!input || !input.tool_input) {
 
 const command = input.tool_input.command || '';
 
-// 只拦截微信 API 相关命令
-const isWeChatCommand = /api\.weixin\.qq\.com/.test(command);
+// 拦截微信 API 调用（curl 直调）和 wechat_publish.py 脚本调用
+const isWeChatCommand = /(api\.weixin\.qq\.com|wechat_publish\.py)/.test(command);
 if (!isWeChatCommand) {
   process.exit(0);
 }

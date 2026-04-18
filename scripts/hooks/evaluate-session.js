@@ -46,8 +46,8 @@ if (input) {
   } else if (typeof input.turn_count === 'number') {
     turnCount = input.turn_count;
   } else {
-    // 无法精确计算时，假设有效（宁可多学）
-    turnCount = 10;
+    // 无法判断轮数，宁可跳过也不写垃圾记录
+    turnCount = 0;
   }
 
   // 尝试提取主题提示

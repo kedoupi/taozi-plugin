@@ -249,3 +249,38 @@ test('sync-codex refuses to delete paths outside repo root from manifest', () =>
 test('generated Codex TOML files parse successfully', () => {
   runTomlValidation();
 });
+
+test('sync-codex gracefully skips agent with no frontmatter', () => {
+  withFixture(fixtureRoot => {
+    const badAgent = path.join(fixtureRoot, 'agents', 'bad-no-frontmatter.md');
+    fs.writeFileSync(badAgent, '# No frontmatter here\n\nJust body text.\n', 'utf8');
+
+    const result = spawnSync('node', [path.join(fixtureRoot, 'scripts', 'sync-codex.js')], {
+      cwd: fixtureRoot,
+      encoding: 'utf8',
+      timeout: 10000,
+    });
+
+    assert.strictEqual(result.status, 0, 'sync should succeed even with a bad agent file');
+    const tomlPath = path.join(fixtureRoot, '.codex', 'agents', 'bad-no-frontmatter.toml');
+    assert(!fs.existsSync(tomlPath), 'bad agent should not produce a .toml file');
+  });
+});
+
+test('sync-codex skips skill directory without SKILL.md', () => {
+  withFixture(fixtureRoot => {
+    const emptySkill = path.join(fixtureRoot, 'skills', 'empty-no-skill-md');
+    fs.mkdirSync(emptySkill, { recursive: true });
+    fs.writeFileSync(path.join(emptySkill, 'notes.txt'), 'some notes\n', 'utf8');
+
+    const result = spawnSync('node', [path.join(fixtureRoot, 'scripts', 'sync-codex.js')], {
+      cwd: fixtureRoot,
+      encoding: 'utf8',
+      timeout: 10000,
+    });
+
+    assert.strictEqual(result.status, 0, 'sync should succeed even with an empty skill dir');
+    const targetDir = path.join(fixtureRoot, '.agents', 'skills', 'empty-no-skill-md');
+    assert(!fs.existsSync(targetDir), 'skill dir without SKILL.md should not be synced');
+  });
+});

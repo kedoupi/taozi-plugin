@@ -43,7 +43,7 @@ const junkPatterns = [
 const isJunk = junkPatterns.some((p) => p.test(basename));
 
 // Allowlisted directories
-const allowedDirs = ['docs', 'skills', '.claude', 'README'];
+const allowedDirs = ['docs', 'skills', '.claude', 'agents', 'rules'];
 const dirParts = filePath.split(path.sep);
 const isInAllowedDir = dirParts.some((part) => allowedDirs.includes(part));
 

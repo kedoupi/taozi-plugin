@@ -166,8 +166,18 @@ function buildDeveloperInstructions(agentPath, sandboxMode, body) {
 }
 
 function generateCodexAgent(agentPath) {
+  let frontmatter;
+  try {
+    frontmatter = parseFrontmatter(readFile(agentPath));
+  } catch (e) {
+    console.warn(`[sync-codex] skipping ${path.relative(ROOT, agentPath)}: ${e.message}`);
+    return null;
+  }
+  if (!frontmatter.name) {
+    console.warn(`[sync-codex] skipping ${path.relative(ROOT, agentPath)}: missing 'name' in frontmatter`);
+    return null;
+  }
   const content = readFile(agentPath);
-  const frontmatter = parseFrontmatter(content);
   const body = getBody(content);
   const modelConfig = MODEL_MAP[frontmatter.model] || MODEL_MAP.sonnet;
   const sandboxMode = inferSandboxMode(frontmatter.tools);
@@ -193,9 +203,11 @@ function syncAgents() {
   const managedEntries = [];
 
   for (const agentPath of sourceAgents) {
+    const toml = generateCodexAgent(agentPath);
+    if (toml === null) continue;
     const targetName = `${path.basename(agentPath, '.md')}.toml`;
     const targetPath = path.join(TARGET_CODEX_AGENTS_DIR, targetName);
-    writeFile(targetPath, generateCodexAgent(agentPath));
+    writeFile(targetPath, toml);
     managedEntries.push(path.relative(ROOT, targetPath));
   }
 
@@ -216,6 +228,11 @@ function syncSkills() {
   const managedEntries = [];
 
   for (const skillName of sourceSkills) {
+    const skillMd = path.join(SOURCE_SKILLS_DIR, skillName, 'SKILL.md');
+    if (!fs.existsSync(skillMd)) {
+      console.warn(`[sync-codex] skipping skills/${skillName}: no SKILL.md found`);
+      continue;
+    }
     const targetDir = path.join(TARGET_REPO_SKILLS_DIR, skillName);
     copyDir(path.join(SOURCE_SKILLS_DIR, skillName), targetDir);
     managedEntries.push(path.relative(ROOT, targetDir));

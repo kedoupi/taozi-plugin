@@ -20,7 +20,7 @@
 - 标题 emoji 必须清理，长度 ≤ 64 字符
 """
 
-import json, os, sys, re, argparse, urllib.request
+import json, os, sys, re, argparse, urllib.request, uuid
 from datetime import datetime
 from pathlib import Path
 
@@ -208,7 +208,7 @@ def get_access_token():
 def upload_image(token, image_path, retries=3):
     """上传文章内图片到微信CDN，返回 mmbiz.qpic.cn URL（带重试）"""
     import time as _time
-    boundary = "----WebKitFormBoundary7MA4YWxkTrZu0gW"
+    boundary = f"----FormBoundary{uuid.uuid4().hex}"
     filename = os.path.basename(image_path)
     with open(image_path, "rb") as f:
         file_data = f.read()
@@ -377,7 +377,7 @@ def overlay_title_on_cover(img_bytes, title, cfg=None):
 def upload_thumb(token, image_path, title=None, retries=3):
     """上传封面图，返回 thumb_media_id（带重试）。自动裁切到 900×383，可叠标题文字。"""
     import time as _time
-    boundary = "----WebKitFormBoundary7MA4YWxkTrZu0gW"
+    boundary = f"----FormBoundary{uuid.uuid4().hex}"
     file_data, filename, ct = _resize_cover(image_path)
     if title:
         file_data = overlay_title_on_cover(file_data, title)

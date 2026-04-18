@@ -16,7 +16,9 @@ if (!input || !input.tool_input) {
 
 const command = input.tool_input.command || '';
 const isGitCommand = /\bgit\b/.test(command);
-const hasNoVerify = /--no-verify\b/.test(command);
+// Strip -m "..." / -m '...' content so --no-verify inside a commit message isn't matched
+const stripped = command.replace(/-m\s+(['"])(.*?)\1/gs, '');
+const hasNoVerify = /--no-verify\b/.test(stripped);
 
 if (isGitCommand && hasNoVerify) {
   error('');

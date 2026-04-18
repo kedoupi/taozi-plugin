@@ -60,7 +60,7 @@ author: foo
 - 所有 hook 脚本通过 stdin 读取 JSON，用 `require('../lib/utils').readStdinJson()`
 - 新 hook 三步走：`scripts/hooks/<name>.js` → `hooks/hooks.json` 注册 → `tests/hooks/hooks.test.js` 补测试
 - `${CLAUDE_PLUGIN_ROOT}` 是插件根目录的环境变量，在 hooks.json 命令路径中使用
-- `block-random-md` PostToolUse hook 会拦截任意 `.md` 文件写入；合法路径（`skills/*/SKILL.md`、`agents/*.md`、`docs/` 等）会通过，不要尝试在其他路径创建 `.md` 文件
+- `block-random-md` PostToolUse hook 会对任意 `.md` 文件写入输出警告；合法路径（`skills/*/SKILL.md`、`agents/*.md`、`docs/` 等）会静默放行，不要尝试在其他路径创建 `.md` 文件
 
 ## CI 结构检查
 

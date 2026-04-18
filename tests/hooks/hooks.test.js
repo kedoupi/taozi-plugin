@@ -147,6 +147,22 @@ test('no-verify-guard handles missing tool_input', () => {
   assert.strictEqual(result.status, 0, 'Should exit(0) for missing tool_input');
 });
 
+test('no-verify-guard allows --no-verify inside commit message string', () => {
+  const script = path.join(HOOKS_DIR, 'no-verify-guard.js');
+  const result = runHook(script, {
+    tool_input: { command: 'git commit -m "removed --no-verify from CI pipeline"' },
+  });
+  assert.strictEqual(result.status, 0, 'Should exit(0) when --no-verify is inside -m "..."');
+});
+
+test('no-verify-guard still blocks --no-verify flag outside quotes', () => {
+  const script = path.join(HOOKS_DIR, 'no-verify-guard.js');
+  const result = runHook(script, {
+    tool_input: { command: "git commit -m 'fix issue' --no-verify" },
+  });
+  assert.strictEqual(result.status, 2, 'Should exit(2) when --no-verify is a real flag');
+});
+
 // =====================
 // 3. tmux-hint
 // =====================
@@ -467,6 +483,22 @@ test('evaluate-session falls back to existing topicHint when current session is 
   }
 });
 
+test('evaluate-session 无法判断轮数时不写 learned 记录', () => {
+  const script = path.join(HOOKS_DIR, 'evaluate-session.js');
+  const taoziHome = path.join(os.tmpdir(), `taozi-evaluate-no-turn-${Date.now()}`);
+  const learnedDir = path.join(taoziHome, 'learned');
+
+  try {
+    fs.mkdirSync(learnedDir, { recursive: true });
+    const result = runHook(script, {}, { env: { TAOZI_HOME: taoziHome } });
+    assert.strictEqual(result.status, 0, 'Should exit(0)');
+    const files = fs.readdirSync(learnedDir);
+    assert.strictEqual(files.length, 0, 'Should not write learned record when turnCount is unknown');
+  } finally {
+    fs.rmSync(taoziHome, { recursive: true, force: true });
+  }
+});
+
 test('suggest-compact 对同一文件重复编辑不重复计数', () => {
   const script = path.join(HOOKS_DIR, 'suggest-compact.js');
   const taoziHome = path.join(os.tmpdir(), `taozi-suggest-repeat-${Date.now()}`);
@@ -630,4 +662,24 @@ test('wechat-key-check handles empty input gracefully', () => {
   const script = path.join(HOOKS_DIR, 'wechat-key-check.js');
   const result = runHook(script, {});
   assert.strictEqual(result.status, 0, 'Should exit(0) for empty input');
+});
+
+test('wechat-key-check blocks direct wechat_publish.py call without credentials', () => {
+  const script = path.join(HOOKS_DIR, 'wechat-key-check.js');
+  const result = runHook(
+    script,
+    { tool_input: { command: 'python3 wechat_publish.py --publish' } },
+    { env: { WECHAT_APPID: '', WECHAT_APPSECRET: '' } }
+  );
+  assert.strictEqual(result.status, 2, 'Should exit(2) when calling wechat_publish.py without credentials');
+});
+
+test('wechat-key-check allows direct wechat_publish.py call with credentials', () => {
+  const script = path.join(HOOKS_DIR, 'wechat-key-check.js');
+  const result = runHook(
+    script,
+    { tool_input: { command: 'python3 wechat_publish.py --publish' } },
+    { env: { WECHAT_APPID: 'wx_test123', WECHAT_APPSECRET: 'secret_test456' } }
+  );
+  assert.strictEqual(result.status, 0, 'Should exit(0) when calling wechat_publish.py with credentials');
 });
