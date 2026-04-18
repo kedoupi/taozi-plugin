@@ -1,6 +1,6 @@
 {
   "name": "taozi",
-  "version": "4.3.0",
-  "description": "Taozi 4.3.0 - 图片后台并行化；xhs 12风格×8布局卡片库；wechat 信息图支持；newspaper 默认主题；修复 wechat 路径遗留问题",
+  "version": "4.4.0",
+  "description": "Taozi 4.4.0 - superpowers 借鉴（场景触发规则、反模式警告、code-review Spec 对照、skill-create TDD 验证）；7 项 bug 修复（sync-codex 健壮性、hook 误拦截、wechat boundary 随机化）",
   "skills": "./skills/"
 }

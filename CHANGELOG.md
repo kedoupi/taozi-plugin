@@ -4,6 +4,33 @@ All notable changes to Taozi Plugin are documented here.
 
 ---
 
+## [4.4.0] - 2026-04-18
+
+### Added
+
+- **场景自动触发规则**：CLAUDE.md 新增 7 条场景 → skill 映射表，Claude Agent 在感知到需求描述、代码提交、发版等场景时主动触发对应 skill，无需用户手动输入指令
+- **Agent 反模式警告**：CLAUDE.md 新增历史高频错误列表（忘跑 sync-codex、非法 .md 路径、frontmatter 嵌套、PostToolUse exit(2) 无效、发版漏更新版本号）
+- **`code-review` Spec 对照阶段**：在 6 步质量审查前插入第 0 步，先对照需求来源验证"做了正确的事"，报告新增 Spec 对照节
+- **`skill-create` TDD 验证**：创建 skill 后自动运行测试验证 frontmatter 格式合法，并 sync-codex 同步到 Codex 侧
+- **`.claude/skills/` 纳入版本控制**：release、new-hook、run-tests、sync-codex 四个项目级 skill 现在跟随仓库分发
+- **`/release` skill 增强**：新增 README 检查步骤（步骤 4），发版完成后询问是否推送远程（步骤 10）
+
+### Fixed
+
+- **sync-codex 健壮性**：agent 文件无/坏 frontmatter 时 skip+warn 不崩溃；skill 目录缺 SKILL.md 时跳过而非静默写入空目录
+- **no-verify-guard 误拦截**：commit message 引号内包含 `--no-verify` 文字时不再被误拦截（剥离 `-m "..."` 内容后再检测 flag）
+- **evaluate-session 垃圾记录**：Stop 事件 payload 无 `turn_count`/`conversation` 时 fallback 由 10 改为 0，不再写无效 learned 记录
+- **wechat-key-check 覆盖缺口**：matcher 扩展覆盖 `wechat_publish.py` 直调场景（原仅匹配 curl 调用）
+- **wechat_publish.py multipart boundary**：固定字符串改为 `uuid.uuid4()` 随机生成，消除二进制内容碰撞风险
+- **block-random-md 冗余条目**：移除 allowedDirs 中无效的 `'README'` 条目
+
+### Changed
+
+- **CLAUDE.md 措辞修正**：`block-random-md` 描述从"拦截"更正为"输出警告"（PostToolUse 不具备拦截能力）
+- **测试覆盖**：新增 7 个边界场景测试（共 609 个，0 失败）
+
+---
+
 ## [4.3.0] - 2026-04-18
 
 ### Added
