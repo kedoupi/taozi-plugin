@@ -90,3 +90,29 @@ asyncTest('异步描述', async () => {
 ## 命名规范
 
 - Skill 目录名 = slash 触发名（`skills/image/` → `/taozi:image`，插件命名空间 `taozi:` 负责区分）
+
+## 场景自动触发规则
+
+Claude Agent 在感知到以下场景时，应主动触发对应 Skill，无需用户手动输入指令：
+
+| 场景 | 主动触发 |
+|------|----------|
+| 用户描述新功能需求或任务分解 | `/taozi:plan` |
+| 用户准备提交代码或合并 PR | `/taozi:verify` → `/taozi:code-review` |
+| 用户说"发版"、"release"、"升版本" | `/release` |
+| 用户改动 `agents/*.md` 或 `skills/*/SKILL.md` | 提醒运行 `node scripts/sync-codex.js` |
+| 用户要创建新 Skill | `/taozi:skill-create` |
+| 用户遇到构建 / 类型错误 | `/taozi:build-fix` |
+| 用户需要研究某个技术方案 | `/taozi:research` 或 `/taozi:deep-research` |
+
+触发前告知用户，用户可随时说"跳过"终止。
+
+## Agent 常见错误（必读）
+
+以下是 AI Agent 在此仓库中反复出现的错误，**每次操作前主动对照**：
+
+- **忘跑 sync-codex**：改了 `skills/*/SKILL.md` 或 `agents/*.md` 后未运行 `node scripts/sync-codex.js`，导致 Codex 侧显示旧版本。每次改完 skill/agent 立即 sync。
+- **在非法路径创建 .md 文件**：`block-random-md` hook 会拦截在 `skills/*/SKILL.md`、`agents/*.md`、`docs/`、`.claude/skills/` 之外创建的 `.md` 文件。不要在其他任何路径创建 `.md`。
+- **frontmatter 写嵌套 YAML**：`parseFrontmatter()` 只支持 `key: value` 单行，嵌套字段会被静默忽略，导致 skill 元数据丢失。
+- **在 PostToolUse hook 用 exit(2) 拦截**：PostToolUse 的 exit 码不会拦截任何操作，只有 `PreToolUse` 的 `exit(2)` 才能拦截。用错了 hook 类型，拦截逻辑完全失效。
+- **发版漏更新三处版本号**：`package.json` / `.claude-plugin/plugin.json` / `.codex-plugin/plugin.json` 三处必须同步，漏一处 Codex 侧显示旧版本。

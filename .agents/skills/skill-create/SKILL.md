@@ -91,6 +91,22 @@ description: <一句话描述，用于自动匹配触发>
 cat skills/<skill-name>/SKILL.md
 ```
 
+### 5. 运行测试（frontmatter 格式验证）
+
+```bash
+node tests/run-all.js
+```
+
+必须全绿才算完成。测试会自动验证新 skill 的 frontmatter `name`/`description` 字段是否存在且格式合法。若报错，检查 frontmatter 是否有嵌套 YAML 或缺失必填字段。
+
+### 6. 同步 Codex 适配层
+
+```bash
+node scripts/sync-codex.js
+```
+
+新 skill 必须 sync 后才能在 Codex 侧生效。
+
 ## 与 `/taozi:learn` 的区别
 
 | | `/taozi:learn` | `/taozi:skill-create` |
