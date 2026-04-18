@@ -201,8 +201,8 @@ mkdir -p .agents/plugins
 | `/taozi:clip` | 内容采集与分析（YouTube / 微信公众号 / 网页，AI 深度分析）|
 | `/taozi:ppt` | PPT 生成（返回封面图预览 + Craft 编辑链接）|
 | `/taozi:webpage` | 网页生成（描述 → 可访问的 CDN 链接）|
-| `/taozi:wechat` | 微信公众号全链路（热点选题 → 研究 → 写作 → 封面图 → 草稿箱）|
-| `/taozi:xiaohongshu` | 小红书全链路（热点选题 → 研究 → 正文 → 话题标签 → AI 多图配套）|
+| `/taozi:wechat` | 微信公众号全链路（热点选题 → 研究 → 写作 → 信息图/插画章节配图 → 草稿箱，newspaper 主题，后台生图）|
+| `/taozi:xiaohongshu` | 小红书全链路（热点选题 → 研究 → 正文 → 12风格×8布局配图卡片，Smart Confirm 风格选择，后台生图）|
 
 ## 使用示例
 
@@ -290,13 +290,13 @@ mkdir -p .agents/plugins
 | context-manager | 上下文优化、CLAUDE.md |
 | prompt-engineer | LLM 提示优化、AI 系统 |
 
-## Skills（61 个）
+## Skills（62 个）
 
 Claude / Codex 根据任务自动引用相关知识库；同时 `/taozi:<name>` 手动触发工作流类 skill。
 
-### 工作流 Skills（22 个，带 `/taozi:` 触发）
+### 工作流 Skills（23 个，带 `/taozi:` 触发）
 
-`taozi` · `plan` · `tdd` · `verify` · `code-review` · `quality-gate` · `git-workflow` · `update-context` · `model-route` · `learning` · `multi-plan` · `multi-execute` · `build-fix` · `checkpoint` · `ultra-think` · `evolve` · `harness-audit` · `instinct-status` · `instinct-import` · `instinct-export` · `skill-create` · `security-scan`
+`taozi` · `plan` · `tdd` · `verify` · `code-review` · `quality-gate` · `git-workflow` · `update-context` · `model-route` · `learning` · `multi-plan` · `multi-execute` · `build-fix` · `checkpoint` · `ultra-think` · `evolve` · `harness-audit` · `instinct-status` · `instinct-import` · `instinct-export` · `skill-create` · `security-scan` · `setup`
 
 ### 开发知识库（31 个，自动引用）
 
