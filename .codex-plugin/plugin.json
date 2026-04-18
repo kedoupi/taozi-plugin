@@ -1,6 +1,6 @@
 {
   "name": "taozi",
-  "version": "4.4.0",
-  "description": "Taozi 4.4.0 - superpowers 借鉴（场景触发规则、反模式警告、code-review Spec 对照、skill-create TDD 验证）；7 项 bug 修复（sync-codex 健壮性、hook 误拦截、wechat boundary 随机化）",
+  "version": "4.4.1",
+  "description": "Taozi 4.4.1 - wechat 配图发布健壮性修复（图片占位符残留、多轮漂移、uuid boundary）。superpowers Iron Law 注入 skill 顶部防漂移。",
   "skills": "./skills/"
 }

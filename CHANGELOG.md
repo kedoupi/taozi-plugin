@@ -4,6 +4,16 @@ All notable changes to Taozi Plugin are documented here.
 
 ---
 
+## [4.4.1] - 2026-04-18
+
+### Fixed
+
+- **wechat 图片占位符残留**：Agent C 子 Agent 改为输出 `SAVED: <path>` 确认，`--images` 参数改为 glob 收集（`ls wechat/images/YYYYMMDD/section-*.jpg`），发布前校验所有文件存在，防止 `[Image #1]` 占位符出现在正文
+- **wechat 多轮漂移**：在 `skills/wechat/SKILL.md` 顶部注入 Iron Law + 逃逸借口表，无论对话进行多少轮 Claude 必须从第一步执行完整流程
+- **sync Codex 适配层**：同步上述 wechat skill 变更到 `.agents/skills/`
+
+---
+
 ## [4.4.0] - 2026-04-18
 
 ### Added
