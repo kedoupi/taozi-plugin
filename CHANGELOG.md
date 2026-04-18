@@ -4,6 +4,27 @@ All notable changes to Taozi Plugin are documented here.
 
 ---
 
+## [4.3.0] - 2026-04-18
+
+### Added
+
+- **小红书配图风格库**：12 种视觉风格（cute/fresh/warm/bold/minimal/retro/pop/notion/chalkboard/study-notes/screen-print/sketch-notes）× 8 种布局（sparse/balanced/dense/list/comparison/flow/mindmap/quadrant）× 3 种配色（macaron/warm/neon），参考 baoyu-xhs-images 实现；写作完成后展示风格推荐，用户确认后后台生成，reference chain 保证视觉一致性
+- **微信信息图支持**：章节配图自动识别数据/对比/流程/层级类内容，切换为专业信息图生成模式（10 种风格 × 10 种布局，参考 baoyu-infographic）；普通章节保持原有插画流程
+- **`newspaper` 主题**：新增报纸编辑风排版主题（衬线字体、双线标题分割、奶油纸背景 `#faf8f4`），设为 wechat 默认主题
+
+### Fixed
+
+- **wechat 路径全量修复**：`SKILL.md` 和 5 个 reference 文档中残留的 `wechat-article`、`wechat-articles/` 旧路径全部更正，发布脚本路径 404 导致配图上传失败的 bug 彻底修复
+- **图片占位符验证**：`wechat_publish.py` 发布前扫描未替换的本地图片占位符，文件名与 `--images` 参数不匹配时主动报错，不再静默成功
+- **wechat-key-check.js 提示文字**：错误消息中的旧路径 `wechat-articles/style.yaml` 更正为 `~/.taozi/platforms/wechat/style.yaml`
+
+### Changed
+
+- **图片生成后台化**：wechat 子 Agent C 和 xiaohongshu 配图 sub-agent 均改为 `run_in_background: true`，写作完成后主对话立即解锁，图片生成和发布完成后 `PushNotification` 通知用户
+- **图片生成并行化**：wechat 章节配图（最多 4 张）和 xiaohongshu 配图（最多 7 张）改为多 sub-agent 并行轮询，从串行最坏 17 分钟降至约 3-5 分钟
+
+---
+
 ## [4.2.0] - 2026-04-18
 
 ### Added

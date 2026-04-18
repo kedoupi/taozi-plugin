@@ -1,6 +1,6 @@
 {
   "name": "taozi",
-  "version": "4.2.0",
-  "description": "Taozi 4.2.0 - 新增 /taozi:xiaohongshu 小红书全链路；wechat-article 改名为 wechat；移除 create（通用调度走 /taozi）",
+  "version": "4.3.0",
+  "description": "Taozi 4.3.0 - 图片后台并行化；xhs 12风格×8布局卡片库；wechat 信息图支持；newspaper 默认主题；修复 wechat 路径遗留问题",
   "skills": "./skills/"
 }
