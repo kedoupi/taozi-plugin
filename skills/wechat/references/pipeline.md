@@ -6,7 +6,7 @@
 
 ## Step 1：加载配置
 
-读取 `wechat-articles/style.yaml`，解析凭据（`$VAR_NAME` 展开为 env var）。
+按优先级读取配置（高 → 低）：`wechat/style.yaml` → `.taozi/platforms/wechat/style.yaml` → `~/.taozi/platforms/wechat/style.yaml`，解析凭据（`$VAR_NAME` 展开为 env var）。
 检查必填字段：wechat.appid、wechat.secret、youmind.api_key、name、tone、voice。
 
 ---
@@ -14,10 +14,10 @@
 ## Step 2：热点抓取
 
 ```bash
-python3 skills/wechat-article/scripts/fetch_hotspots.py --limit 30
+python3 skills/wechat/scripts/fetch_hotspots.py --limit 30
 ```
 
-输出 JSON 热点列表，结合 `wechat-articles/history.yaml` 过滤近 7 天已发布的话题。
+输出 JSON 热点列表，结合 `wechat/history.yaml` 过滤近 7 天已发布的话题。
 
 **Fallback：** 脚本失败 → YouMind webSearch 搜"今日热点新闻" → 再失败则请用户提供主题。
 
@@ -40,7 +40,7 @@ python3 skills/wechat-article/scripts/fetch_hotspots.py --limit 30
 
 ## Step 4：文章写作
 
-读取 `references/writing-guide.md` 和 `wechat-articles/playbook.md`（如存在）。
+读取 `references/writing-guide.md` 和 `~/.taozi/brand/playbook.md`（优先 `.taozi/brand/playbook.md`，如存在）。
 
 执行要求：
 - 写前完成思维框架（原子洞察 + 情感弧 + 核心张力）
@@ -71,7 +71,8 @@ youmind --help > /dev/null 2>&1 || npm install -g @youmind-ai/cli
 youmind call getDefaultBoard
 
 # 检测 character.md 是否有实际角色内容（排除注释、空行、blockquote、HTML 注释）
-HAS_CHAR=$(grep -v '^#' wechat-articles/character.md 2>/dev/null \
+CHAR_FILE="${PWD}/.taozi/brand/character.md"; [ -f "$CHAR_FILE" ] || CHAR_FILE="$HOME/.taozi/brand/character.md"
+HAS_CHAR=$(grep -v '^#' "$CHAR_FILE" 2>/dev/null \
   | grep -v '^[[:space:]]*$' \
   | grep -v '^>' \
   | grep -v '^<!--' \
@@ -82,7 +83,7 @@ HAS_CHAR=$(grep -v '^#' wechat-articles/character.md 2>/dev/null \
 
 # 生成封面图（海报风格，含大字标题）
 # - 读 references/cover-image-prompt.md 构建 prompt
-# - 若有角色：读 wechat-articles/character.md 提炼描述，追加到 prompt（见 cover-image-prompt.md 第 6 节）
+# - 若有角色：读 ~/.taozi/brand/character.md 提炼描述，追加到 prompt（见 cover-image-prompt.md 第 6 节）
 # - quality 使用 "medium"，上传时自动裁切到 900×383
 youmind call createChat '{"boardId":"<id>","message":"<海报风格 prompt，含大字标题[+ 角色描述（如有）]>","tools":{"imageGenerate":{"useTool":"required","aspectRatio":"16:9","quality":"medium","model":"gemini-3-pro-image-preview"}}}'
 
@@ -112,7 +113,7 @@ curl -s "<image_url>" -o /tmp/wechat_cover.jpg
 ## Step 7：发布到微信草稿箱
 
 ```bash
-python3 skills/wechat-article/scripts/wechat_publish.py \
+python3 skills/wechat/scripts/wechat_publish.py \
   --publish \
   --title "<标题>" \
   --content /tmp/article.md \
@@ -132,7 +133,7 @@ python3 skills/wechat-article/scripts/wechat_publish.py \
 ## Step 7.5：更新发布历史
 
 ```bash
-python3 skills/wechat-article/scripts/wechat_publish.py \
+python3 skills/wechat/scripts/wechat_publish.py \
   --update-history \
   --media-id "<media_id>" \
   --title "<标题>" \

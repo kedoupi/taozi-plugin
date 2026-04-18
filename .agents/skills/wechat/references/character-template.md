@@ -1,6 +1,6 @@
 # 封面角色设定模板
 
-> 将此文件复制到 `wechat-articles/character.md` 并填写。
+> 将此文件复制到 `~/.taozi/brand/character.md` 并填写。
 > 文件存在时，每张封面图都会包含此角色；删除或重命名则不使用角色。
 
 ---

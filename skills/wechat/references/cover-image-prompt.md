@@ -124,7 +124,7 @@
 1. 从文章标题中提取 **8-15 字的封面大标题**（可以比正文标题更简短有力）
 2. 根据文章行业/主题选择风格（tech / business / opinion / minimal）
 3. 将封面大标题嵌入 prompt 的 `「{标题}」` 位置
-4. 检查 `wechat-articles/character.md` 是否存在：
+4. 检查 `~/.taozi/brand/character.md` 是否存在：
    - **存在** → 读取文件，提取角色描述追加到 prompt（见第 6 节）
    - **不存在** → 不追加，AI 自由发挥视觉元素
 5. 使用 `quality: "medium"` 生成（文件大小可控，1-3MB）
@@ -142,11 +142,11 @@
 
 ## 6. character.md 角色嵌入规则
 
-`wechat-articles/character.md` 是可选文件，定义每张封面都应出现的固定 IP 角色。模板见 `references/character-template.md`。
+`~/.taozi/brand/character.md` 是可选文件，定义每张封面都应出现的固定 IP 角色。模板见 `references/character-template.md`。
 
 ### 有角色文件时的 prompt 构建
 
-读取 `wechat-articles/character.md`，从各章节提取关键信息，拼接成一句角色描述，追加到封面 prompt 末尾：
+读取 `~/.taozi/brand/character.md`，从各章节提取关键信息，拼接成一句角色描述，追加到封面 prompt 末尾：
 
 ```
 画面中包含固定角色：{从 character.md 提炼的角色一句话描述}，{位置偏好}，角色与标题文字共存，不遮挡主标题

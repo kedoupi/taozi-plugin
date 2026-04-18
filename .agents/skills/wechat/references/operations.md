@@ -14,7 +14,7 @@
 
 ```
 Step A：获取原始版本
-  读取 wechat-articles/history.yaml 中最近一篇记录
+  读取 wechat/history.yaml 中最近一篇记录
   → 确认对应的原始文章内容（若 history.yaml 中有 content_hash，可对比）
 
 Step B：用户提供修改版本
@@ -28,7 +28,7 @@ Step C：提取 diff 和规律
   - 结构改动：段落顺序有调整吗？小节数量变化了吗？
 
 Step D：写入 lessons 文件
-  生成文件：wechat-articles/lessons/YYYY-MM-DD-<文章主题关键词>.md
+  生成文件：wechat/lessons/YYYY-MM-DD-<文章主题关键词>.md
   格式：
 ```
 
@@ -54,7 +54,7 @@ Step D：写入 lessons 文件
 
 ```
 Step E：检查是否触发 playbook 更新
-  读取 wechat-articles/lessons/ 目录的文件数量
+  读取 wechat/lessons/ 目录的文件数量
   若 ≥ 5 篇（或用户主动说"更新我的写作手册"）→ 执行操作 2 的 Step C
 ```
 
@@ -64,7 +64,7 @@ Step E：检查是否触发 playbook 更新
 
 **触发方式：** 用户说"生成我的写作手册" 或 "分析我的历史文章"。
 
-**前提：** `wechat-articles/corpus/` 目录下有 1 篇以上历史文章（txt 或 md 格式，粘贴进去即可）。
+**前提：** `wechat/corpus/` 目录下有 1 篇以上历史文章（txt 或 md 格式，粘贴进去即可）。
 
 **建议语料量：** 20 篇以上效果最佳，5 篇以上可出初版。
 
@@ -72,7 +72,7 @@ Step E：检查是否触发 playbook 更新
 
 ```
 Step A：扫描语料
-  列出 wechat-articles/corpus/ 下所有文件
+  列出 wechat/corpus/ 下所有文件
   统计总字数、篇数，汇报给用户确认分析
 
 Step B：逐篇分析（批量，每批 5 篇）
@@ -84,7 +84,7 @@ Step B：逐篇分析（批量，每批 5 篇）
   - 情感基调（理性/感性/幽默/严肃）
 
 Step C：汇总生成 playbook.md
-  写入文件：wechat-articles/playbook.md
+  写入文件：.taozi/brand/playbook.md（全局品牌目录，SKILL.md 从此处读取；目录不存在时先 mkdir -p .taozi/brand/）
   格式参考：
 ```
 
@@ -131,7 +131,7 @@ Step C：汇总生成 playbook.md
 
 **触发方式：** 用户说"分析我的文章表现" 或 "哪类文章效果最好"。
 
-**前提：** 用户已在 `wechat-articles/history.yaml` 中手动填入阅读量、点赞数等数据。
+**前提：** 用户已在 `wechat/history.yaml` 中手动填入阅读量、点赞数等数据。
 
 ### history.yaml 数据结构
 

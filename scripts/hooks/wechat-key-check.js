@@ -67,7 +67,7 @@ error('');
 error('【IP 白名单（必须配置，否则调用失败）】');
 error('  1. 运行 `curl -s https://ifconfig.me` 获取本机公网 IP');
 error('  2. 登录微信公众平台 → 公众号 → 基础信息 → API IP 白名单 → 编辑 → 添加 IP');
-error('  提示：有代理服务器可在 wechat-articles/style.yaml 的 proxy 字段填入，无需配白名单');
+error('  提示：有代理服务器可在 ~/.taozi/platforms/wechat/style.yaml 的 proxy 字段填入，无需配白名单');
 error('');
 error('配置完成后重新执行命令即可。');
 error('');

@@ -1,0 +1,39 @@
+name: "newspaper"
+description: "报纸编辑风：衬线字体、黑色粗线标题分割、奶油纸感背景，适合严肃叙事和深度长文"
+colors:
+  primary: "#1a1a1a"
+  secondary: "#444444"
+  text: "#1a1a1a"
+  text_light: "#666666"
+  background: "#faf8f4"
+  code_bg: "#f0ede6"
+  code_color: "#333333"
+  quote_border: "#1a1a1a"
+  quote_bg: "#f5f2ec"
+  border_radius: "0px"
+  darkmode:
+    background: "#1a1814"
+    text: "#d8d4cc"
+    primary: "#c8c4bc"
+    code_bg: "#252320"
+    code_color: "#b8b4ac"
+    quote_bg: "#221e18"
+    quote_border: "#888480"
+base_css: |
+  body { font-family: "Georgia", "Noto Serif SC", "Source Han Serif SC", "STSong", serif; font-size: 17px; line-height: 1.9; color: #1a1a1a; background: #faf8f4; }
+  h2 { font-size: 22px; font-weight: 900; color: #1a1a1a; letter-spacing: 0.02em; border-top: 3px solid #1a1a1a; border-bottom: 1px solid #1a1a1a; padding: 8px 0 6px; margin: 32px 0 14px; font-family: "Georgia", "Noto Serif SC", serif; }
+  h3 { font-size: 18px; font-weight: 700; color: #1a1a1a; border-bottom: 1px solid #cccccc; padding-bottom: 4px; margin: 24px 0 10px; font-family: "Georgia", "Noto Serif SC", serif; }
+  p { margin: 14px 0; text-align: justify; }
+  strong { color: #1a1a1a; font-weight: 800; }
+  em { font-style: italic; color: #333333; }
+  code { background: #f0ede6; color: #333333; padding: 2px 6px; border-radius: 0; font-size: 14px; font-family: "Courier New", monospace; border: 1px solid #d8d4cc; }
+  pre { background: #f0ede6; padding: 16px; border-radius: 0; overflow-x: auto; margin: 16px 0; border: 1px solid #ccc9c0; border-left: 3px solid #1a1a1a; }
+  blockquote { border-left: 4px solid #1a1a1a; background: #f5f2ec; padding: 14px 20px; margin: 20px 0; border-radius: 0; color: #333333; font-style: italic; font-size: 18px; line-height: 1.75; }
+  table { width: 100%; border-collapse: collapse; margin: 16px 0; border: 1px solid #1a1a1a; }
+  th { background: #1a1a1a; color: #faf8f4; padding: 10px 14px; font-weight: 700; border: 1px solid #1a1a1a; font-family: "Georgia", serif; letter-spacing: 0.05em; }
+  td { padding: 10px 14px; border: 1px solid #ccc9c0; }
+  tr:nth-child(even) { background: #f5f2ec; }
+  a { color: #1a1a1a; text-decoration: underline; font-weight: 600; }
+  hr { border: none; border-top: 2px solid #1a1a1a; margin: 28px 0; }
+  ul, ol { padding-left: 24px; margin: 12px 0; }
+  li { margin: 6px 0; }

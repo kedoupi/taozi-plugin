@@ -141,7 +141,7 @@ def load_config():
     config["author"] = wechat.get("author", "") or ""
     config["proxy"]  = resolve(raw.get("proxy", "$WECHAT_PROXY"))
     fmt = raw.get("format", {}) or {}
-    config["theme"]  = fmt.get("theme", raw.get("theme", "simple")) or "simple"
+    config["theme"]  = fmt.get("theme", raw.get("theme", "newspaper")) or "newspaper"
     ct = raw.get("cover_text", {}) or {}
     config["cover_text"] = {
         "enabled":            ct.get("enabled", "true") not in ("false", "0", False),
@@ -166,7 +166,7 @@ WECHAT_APPSECRET = CONFIG["secret"]
 WECHAT_PROXY     = CONFIG["proxy"]
 WECHAT_AUTHOR    = CONFIG["author"] or "作者"
 COVER_TEXT_CFG   = CONFIG.get("cover_text", {})
-DEFAULT_THEME    = CONFIG.get("theme", "simple")
+DEFAULT_THEME    = CONFIG.get("theme", "newspaper")
 PRIMARY          = "#576b95"
 
 
@@ -693,6 +693,14 @@ def sync(title, content_md, cover_path, image_paths=None, theme=None):
             content_md = content_md.replace(f"({filename})", f"({wx_url})")
             print(f"[同步] 配图 OK {filename}", file=sys.stderr)
 
+    # 替换完成后，检查是否还有未替换的本地图片占位符
+    remaining = re.findall(r'!\[[^\]]*\]\((?!https?://)([^)]+)\)', content_md)
+    if remaining:
+        raise Exception(
+            f"以下图片占位符未被替换（文件名与 --images 参数不匹配）：{remaining}\n"
+            f"请确保 --images 传入的文件名与 markdown 中 ![](...) 括号内完全一致"
+        )
+
     # 去掉 Markdown 标题行（公众号标题单独设置）
     content_body = re.sub(r"^#\s+.*\n", "", content_md)
 
@@ -805,7 +813,7 @@ def main():
     parser.add_argument("--content", help="Markdown 文件路径（--publish 用）")
     parser.add_argument("--cover",   help="封面图路径")
     parser.add_argument("--images",  nargs="*", default=[], help="文章内图片路径列表")
-    parser.add_argument("--theme",   default=DEFAULT_THEME, help="排版主题（默认 simple）")
+    parser.add_argument("--theme",   default=DEFAULT_THEME, help="排版主题（默认 newspaper）")
 
     # --update-history 参数
     parser.add_argument("--media-id",       help="已发布的 media_id")

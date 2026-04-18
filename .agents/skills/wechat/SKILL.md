@@ -58,7 +58,7 @@ mkdir -p wechat/drafts
 **`wechat/history.yaml` 内容**（写入）：
 
 ```yaml
-# 发布历史 — 由 /taozi:wechat-article 自动维护
+# 发布历史 — 由 /taozi:wechat 自动维护
 # 每次发布后自动追加一条记录
 articles: []
 ```
@@ -121,7 +121,7 @@ fmt     = cfg.get('format', {}) or {}
 appid  = expand(wechat.get('appid',  '\$WECHAT_APPID'))
 secret = expand(wechat.get('secret', '\$WECHAT_APPSECRET'))
 apikey = expand(youmind.get('api_key', '\$YOUMIND_API_KEY'))
-theme  = fmt.get('theme', cfg.get('theme', 'simple')) or 'simple'
+theme  = fmt.get('theme', cfg.get('theme', 'newspaper')) or 'newspaper'
 
 missing = []
 if not appid:  missing.append('wechat.appid')
@@ -178,7 +178,7 @@ print('PLAYBOOK_FOUND:' + ('yes' if playbook else 'no'))
 
 **同时提取排版主题**：若用户输入含 "用 X 主题"、"X 风格排版" 等字样，提取主题名作为本次 `THEME`；否则使用 style.yaml 的 `theme` 字段（默认 `simple`）。
 
-可用主题（wewrite 提供，引入后生效）：`simple`（通用简洁）、`sspai`（少数派）、`tech`（科技深色）、`minimal`（极简）、`green`（清新绿）、`elegant`（典雅）等共 16 个。
+可用主题：`newspaper`（报纸编辑风，**默认**）、`simple`（通用简洁）、`sspai`（少数派）、`minimal`（极简）、`github`（GitHub 风）、`tech-modern`（科技深色）等。
 
 ---
 
@@ -187,7 +187,7 @@ print('PLAYBOOK_FOUND:' + ('yes' if playbook else 'no'))
 ### 路径 3A：全流程（无主题）
 
 告知用户：
-> 开始全流程，包含选题 → 研究 → 写作 → 配图 → 发布，约 5-10 分钟，期间可继续其他工作。
+> 开始全流程，包含选题 → 研究 → 写作 → 配图 → 发布。写作完成后配图和发布会在**后台**进行，你可以继续聊其他事情，完成时会推送通知。
 
 依次派以下子 Agent：
 
@@ -242,7 +242,7 @@ youmind call webSearch '{"query":"<主题>","limit":15}'
 **写作前必须参考以下规范**：
 - 参数中的 `playbook.md` 内容：标题规范、段落节奏、HKR 质检框架、风格禁忌
 - `references/writing-guide.md`（若存在）：de-AI 四级协议、So What 三层法、原子洞察强制框架
-  读取路径：`skills/wechat-article/references/writing-guide.md`
+  读取路径：`skills/wechat/references/writing-guide.md`
 - 参数中的 `voice.md` 内容：用于确定写作语气、人设、禁用词、目标读者
 
 遵循规范撰写，输出：
@@ -260,39 +260,38 @@ youmind call webSearch '{"query":"<主题>","limit":15}'
 - L3 活人感终审：通读一遍，像机器生成的句子改掉
 - L4 信息诚信：无来源的数字/案例标 "暂缺数据" 或删除，不编造
 
-### 步骤 3：提取视觉锚点 + 生成章节配图 prompt
+### 步骤 3：章节类型识别 + 生成章节配图 prompt
 
-从封面图 prompt 中提取 3 个风格关键词作为**视觉锚点**（如 `manga / cream beige / Q-style`），
-所有章节配图必须包含这些锚点，确保风格统一。
+对每个 H2 章节（最多 4 个），先判断章节类型：
 
-读取角色文件（优先 `./.taozi/brand/character.md`，其次 `~/.taozi/brand/character.md`），
-提取"章节配图用法（16:9）"模板。
+**数据图表型（section_type: infographic）**：章节中含以下任一特征 → 优先推荐信息图
+- 含具体数字/百分比/统计数据
+- 含对比（A vs B、优劣、前后）
+- 含流程/步骤（3步以上）
+- 含层级/分类体系
+- 含多维数据或指标
 
-为文章每个 H2 章节（最多 4 个）生成一条配图 prompt，格式：
+**插画型（section_type: illustration）**：其余章节（场景描述、概念解释、情感表达等）
+
+---
+
+**对 infographic 章节**：读取 `skills/wechat/references/infographic-styles.md` 的**章节类型→信息图推荐规则**，自动选择最匹配的 layout + style 组合，生成信息图 prompt：
 
 ```
-SECTION_IMAGE_PROMPT_1: <章节标题> | <完整英文 prompt，含视觉锚点 + 角色模板 + 章节场景描述>
-SECTION_IMAGE_PROMPT_2: ...
+SECTION_IMAGE_PROMPT_N: <章节标题> | infographic | layout=<layout> | style=<style> | <章节核心数据/结构，中文，50字以内>
 ```
 
-配图 prompt 构建规则：
+**对 illustration 章节**：从封面图 prompt 中提取 3 个视觉锚点，读取 character.md 角色模板（优先 `./.taozi/brand/character.md`，其次 `~/.taozi/brand/character.md`），生成插画 prompt：
 
-1. **读取 character.md**（优先 `./.taozi/brand/character.md`，其次 `~/.taozi/brand/character.md`）
-2. 找到 `## 章节配图用法（16:9）` 下方的代码块，提取其完整内容作为**角色模板**
-3. 若找不到该章节、或"我的角色"部分为空注释（只有 `<!-- ... -->`），则**无角色模板**
-
-最终 prompt 结构：
 ```
-WeChat article section illustration, 16:9 landscape.
-Scene: <用 10 词描述该章节核心场景>.
-<角色模板内容（从 character.md 提取，原样保留）>
-Visual anchors: <锚点1, 锚点2, 锚点3>. No text overlay. Not realistic.
+SECTION_IMAGE_PROMPT_N: <章节标题> | illustration | <完整英文 prompt，含视觉锚点 + 角色模板 + 章节场景描述>
 ```
 
-无角色模板时省略角色行，视觉锚点仍保留：
+插画 prompt 结构（同原有规则）：
 ```
 WeChat article section illustration, 16:9 landscape.
 Scene: <用 10 词描述该章节核心场景>.
+<角色模板内容（从 character.md 提取，原样保留，若无则省略）>
 Visual anchors: <锚点1, 锚点2, 锚点3>. No text overlay. Not realistic.
 ```
 
@@ -323,14 +322,19 @@ draft_path: wechat/drafts/<文件名>
 cover_prompt: <封面图 prompt>
 visual_anchors: <锚点1,锚点2,锚点3>
 section_count: <章节数，最多4>
-SECTION_IMAGE_PROMPT_1: <章节标题> | <prompt>
-SECTION_IMAGE_PROMPT_2: ...（有几个写几个）
+SECTION_IMAGE_PROMPT_1: <章节标题> | illustration | <英文 prompt>
+SECTION_IMAGE_PROMPT_2: <章节标题> | infographic | layout=bento-grid | style=corporate-memphis | <中文数据摘要>
+...（有几个写几个，类型字段 illustration 或 infographic）
 ```
 
-**子 Agent C — 封面图 + 章节配图 + 微信发布**
+**子 Agent C — 封面图 + 章节配图 + 微信发布（后台执行，`run_in_background: true`）**
+
+收到 DRAFT_DONE 后：
+1. 立即告知用户："✅ 文章写作完成！正在后台生成配图并推送草稿箱，约 3-5 分钟后会收到通知，可以继续聊其他事情。"
+2. 以 `run_in_background: true` 派出子 Agent C，不等待其返回。
 
 ```
-你是发布 agent，负责生成封面图、章节配图，并推送到微信草稿箱。
+你是发布 agent，负责生成封面图、章节配图，并推送到微信草稿箱。完成后用 PushNotification 通知用户。
 
 ## 参数
 - draft_path: <草稿文件路径>
@@ -338,89 +342,111 @@ SECTION_IMAGE_PROMPT_2: ...（有几个写几个）
 - digest: <摘要>
 - cover_prompt: <封面图 prompt>
 - section_prompts: [<SECTION_IMAGE_PROMPT_1>, <SECTION_IMAGE_PROMPT_2>, ...]（从写作 agent 传入）
+- theme: <THEME>
+- visual_anchors: <锚点>
 
 ## 执行步骤
 
-### 步骤 1：生成封面图（YouMind）
+### 步骤 1：生成封面图（YouMind，串行）
 youmind call generateImage '{"prompt":"<cover_prompt>, 16:9 ratio, widescreen, no faces, no text","width":900,"height":506}'
 下载到本地 /tmp/cover-<slug>.jpg。
 
-### 步骤 2：批量生成章节配图（最多 4 张，并行调用）
-对每个 section_prompt，调用：
-youmind call generateImage '{"prompt":"<section_prompt>","width":900,"height":506}'
-下载到 wechat/images/<YYYYMMDD>/section-<n>.jpg。
+### 步骤 2：并行生成章节配图（最多 4 张）
 
-目录不存在时先创建：
-mkdir -p wechat/images/<YYYYMMDD>/
+解析每个 section_prompt 的类型（`illustration` 或 `infographic`），各派一个独立子 agent：
 
-注意：章节配图数 > 4 时只取前 4 个。
+**illustration 类型**的子 agent：
+```
+直接使用 section_prompt 中的英文 prompt 调用 generateImage：
+youmind call generateImage '{"prompt":"<英文 prompt>","width":900,"height":506}'
+下载到 wechat/images/<YYYYMMDD>/section-<n>.jpg
+```
+
+**infographic 类型**的子 agent：
+```
+1. 读取 skills/wechat/references/infographic-styles.md 中对应 layout 和 style 的定义
+2. 按文件中的 Prompt 组装模板，将 {LAYOUT_GUIDELINES} + {STYLE_GUIDELINES} + {CONTENT}（中文数据摘要）组装成完整 prompt
+3. 调用 generateImage：
+   youmind call generateImage '{"prompt":"<组装好的 infographic prompt>","width":900,"height":506}'
+4. 下载到 wechat/images/<YYYYMMDD>/section-<n>.jpg
+```
+
+目录预先创建：`mkdir -p wechat/images/<YYYYMMDD>/`
+同时发出所有子 agent，等所有完成后进入步骤 3。
+
+### 前置检查：文件名对齐
+
+读取草稿 markdown，提取所有 `![](xxx)` 中的文件名（如 `section-1.jpg`）。
+传给 `--images` 的每个文件路径，其 basename 必须与这些文件名**完全一致**。
+如果实际图片文件名不同（如 `section-1-compressed.jpg`），必须先重命名再传入。
+不一致时**不要继续发布**，先修正文件名再执行步骤 3。
 
 ### 步骤 3：执行发布脚本
 
-python3 skills/wechat-article/scripts/wechat_publish.py \
+python3 skills/wechat/scripts/wechat_publish.py \
   --publish \
   --title "<title>" \
   --content "<draft_path>" \
   --cover "/tmp/cover-<slug>.jpg" \
-  --theme "<THEME>" \
+  --theme "<theme>" \
   --images wechat/images/<YYYYMMDD>/section-1.jpg \
            wechat/images/<YYYYMMDD>/section-2.jpg \
            ...（有几张列几张）
 
 脚本自动从 ~/.taozi/ 读取凭据，封面图自动完成 900×383 裁切 + 标题叠字。
+获取返回的 media_id。
 
-### 步骤 4：返回结果
-WECHAT_DRAFT_DONE
-title: <标题>
-digest: <摘要>
-cover_url: <封面图 URL>
-section_images: <生成的章节配图数量>
-media_id: <草稿 media_id>
+### 步骤 4：追加发布历史记录
+
+python3 skills/wechat/scripts/wechat_publish.py \
+  --update-history \
+  --media-id "<media_id>" \
+  --title "<title>" \
+  --keywords "<从 title 提取的关键词1,关键词2,关键词3>" \
+  --visual-anchors "<visual_anchors>" \
+  --framework "<文章结构>" \
+  --section-images <章节配图数量>
+
+### 步骤 5：用 PushNotification 通知用户
+
+调用 PushNotification，内容：
+"✅ 微信公众号草稿已发布！\n标题：<title>\n草稿 ID：<media_id>\n\n登录 https://mp.weixin.qq.com → 内容 → 草稿箱 → 找到文章 → 发布"
 ```
 
 ---
 
 ### 路径 3B：有主题，跳过热点
 
-直接派子 Agent B（写作）→ 子 Agent C（发布），参数中主题替换为用户提供的内容。
+直接派子 Agent B（写作）→ 子 Agent C（`run_in_background: true`），参数中主题替换为用户提供的内容。
+写作完成后立即告知用户"正在后台生图并发布"。
 
 ---
 
 ### 路径 3C：有完整内容，直接发布
 
-仅派子 Agent C，draft_path 指向用户提供的内容（先写入临时文件），cover_prompt 由 AI 根据标题生成。
+仅派子 Agent C（`run_in_background: true`），draft_path 指向用户提供的内容（先写入临时文件），cover_prompt 由 AI 根据标题生成。
+立即告知用户"正在后台生图并推送草稿箱"。
 
 ---
 
-## 第四步：展示结果
+## 第四步：告知用户
 
-收到 `WECHAT_DRAFT_DONE` 后，展示：
+子 Agent C 以 `run_in_background: true` 启动后，主 agent **立即**向用户展示写作成果并告知后台状态：
 
 ```
-✅ 文章已推送到草稿箱！
+✅ 文章写作完成！
 
 标题：<title>
 摘要：<digest>
-封面：<cover_url>
-草稿 ID：<media_id>
+草稿已保存至：<draft_path>
 
-下一步：登录 https://mp.weixin.qq.com → 内容 → 草稿箱 → 找到文章 → 发布
+⏳ 正在后台生成封面图和章节配图，并推送到草稿箱（约 3-5 分钟）。
+   完成后会收到通知，届时登录 https://mp.weixin.qq.com → 内容 → 草稿箱 查看。
 
-需要调整文章、重新生成封面，还是写下一篇？
+期间可以继续聊其他事情。
 ```
 
-同时调用脚本追加发布记录（安全 YAML 写入，字段用于下次选题参考）：
-
-```bash
-python3 skills/wechat-article/scripts/wechat_publish.py \
-  --update-history \
-  --media-id "<media_id>" \
-  --title "<title>" \
-  --keywords "<关键词1,关键词2,关键词3>" \
-  --visual-anchors "<锚点1,锚点2,锚点3>" \
-  --framework "<文章结构，如：问题分析方案行动>" \
-  --section-images <章节配图数量>
-```
+发布历史记录和 PushNotification 通知均在子 Agent C 内部完成（步骤 4-5）。
 
 ---
 
