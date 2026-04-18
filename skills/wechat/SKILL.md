@@ -353,46 +353,74 @@ youmind call generateImage '{"prompt":"<cover_prompt>, 16:9 ratio, widescreen, n
 
 ### 步骤 2：并行生成章节配图（最多 4 张）
 
+先创建图片目录：
+```bash
+mkdir -p wechat/images/<YYYYMMDD>/
+```
+
 解析每个 section_prompt 的类型（`illustration` 或 `infographic`），各派一个独立子 agent：
 
 **illustration 类型**的子 agent：
 ```
-直接使用 section_prompt 中的英文 prompt 调用 generateImage：
-youmind call generateImage '{"prompt":"<英文 prompt>","width":900,"height":506}'
-下载到 wechat/images/<YYYYMMDD>/section-<n>.jpg
+目标保存路径：wechat/images/<YYYYMMDD>/section-<n>.jpg
+
+1. 调用 generateImage：
+   youmind call generateImage '{"prompt":"<英文 prompt>","width":900,"height":506}'
+2. 将返回的图片 URL 下载保存到 wechat/images/<YYYYMMDD>/section-<n>.jpg
+3. 验证文件存在且大小 > 0：ls -la wechat/images/<YYYYMMDD>/section-<n>.jpg
+4. 最后输出一行：SAVED: wechat/images/<YYYYMMDD>/section-<n>.jpg
 ```
 
 **infographic 类型**的子 agent：
 ```
+目标保存路径：wechat/images/<YYYYMMDD>/section-<n>.jpg
+
 1. 读取 skills/wechat/references/infographic-styles.md 中对应 layout 和 style 的定义
 2. 按文件中的 Prompt 组装模板，将 {LAYOUT_GUIDELINES} + {STYLE_GUIDELINES} + {CONTENT}（中文数据摘要）组装成完整 prompt
 3. 调用 generateImage：
    youmind call generateImage '{"prompt":"<组装好的 infographic prompt>","width":900,"height":506}'
-4. 下载到 wechat/images/<YYYYMMDD>/section-<n>.jpg
+4. 将返回的图片 URL 下载保存到 wechat/images/<YYYYMMDD>/section-<n>.jpg
+5. 验证文件存在且大小 > 0：ls -la wechat/images/<YYYYMMDD>/section-<n>.jpg
+6. 最后输出一行：SAVED: wechat/images/<YYYYMMDD>/section-<n>.jpg
 ```
 
-目录预先创建：`mkdir -p wechat/images/<YYYYMMDD>/`
-同时发出所有子 agent，等所有完成后进入步骤 3。
+同时发出所有子 agent，**等所有子 agent 均返回结果后**进入下一步。
 
-### 前置检查：文件名对齐
+### 前置检查：收集实际保存路径 + 文件验证
 
-读取草稿 markdown，提取所有 `![](xxx)` 中的文件名（如 `section-1.jpg`）。
-传给 `--images` 的每个文件路径，其 basename 必须与这些文件名**完全一致**。
-如果实际图片文件名不同（如 `section-1-compressed.jpg`），必须先重命名再传入。
-不一致时**不要继续发布**，先修正文件名再执行步骤 3。
+所有子 agent 完成后，执行以下强制检查（**缺一不过**）：
+
+```bash
+# 1. 列出实际下载的文件
+ls wechat/images/<YYYYMMDD>/section-*.jpg 2>/dev/null | sort
+
+# 2. 与草稿中的占位符对比
+# 草稿中有多少个 ![](section-N.jpg) 占位符，磁盘上就必须有多少个文件
+# 文件数 < 占位符数 → 报错，不发布
+```
+
+若任意图片文件缺失：
+- 用 PushNotification 通知用户："❌ 配图生成失败：section-<n>.jpg 未成功下载，文章未发布，请重试"
+- **立即终止，不执行步骤 3**
+
+`--images` 参数从磁盘实际文件列表构建，不手动枚举：
+```bash
+IMAGE_FILES=$(ls wechat/images/<YYYYMMDD>/section-*.jpg 2>/dev/null | sort | tr '\n' ' ')
+```
 
 ### 步骤 3：执行发布脚本
 
+```bash
 python3 skills/wechat/scripts/wechat_publish.py \
   --publish \
   --title "<title>" \
   --content "<draft_path>" \
   --cover "/tmp/cover-<slug>.jpg" \
   --theme "<theme>" \
-  --images wechat/images/<YYYYMMDD>/section-1.jpg \
-           wechat/images/<YYYYMMDD>/section-2.jpg \
-           ...（有几张列几张）
+  --images $IMAGE_FILES
+```
 
+`$IMAGE_FILES` 是上一步 glob 收集到的**实际存在**的图片路径列表。
 脚本自动从 ~/.taozi/ 读取凭据，封面图自动完成 900×383 裁切 + 标题叠字。
 获取返回的 media_id。
 

@@ -687,6 +687,13 @@ def sync(title, content_md, cover_path, image_paths=None, theme=None):
 
     # 上传文章内图片并替换路径
     if image_paths:
+        # 前置检查：所有图片文件必须存在，否则立即报错
+        missing = [p for p in image_paths if not os.path.exists(p)]
+        if missing:
+            raise FileNotFoundError(
+                f"以下图片文件不存在，发布中止：{missing}\n"
+                f"请确认图片已成功下载后再执行发布"
+            )
         for img_path in image_paths:
             filename = os.path.basename(img_path)
             wx_url = upload_image(token, img_path)
