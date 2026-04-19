@@ -60,7 +60,8 @@ flutter clean
 flutter pub get
 
 # iOS Pod 清理
-cd ios && pod deintegrate && pod install && cd ..
+cd ios && pod deintegrate && pod install
+cd ..
 
 # Android 清理
 cd android && ./gradlew clean && cd ..

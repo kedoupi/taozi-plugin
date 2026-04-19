@@ -1,6 +1,6 @@
 ---
 name: flutter-patterns
-description: Flutter/Dart 开发模式参考 — Widget 组合、状态管理（Riverpod/BLoC）、async/Future、null safety、测试。
+description: Flutter/Dart 开发模式参考 — Widget 组合、Riverpod 状态管理、async/Future 安全模式、null safety、测试。
 ---
 
 # Flutter/Dart 开发模式参考
@@ -109,7 +109,7 @@ String? name = getName();
 final display = name ?? 'Anonymous';
 final length = name?.length ?? 0;
 
-// 断言只在确定非空时用（测试/确定有值时）
+// ❌ 仅在 100% 确定有值时用，否则用 ?? 或条件判断
 final user = cache['admin']!;
 
 // 晚初始化（一定会在使用前赋值）
