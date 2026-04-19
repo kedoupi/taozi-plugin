@@ -1,4 +1,4 @@
-# Taozi Plugin 4.5.0
+# Taozi Plugin 4.6.0
 
 智能开发工具集 - 工作流驱动、3 条铁律、思维工具箱、自动化 Hooks + YouMind AI 创作能力。
 
@@ -188,6 +188,8 @@ mkdir -p .agents/plugins
 | `/taozi:model-route` | 根据任务推荐最优模型 |
 | `/taozi:quality-gate` | 发布前质量门禁（构建/测试/lint/安全） |
 | `/taozi:skill-create` | 手动创建可复用 Skill |
+| `/taozi:setup` | Taozi 配置向导（YouMind Key / 品牌人设 / 平台凭据，支持微信/飞书等多平台）|
+| `/taozi:lark` | 飞书万能链接助手（任意飞书链接读取→分析→逐步确认→写回；项目目录绑定知识库）|
 
 ### YouMind AI 创作
 
@@ -291,13 +293,13 @@ mkdir -p .agents/plugins
 | context-manager | 上下文优化、CLAUDE.md |
 | prompt-engineer | LLM 提示优化、AI 系统 |
 
-## Skills（63 个）
+## Skills（64 个）
 
 Claude / Codex 根据任务自动引用相关知识库；同时 `/taozi:<name>` 手动触发工作流类 skill。
 
-### 工作流 Skills（23 个，带 `/taozi:` 触发）
+### 工作流 Skills（24 个，带 `/taozi:` 触发）
 
-`taozi` · `plan` · `tdd` · `verify` · `code-review` · `quality-gate` · `git-workflow` · `update-context` · `model-route` · `learning` · `multi-plan` · `multi-execute` · `build-fix` · `checkpoint` · `ultra-think` · `evolve` · `harness-audit` · `instinct-status` · `instinct-import` · `instinct-export` · `skill-create` · `security-scan` · `setup`
+`taozi` · `plan` · `tdd` · `verify` · `code-review` · `quality-gate` · `git-workflow` · `update-context` · `model-route` · `learning` · `multi-plan` · `multi-execute` · `build-fix` · `checkpoint` · `ultra-think` · `evolve` · `harness-audit` · `instinct-status` · `instinct-import` · `instinct-export` · `skill-create` · `security-scan` · `setup` · `lark`
 
 ### 开发知识库（31 个，自动引用）
 

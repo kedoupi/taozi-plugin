@@ -1,6 +1,6 @@
 {
   "name": "taozi",
-  "version": "4.5.0",
-  "description": "Taozi 4.5.0 - 内容感知配图中枢：image skill Context Mode、独立 infographic skill（14 布局×15 风格）、角色锚点注入、Style Anchor 一致性、三层测试体系。",
+  "version": "4.6.0",
+  "description": "Taozi 4.6.0 - 飞书万能链接助手（/taozi:lark）：任意飞书链接读取→分析→逐步确认→写回；配置体系重构（3 层平铺 + 多账号支持）；wechat 软引导替硬停；xiaohongshu 项目配置层。",
   "skills": "./skills/"
 }

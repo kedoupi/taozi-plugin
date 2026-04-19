@@ -4,6 +4,33 @@ All notable changes to Taozi Plugin are documented here.
 
 ---
 
+## [4.6.0] - 2026-04-19
+
+### Added
+
+- **`/taozi:lark` 飞书万能链接助手（新 skill）**：给任意飞书链接（文档 `/docx/`、知识库 `/wiki/`、电子表格 `/sheets/`、多维表格 `/base/`），自动读取内容、分析结构、输出编号建议清单，逐步确认后写回。支持在项目目录下放 `.taozi/platforms/lark.yaml` 绑定默认知识库，无需每次提供链接。
+- **setup 新增飞书平台选项**：第四步平台列表加入"飞书知识库（无需在此配置凭据，使用 `lark-cli auth login` 认证）"，引导用户创建 `.taozi/platforms/lark.yaml` 绑定项目。
+- **xiaohongshu 项目配置层**：在 `~/.taozi/` 全局检查之后新增非阻断项目配置检查；`.taozi/platforms/xiaohongshu.yaml` 可覆盖 `image_count`、`ratio`、`strategy` 等格式参数；缺失时软提示（不阻断继续执行）。
+
+### Changed
+
+- **配置体系重构（3 层平铺 + 多账号）**：
+  - 全局凭据集中存 `~/.taozi/config.yaml`（`wechat.accounts.<name>.appid/secret/author`，支持多账号）
+  - 平台格式偏好改为平铺文件 `~/.taozi/platforms/<平台>.yaml`（去除旧子目录 `platforms/wechat/style.yaml`）
+  - 项目绑定存 `.taozi/platforms/<平台>.yaml`，可指定 `account: <名称>` 引用多账号
+  - 三级优先级：全局 config.yaml → 全局 platforms/wechat.yaml → 项目 .taozi/platforms/wechat.yaml
+- **wechat 硬停改软引导**：`~/.taozi/platforms/wechat.yaml` 不存在时不再直接停止，改为 ⚠️ 软引导（初始化 / 跳过用环境变量），保持 `~/.taozi/` 目录缺失时仍硬停。
+- **`wechat_publish.py` 配置加载升级**：`load_taozi_config()` 由四级合并改为三级合并（平铺路径）；`load_config()` 新增多账号提取逻辑（`wechat.accounts.<account_name>`），兼容旧版扁平格式（`wechat.appid/secret` 直接存放）。
+- **setup config.yaml 格式升级**：生成模板改为多账号结构，注释说明 `wechat.accounts.default` 格式。
+
+### Fixed
+
+- **wechat_publish.py 配置路径与 SKILL.md 不一致**：原脚本读旧子目录路径 `platforms/wechat/style.yaml`，导致 SKILL.md 引导的新路径配置被静默忽略；已同步升级为 3 层平铺路径。
+- **`pipeline.md` 旧路径文档残留**：Step 1 路径链和字段说明已更新至新架构（`wechat.accounts.default.appid`）。
+- **lark skill `allowed-tools` 路径格式**：`find` 命令补全引号，`cat` 命令移除尾部通配符，修正 prefix 匹配错误。
+
+---
+
 ## [4.5.0] - 2026-04-18
 
 ### Added
