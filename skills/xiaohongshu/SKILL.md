@@ -108,6 +108,8 @@ allowed-tools:
 
 ### 步骤 2：后台启动配图 sub-agent（`run_in_background: true`）
 
+**派出前**，先从标题推导 `title_slug`：取标题核心关键词翻译为英文，3-5 个词，全小写连字符，最多 25 字符。例如：「AI 替代职场 5 大趋势」→ `ai-workplace-trends`。
+
 **立刻**以 `run_in_background: true` 派出配图 sub-agent，不等待返回。
 
 ---
@@ -121,7 +123,8 @@ allowed-tools:
 - article_type: <opinion|tech|tutorial|storytelling|knowledge>
 - content_outline: <文章标题 + 各节核心内容列表（每项50字内）>
 - total_count: <总图片数（封面1张 + 内容图N张）>
-- output_dir: xiaohongshu/images/<YYYYMMDD>/
+- title_slug: <从标题提取的英文 slug，3-5个词，小写连字符，如 "ai-career-shift">
+- output_dir: xiaohongshu/images/<YYYYMMDD>-<title_slug>/
 
 ## 步骤 0：读取品牌配置
 
@@ -167,7 +170,7 @@ if char:
 ## 步骤 2：生成封面图（串行，建立 Style Anchor）
 
 ```bash
-mkdir -p xiaohongshu/images/<YYYYMMDD>/
+mkdir -p xiaohongshu/images/<YYYYMMDD>-<title_slug>/
 ```
 
 封面 prompt 结构：
@@ -182,8 +185,8 @@ mkdir -p xiaohongshu/images/<YYYYMMDD>/
 2. youmind call getDefaultBoard → boardId
 3. youmind call createChat '{"boardId":"<boardId>","message":"<封面 prompt>","tools":{"imageGenerate":{"useTool":"required","aspectRatio":"3:4","quality":"high","model":"gemini-3-pro-image-preview"}}}'
 4. 每5秒 getChat 轮询，status=completed 后 listMessages 提取 URL
-5. 下载到 xiaohongshu/images/<YYYYMMDD>/cover.jpg
-6. 输出：SAVED: xiaohongshu/images/<YYYYMMDD>/cover.jpg
+5. 下载到 xiaohongshu/images/<YYYYMMDD>-<title_slug>/cover.jpg
+6. 输出：SAVED: xiaohongshu/images/<YYYYMMDD>-<title_slug>/cover.jpg
 ```
 
 ## 步骤 3：并行生成内容图（最多 7 张）
@@ -212,8 +215,8 @@ All text in Simplified Chinese, aspectRatio 1:1
 2. youmind call getDefaultBoard → boardId
 3. youmind call createChat '{"boardId":"<boardId>","message":"<内容图 prompt>","tools":{"imageGenerate":{"useTool":"required","aspectRatio":"1:1","quality":"high","model":"gemini-3-pro-image-preview"}}}'
 4. 每5秒 getChat 轮询，status=completed 后 listMessages 提取 URL
-5. 下载到 xiaohongshu/images/<YYYYMMDD>/image-<n>.jpg
-6. 输出：SAVED: xiaohongshu/images/<YYYYMMDD>/image-<n>.jpg
+5. 下载到 xiaohongshu/images/<YYYYMMDD>-<title_slug>/image-<n>.jpg
+6. 输出：SAVED: xiaohongshu/images/<YYYYMMDD>-<title_slug>/image-<n>.jpg
 ```
 
 同时派出所有子 agent，等全部完成后进入步骤 4。
@@ -221,7 +224,7 @@ All text in Simplified Chinese, aspectRatio 1:1
 ## 步骤 4：用 PushNotification 通知用户
 
 调用 PushNotification，内容：
-"✅ 小红书配图已生成！\n共 {total_count} 张图片\n保存至：xiaohongshu/images/<YYYYMMDD>/\n\n可用 /taozi:image 重新生成某张图，或告诉我换个风格重新生成全套。"
+"✅ 小红书配图已生成！\n共 {total_count} 张图片\n保存至：xiaohongshu/images/<YYYYMMDD>-<title_slug>/\n\n可用 /taozi:image 重新生成某张图，或告诉我换个风格重新生成全套。"
 ```
 
 ### 配图数量建议
