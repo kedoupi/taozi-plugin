@@ -59,6 +59,7 @@ allowed-tools:
 
 - **初始化**：引导用户填写，写入 `~/.taozi/config.yaml` 的 `wechat.accounts.default` 字段和 `~/.taozi/platforms/wechat.yaml`，然后继续执行。
 - **跳过**：继续执行，凭据从环境变量读取（`$WECHAT_APPID` / `$WECHAT_APPSECRET`）。
+  > ⚠️ 如果环境变量也未设置，后续配置检查仍会失败。请确认环境变量已配置，或选择"初始化"完成配置。
 
 **`~/.taozi/` 存在**（无论 wechat.yaml 是否存在）→ 继续阶段 2。
 
@@ -96,7 +97,7 @@ articles: []
 
 ### 阶段 3：读取配置 + 品牌文件
 
-用以下 python3 脚本读取配置（四级合并）和品牌文件：
+用以下 python3 脚本读取配置（三级合并）和品牌文件：
 
 ```bash
 python3 -c "
@@ -129,6 +130,10 @@ def deep_merge(base, override):
             result[key] = val
     return result
 
+# 三级合并（优先级由低到高）：
+# 1. ~/.taozi/config.yaml（全局凭据）
+# 2. ~/.taozi/platforms/wechat.yaml（全局格式默认）
+# 3. .taozi/platforms/wechat.yaml（项目级覆盖）
 cfg = {}
 cfg = deep_merge(cfg, load_yaml(os.path.join(TAOZI, 'config.yaml')))
 cfg = deep_merge(cfg, load_yaml(os.path.join(TAOZI, 'platforms', 'wechat.yaml')))
@@ -363,7 +368,7 @@ SECTION_IMAGE_META_2: <章节标题> | infographic | <章节核心数据，中�
 
 ```bash
 python3 -c "
-import os, re
+import os
 HOME = os.path.expanduser('~')
 
 def read_brand(filename):
@@ -388,8 +393,12 @@ if char:
     print('CHARACTER_CONTENT:' + char[:500])
 
 style = read_platform_yaml()
-m = re.search(r'palette\s*:\s*[^\S\n]*([^\n#]+)', style)
-palette = m.group(1).strip().strip(chr(34)).strip(chr(39)) if m else ''
+try:
+    import yaml as _yaml
+    _style_data = _yaml.safe_load(style) or {}
+    palette = _style_data.get('palette', '') or ''
+except Exception:
+    palette = ''
 print('PALETTE:' + palette)
 "
 ```
