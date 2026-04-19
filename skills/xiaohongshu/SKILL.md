@@ -8,6 +8,7 @@ allowed-tools:
   - Bash(python3 *)
   - Bash(mkdir -p *)
   - Bash(cat *)
+  - Bash([ -f ".taozi/platforms/xiaohongshu.yaml" ]*)
 ---
 
 # Xiaohongshu
@@ -21,6 +22,23 @@ allowed-tools:
 读取 `~/.taozi/config.yaml`，提取 `youmind.api_key`。
 
 **缺失时**：停止并提示运行 `/taozi:setup`。
+
+### 项目配置检查（非阻断）
+
+```bash
+[ -f ".taozi/platforms/xiaohongshu.yaml" ] && echo "xhs_cfg_exists" || echo "xhs_cfg_missing"
+```
+
+`xhs_cfg_missing` 时，软提示（**不阻断，继续执行**）：
+
+```
+⚠️ 未检测到小红书项目配置，将使用全局默认值。
+如需自定义：创建 .taozi/platforms/xiaohongshu.yaml
+  format:
+    image_count: 6
+    ratio: "1:1"
+    strategy: auto
+```
 
 ## 第二步：意图路由
 
