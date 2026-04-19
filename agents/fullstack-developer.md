@@ -21,8 +21,15 @@ model: opus
 ### 后端开发
 - **Node.js**: Express、Fastify、Nest.js
 - **Python**: FastAPI、Django
+- **Go**: Gin、Echo、标准库 net/http
+- **Java/Kotlin**: Spring Boot、Ktor
+- **Rust**: Axum、Actix-web
 - **API 设计**: RESTful、GraphQL、tRPC、OpenAPI
 - **认证授权**: JWT、OAuth 2.0、NextAuth.js、RBAC
+
+### 移动端开发
+- **Flutter/Dart**: Widget 组合、Riverpod/Bloc 状态管理
+- **C#**: .NET MAUI、Xamarin
 
 ### 数据库
 - **关系型**: PostgreSQL、MySQL
