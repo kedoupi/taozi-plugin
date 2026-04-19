@@ -624,7 +624,7 @@ test('wechat-key-check blocks when WECHAT_APPID missing', () => {
   const result = runHook(
     script,
     { tool_input: { command: 'curl https://api.weixin.qq.com/cgi-bin/stable_token' } },
-    { env: { WECHAT_APPID: '', WECHAT_APPSECRET: 'secret_test456' } }
+    { env: { WECHAT_APPID: '', WECHAT_APPSECRET: 'secret_test456', TAOZI_TEST_HOME: '/tmp/taozi-test-nohome' } }
   );
   assert.strictEqual(result.status, 2, 'Should exit(2) when WECHAT_APPID is missing');
   assert(result.stderr.includes('WECHAT_APPID'), 'Should mention missing variable');
@@ -635,7 +635,7 @@ test('wechat-key-check blocks when WECHAT_APPSECRET missing', () => {
   const result = runHook(
     script,
     { tool_input: { command: 'curl https://api.weixin.qq.com/cgi-bin/stable_token' } },
-    { env: { WECHAT_APPID: 'wx_test123', WECHAT_APPSECRET: '' } }
+    { env: { WECHAT_APPID: 'wx_test123', WECHAT_APPSECRET: '', TAOZI_TEST_HOME: '/tmp/taozi-test-nohome' } }
   );
   assert.strictEqual(result.status, 2, 'Should exit(2) when WECHAT_APPSECRET is missing');
   assert(result.stderr.includes('WECHAT_APPSECRET'), 'Should mention missing variable');
@@ -646,7 +646,7 @@ test('wechat-key-check blocks when both credentials missing', () => {
   const result = runHook(
     script,
     { tool_input: { command: 'python3 wechat_publish.py --url https://api.weixin.qq.com/draft/add' } },
-    { env: { WECHAT_APPID: '', WECHAT_APPSECRET: '' } }
+    { env: { WECHAT_APPID: '', WECHAT_APPSECRET: '', TAOZI_TEST_HOME: '/tmp/taozi-test-nohome' } }
   );
   assert.strictEqual(result.status, 2, 'Should exit(2) when both env vars are missing');
   assert(result.stderr.includes('WECHAT_APPID'), 'Should list WECHAT_APPID in missing');
@@ -670,7 +670,7 @@ test('wechat-key-check blocks direct wechat_publish.py call without credentials'
   const result = runHook(
     script,
     { tool_input: { command: 'python3 wechat_publish.py --publish' } },
-    { env: { WECHAT_APPID: '', WECHAT_APPSECRET: '' } }
+    { env: { WECHAT_APPID: '', WECHAT_APPSECRET: '', TAOZI_TEST_HOME: '/tmp/taozi-test-nohome' } }
   );
   assert.strictEqual(result.status, 2, 'Should exit(2) when calling wechat_publish.py without credentials');
 });

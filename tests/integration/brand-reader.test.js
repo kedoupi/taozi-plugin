@@ -149,8 +149,9 @@ asyncTest('品牌读取: style.yaml 含 palette 时正确提取 PALETTE', async 
   const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'taozi-brand-test-'));
   try {
     // 不创建 character.md（只测 palette）
-    const wechatDir = path.join(tmpDir, '.taozi', 'platforms', 'wechat');
-    fs.mkdirSync(wechatDir, { recursive: true });
+    // 使用新扁平路径 .taozi/platforms/wechat.yaml（4.6.0 重构后的格式）
+    const platformsDir = path.join(tmpDir, '.taozi', 'platforms');
+    fs.mkdirSync(platformsDir, { recursive: true });
 
     const styleContent = [
       'wechat:',
@@ -159,7 +160,7 @@ asyncTest('品牌读取: style.yaml 含 palette 时正确提取 PALETTE', async 
       'palette: "warm orange, cream white"',
     ].join('\n');
 
-    fs.writeFileSync(path.join(wechatDir, 'style.yaml'), styleContent, 'utf8');
+    fs.writeFileSync(path.join(platformsDir, 'wechat.yaml'), styleContent, 'utf8');
 
     const result = runBrandScript(BRAND_SCRIPT, tmpDir);
 

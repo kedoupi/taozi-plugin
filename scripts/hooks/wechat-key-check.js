@@ -30,22 +30,33 @@ function resolveEnvRef(val) {
   return val;
 }
 
-// 从 ~/.taozi/platforms/wechat/style.yaml 读取凭据（优先），回退到 process.env
+// 从新版配置文件读取凭据（优先），回退到 process.env
+// 支持 TAOZI_TEST_HOME 注入，用于测试隔离
 function loadYamlCreds() {
   const os = require('os');
   const fs = require('fs');
-  const yamlPath = `${os.homedir()}/.taozi/platforms/wechat/style.yaml`;
-  try {
-    const text = fs.readFileSync(yamlPath, 'utf8');
-    const appidMatch  = text.match(/^\s+appid\s*:\s*(.+)$/m);
-    const secretMatch = text.match(/^\s+secret\s*:\s*(.+)$/m);
-    return {
-      appid:  resolveEnvRef(appidMatch  ? appidMatch[1].trim()  : ''),
-      secret: resolveEnvRef(secretMatch ? secretMatch[1].trim() : ''),
-    };
-  } catch (_) {
-    return { appid: '', secret: '' };
+  const path = require('path');
+  const HOME = process.env.TAOZI_TEST_HOME || os.homedir();
+  const TAOZI = path.join(HOME, '.taozi');
+
+  // 按优先级尝试：config.yaml（全局凭据） > platforms/wechat.yaml（平台配置）
+  const candidates = [
+    path.join(TAOZI, 'config.yaml'),
+    path.join(TAOZI, 'platforms', 'wechat.yaml'),
+  ];
+
+  for (const yamlPath of candidates) {
+    try {
+      const text = fs.readFileSync(yamlPath, 'utf8');
+      const appidMatch  = text.match(/appid\s*:\s*(.+)$/m);
+      const secretMatch = text.match(/secret\s*:\s*(.+)$/m);
+      const appid  = resolveEnvRef(appidMatch  ? appidMatch[1].trim()  : '');
+      const secret = resolveEnvRef(secretMatch ? secretMatch[1].trim() : '');
+      if (appid || secret) return { appid, secret };
+    } catch (_) {}
   }
+
+  return { appid: '', secret: '' };
 }
 
 // 检查必要凭据：YAML 优先，回退标准环境变量
