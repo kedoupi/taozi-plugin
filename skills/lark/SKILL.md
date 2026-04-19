@@ -4,8 +4,8 @@ description: 飞书万能链接助手：给任意飞书链接（文档/知识库
 triggers: "整理飞书,更新知识库,飞书文档,飞书链接,lark.cn,feishu.cn,飞书知识库,飞书整理"
 allowed-tools:
   - Bash(lark-cli *)
-  - Bash(find . -maxdepth 5 -name lark.yaml -path */.taozi/platforms/*)
-  - Bash(cat .taozi/platforms/lark.yaml*)
+  - Bash(find . -maxdepth 5 -name "lark.yaml" -path "*/.taozi/platforms/*")
+  - Bash(cat .taozi/platforms/lark.yaml)
   - Read
 ---
 
@@ -144,7 +144,7 @@ lark-cli wiki spaces get_node --params '{"token":"<wiki_token>"}'
 
 - **执行**：运行命令，展示结果，自动进入下一条
 - **跳过**：不执行，直接下一条
-- **查看详情**：展示完整 CLI 命令参数和预期影响
+- **查看详情**：展示完整 CLI 命令参数和预期影响；展示后仍停留在当前条目，等待用户选择执行或跳过
 - **终止全部**：停止，输出已完成/未完成的汇总
 
 所有条目完成后输出摘要：
