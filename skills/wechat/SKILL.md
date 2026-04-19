@@ -321,15 +321,15 @@ SECTION_IMAGE_META_2: 五大高危职业 | infographic | 数据录入员、电�
 
 第一段正文...
 
-![](../images/<YYYYMMDD>/section-1.jpg)
+![](../images/<YYYYMMDD>-<slug>/section-1.jpg)
 
 ## 第二章标题
 ...
 ```
 
-占位符规则：路径为 `../images/<YYYYMMDD>/section-<n>.jpg`，YYYYMMDD 与草稿文件名相同；按 H2 出现顺序从 1 开始编号；超过 4 个 H2 章节时只给前 4 个插入占位符。
+占位符规则：路径为 `../images/<YYYYMMDD>-<slug>/section-<n>.jpg`，YYYYMMDD-slug 与草稿文件名一致；按 H2 出现顺序从 1 开始编号；超过 4 个 H2 章节时只给前 4 个插入占位符。
 
-路径说明：草稿位于 `wechat/drafts/`，图片位于 `wechat/images/<YYYYMMDD>/`，相对路径需写 `../images/<YYYYMMDD>/section-<n>.jpg` 才能在本地 Markdown 预览中正确显示。
+路径说明：草稿位于 `wechat/drafts/`，图片位于 `wechat/images/<YYYYMMDD>-<slug>/`，相对路径需写 `../images/<YYYYMMDD>-<slug>/section-<n>.jpg` 才能在本地 Markdown 预览中正确显示。
 
 将处理后的完整 Markdown 写入 `wechat/drafts/<YYYYMMDD>-<slug>.md`。
 
@@ -438,7 +438,7 @@ print('PALETTE:' + palette)
 
 先创建图片目录：
 ```bash
-mkdir -p wechat/images/<YYYYMMDD>/
+mkdir -p wechat/images/<YYYYMMDD>-<slug>/
 ```
 
 派一个子 agent：
@@ -458,15 +458,15 @@ mkdir -p wechat/images/<YYYYMMDD>/
 对每个章节（最多 4 个），各派一个独立子 agent：
 
 ```
-目标保存路径：wechat/images/<YYYYMMDD>/section-<n>.jpg
+目标保存路径：wechat/images/<YYYYMMDD>-<slug>/section-<n>.jpg
 
 1. 安装 CLI（如未安装）：youmind --help > /dev/null 2>&1 || npm install -g @youmind-ai/cli
 2. youmind call getDefaultBoard → boardId
 3. youmind call createChat '{"boardId":"<boardId>","message":"<步骤1决策的完整 prompt>","tools":{"imageGenerate":{"useTool":"required","aspectRatio":"16:9","quality":"high","model":"gemini-3-pro-image-preview"}}}'
 4. 每 5 秒 getChat 轮询，status=completed 后 listMessages 提取图片 URL
-5. 下载到 wechat/images/<YYYYMMDD>/section-<n>.jpg
-6. 验证：ls -la wechat/images/<YYYYMMDD>/section-<n>.jpg
-7. 输出：SAVED: wechat/images/<YYYYMMDD>/section-<n>.jpg
+5. 下载到 wechat/images/<YYYYMMDD>-<slug>/section-<n>.jpg
+6. 验证：ls -la wechat/images/<YYYYMMDD>-<slug>/section-<n>.jpg
+7. 输出：SAVED: wechat/images/<YYYYMMDD>-<slug>/section-<n>.jpg
 ```
 
 同时发出所有子 agent，**等所有子 agent 均返回结果后**进入下一步。
@@ -477,7 +477,7 @@ mkdir -p wechat/images/<YYYYMMDD>/
 
 ```bash
 # 1. 列出实际下载的文件
-ls wechat/images/<YYYYMMDD>/section-*.jpg 2>/dev/null | sort
+ls wechat/images/<YYYYMMDD>-<slug>/section-*.jpg 2>/dev/null | sort
 
 # 2. 与草稿中的占位符对比
 # 草稿中有多少个 ![](section-N.jpg) 占位符，磁盘上就必须有多少个文件
@@ -490,7 +490,7 @@ ls wechat/images/<YYYYMMDD>/section-*.jpg 2>/dev/null | sort
 
 `--images` 参数从磁盘实际文件列表构建，不手动枚举：
 ```bash
-IMAGE_FILES=$(ls wechat/images/<YYYYMMDD>/section-*.jpg 2>/dev/null | sort | tr '\n' ' ')
+IMAGE_FILES=$(ls wechat/images/<YYYYMMDD>-<slug>/section-*.jpg 2>/dev/null | sort | tr '\n' ' ')
 ```
 
 ### 步骤 3：执行发布脚本
