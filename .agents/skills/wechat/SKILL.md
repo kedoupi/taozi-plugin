@@ -321,13 +321,15 @@ SECTION_IMAGE_META_2: 五大高危职业 | infographic | 数据录入员、电�
 
 第一段正文...
 
-![](section-1.jpg)
+![](../images/<YYYYMMDD>/section-1.jpg)
 
 ## 第二章标题
 ...
 ```
 
-占位符规则：`section-1.jpg`、`section-2.jpg`…按 H2 出现顺序从 1 开始编号；超过 4 个 H2 章节时只给前 4 个插入占位符。
+占位符规则：路径为 `../images/<YYYYMMDD>/section-<n>.jpg`，YYYYMMDD 与草稿文件名相同；按 H2 出现顺序从 1 开始编号；超过 4 个 H2 章节时只给前 4 个插入占位符。
+
+路径说明：草稿位于 `wechat/drafts/`，图片位于 `wechat/images/<YYYYMMDD>/`，相对路径需写 `../images/<YYYYMMDD>/section-<n>.jpg` 才能在本地 Markdown 预览中正确显示。
 
 将处理后的完整 Markdown 写入 `wechat/drafts/<YYYYMMDD>-<slug>.md`。
 

@@ -697,7 +697,12 @@ def sync(title, content_md, cover_path, image_paths=None, theme=None):
         for img_path in image_paths:
             filename = os.path.basename(img_path)
             wx_url = upload_image(token, img_path)
-            content_md = content_md.replace(f"({filename})", f"({wx_url})")
+            # 匹配 markdown 图片链接中以该文件名结尾的路径（兼容裸文件名和相对路径）
+            content_md = re.sub(
+                r'\([^)]*' + re.escape(filename) + r'\)',
+                f'({wx_url})',
+                content_md
+            )
             print(f"[同步] 配图 OK {filename}", file=sys.stderr)
 
     # 替换完成后，检查是否还有未替换的本地图片占位符
