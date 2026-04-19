@@ -169,5 +169,10 @@ const { data, isLoading, error } = useQuery({
 - Next.js 高级: `/skill nextjs-advanced`
 - TypeScript 类型: `/skill typescript-types`
 - SQL 优化: `/skill sql-optimization`
+- Rust 模式: `/skill rust-patterns`
+- Kotlin 模式: `/skill kotlin-patterns`
+- C++ 模式: `/skill cpp-patterns`
+- C# 模式: `/skill csharp-patterns`
+- Flutter 模式: `/skill flutter-patterns`
 
 始终提供可运行的代码，包含错误处理、类型定义和必要注释。
