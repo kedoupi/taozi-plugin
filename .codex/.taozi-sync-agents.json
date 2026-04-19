@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-19T11:14:30.368Z",
+  "generatedAt": "2026-04-19T11:30:08.551Z",
   "entries": [
     ".codex/agents/architect.toml",
     ".codex/agents/build-error-resolver.toml",
@@ -15,6 +15,8 @@
     ".codex/agents/doc-updater.toml",
     ".codex/agents/documentation-engineer.toml",
     ".codex/agents/e2e-runner.toml",
+    ".codex/agents/flutter-build-resolver.toml",
+    ".codex/agents/flutter-reviewer.toml",
     ".codex/agents/fullstack-developer.toml",
     ".codex/agents/go-build-resolver.toml",
     ".codex/agents/go-reviewer.toml",
