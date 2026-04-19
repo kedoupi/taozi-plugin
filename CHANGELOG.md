@@ -4,6 +4,14 @@ All notable changes to Taozi Plugin are documented here.
 
 ---
 
+## [5.0.1] - 2026-04-20
+
+### Fixed
+
+- **微信公众号 skill 图片路径冲突**：同一天生成多篇文章时，第二篇会覆盖第一篇的章节配图。将图片目录由 `images/<YYYYMMDD>/` 改为 `images/<YYYYMMDD>-<slug>/`，每篇文章使用独立目录，互不干扰。
+
+---
+
 ## [5.0.0] - 2026-04-19
 
 ### Added

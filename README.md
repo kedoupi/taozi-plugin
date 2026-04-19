@@ -1,4 +1,4 @@
-# Taozi Plugin 5.0.0
+# Taozi Plugin 5.0.1
 
 智能开发工具集 - 工作流驱动、3 条铁律、思维工具箱、自动化 Hooks + YouMind AI 创作能力。
 

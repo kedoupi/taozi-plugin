@@ -1,6 +1,6 @@
 {
   "name": "taozi",
-  "version": "5.0.0",
-  "description": "Taozi 5.0.0 - 全栈语言覆盖：9 门语言三件套完整支持（TypeScript/Python/Go/Java/Rust/Kotlin/C++/C#/Flutter）；新增 13 个语言专项 agent + 5 个 patterns skill；build-error-resolver 明确为 TypeScript 专属。",
+  "version": "5.0.1",
+  "description": "Taozi 5.0.1 - 修复微信公众号 skill 同日多篇文章图片路径冲突问题（每篇文章使用独立图片目录）。",
   "skills": "./skills/"
 }
