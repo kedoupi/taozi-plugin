@@ -6,8 +6,8 @@
 
 ## Step 1：加载配置
 
-按优先级读取配置（高 → 低）：`wechat/style.yaml` → `.taozi/platforms/wechat/style.yaml` → `~/.taozi/platforms/wechat/style.yaml`，解析凭据（`$VAR_NAME` 展开为 env var）。
-检查必填字段：wechat.appid、wechat.secret、youmind.api_key、name、tone、voice。
+按优先级读取配置（高 → 低）：`.taozi/platforms/wechat.yaml` → `~/.taozi/platforms/wechat.yaml` → `~/.taozi/config.yaml`，解析凭据（`$VAR_NAME` 展开为 env var）。
+检查必填字段：wechat.accounts.default.appid、wechat.accounts.default.secret、youmind.api_key、name、tone、voice。
 
 ---
 
@@ -25,7 +25,7 @@ python3 skills/wechat/scripts/fetch_hotspots.py --limit 30
 
 ## Step 3：选题生成
 
-基于热点列表和 style.yaml 的 topics/target_audience，生成 10 个候选选题。
+基于热点列表和 wechat.yaml 的 topics/target_audience，生成 10 个候选选题。
 
 每个选题包含：
 - 标题（20-28 字）
@@ -46,7 +46,7 @@ python3 skills/wechat/scripts/fetch_hotspots.py --limit 30
 - 写前完成思维框架（原子洞察 + 情感弧 + 核心张力）
 - 字数：1500-2500 字
 - H1 标题：20-28 字
-- 禁用 style.yaml 的 blacklist 词汇
+- 禁用 wechat.yaml 的 blacklist 词汇
 - playbook.md 优先级 > writing-guide.md（客户专属风格）
 
 **Fallback：** playbook.md 不存在 → 仅用 writing-guide.md。
