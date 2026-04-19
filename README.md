@@ -1,4 +1,4 @@
-# Taozi Plugin 4.6.0
+# Taozi Plugin 5.0.0
 
 智能开发工具集 - 工作流驱动、3 条铁律、思维工具箱、自动化 Hooks + YouMind AI 创作能力。
 
@@ -158,7 +158,7 @@ mkdir -p .agents/plugins
 - `agents/` 与 `skills/` 是单一事实来源
 - 修改后运行 `node scripts/sync-codex.js` 同步 Codex 产物
 
-## Skills（30+ 个）
+## Skills（69 个）
 
 所有 skills 触发形式统一为 `/taozi:<skill-name>`。
 
@@ -293,7 +293,7 @@ mkdir -p .agents/plugins
 | context-manager | 上下文优化、CLAUDE.md |
 | prompt-engineer | LLM 提示优化、AI 系统 |
 
-## Skills（64 个）
+## Skills（69 个）
 
 Claude / Codex 根据任务自动引用相关知识库；同时 `/taozi:<name>` 手动触发工作流类 skill。
 
@@ -301,9 +301,9 @@ Claude / Codex 根据任务自动引用相关知识库；同时 `/taozi:<name>` 
 
 `taozi` · `plan` · `tdd` · `verify` · `code-review` · `quality-gate` · `git-workflow` · `update-context` · `model-route` · `learning` · `multi-plan` · `multi-execute` · `build-fix` · `checkpoint` · `ultra-think` · `evolve` · `harness-audit` · `instinct-status` · `instinct-import` · `instinct-export` · `skill-create` · `security-scan` · `setup` · `lark`
 
-### 开发知识库（31 个，自动引用）
+### 开发知识库（36 个，自动引用）
 
-`frontend-react` · `backend-architecture` · `nextjs-advanced` · `nextjs-architecture` · `typescript-types` · `typescript-patterns` · `python-patterns` · `go-patterns` · `swift-patterns` · `swift-concurrency` · `foundation-models` · `django-patterns` · `springboot-patterns` · `springboot-tdd` · `springboot-security` · `docker-patterns` · `e2e-testing` · `api-design` · `deployment-patterns` · `database-migrations` · `security-patterns` · `sql-optimization` · `legacy-migration` · `testing-strategies` · `mcp-templates` · `git-conventions` · `code-quality-checklist` · `thinking-tools` · `continuous-learning` · `token-optimization` · `deep-research`
+`frontend-react` · `backend-architecture` · `nextjs-advanced` · `nextjs-architecture` · `typescript-types` · `typescript-patterns` · `python-patterns` · `go-patterns` · `swift-patterns` · `swift-concurrency` · `foundation-models` · `django-patterns` · `springboot-patterns` · `springboot-tdd` · `springboot-security` · `docker-patterns` · `e2e-testing` · `api-design` · `deployment-patterns` · `database-migrations` · `security-patterns` · `sql-optimization` · `legacy-migration` · `testing-strategies` · `mcp-templates` · `git-conventions` · `code-quality-checklist` · `thinking-tools` · `continuous-learning` · `token-optimization` · `deep-research` · `rust-patterns` · `kotlin-patterns` · `cpp-patterns` · `csharp-patterns` · `flutter-patterns`
 
 ### YouMind 创作 Skills（9 个）
 

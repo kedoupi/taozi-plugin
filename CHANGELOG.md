@@ -4,6 +4,34 @@ All notable changes to Taozi Plugin are documented here.
 
 ---
 
+## [5.0.0] - 2026-04-19
+
+### Added
+
+- **全栈语言覆盖 — 9 门语言三件套完整支持**：taozi 从 TypeScript 单语言扩展为真正的全栈工具，覆盖 TypeScript/Python/Go/Java/Rust/Kotlin/C++/C#/Flutter 共 9 门语言，每门语言提供 reviewer（专项审查）、build-resolver（构建修复）、patterns（惯用法 skill）三件套。
+- **新增 13 个语言专项 agent**：
+  - `python-build-resolver`：ModuleNotFoundError、pip/uv/poetry 冲突、mypy、虚拟环境
+  - `go-build-resolver`：undefined/类型不匹配、module 路径不一致、CGO 编译
+  - `java-build-resolver`：cannot find symbol、dependency hell、Spring Bean 注入失败
+  - `rust-reviewer`：unsafe 合规、所有权/借用/生命周期、async 阻塞（CRITICAL/HIGH/MEDIUM 分级）
+  - `rust-build-resolver`：生命周期标注缺失、借用冲突、trait 未实现、feature flag
+  - `kotlin-reviewer`：GlobalScope 协程泄漏、`!!` 滥用、Java 互操作陷阱、Compose 性能
+  - `kotlin-build-resolver`：Gradle、kapt 注解处理失败、Compose 编译器版本不匹配
+  - `cpp-reviewer`：内存安全（raw pointer/UAF/double-free）、UB、RAII 违反
+  - `cpp-build-resolver`：头文件缺失、链接错误（undefined reference）、模板实例化、CMake
+  - `csharp-reviewer`：async/await 死锁（.Result/.Wait()）、IDisposable 泄漏、LINQ 延迟求值
+  - `csharp-build-resolver`：NuGet 依赖冲突（NU1107）、TFM 不兼容、EF migrations 不同步
+  - `flutter-reviewer`：BuildContext 跨 async gap（mounted 检查）、setState 生命周期、Widget 重建性能
+  - `flutter-build-resolver`：pubspec 版本冲突、native plugin 编译失败（Android/iOS）、Dart SDK 不兼容
+- **新增 5 个 patterns skill**：`rust-patterns`、`kotlin-patterns`、`cpp-patterns`、`csharp-patterns`、`flutter-patterns`，每个覆盖该语言 3-5 个核心惯用法，含 ❌/✅ 对比示例。
+
+### Changed
+
+- **`build-error-resolver` 描述明确化**：description 更新为"TypeScript/Node.js 构建错误修复专家"，避免误导其他语言用户使用错误 agent。
+- **`fullstack-developer` 覆盖范围扩展**：后端章节新增 Go/Java/Kotlin/Rust/C#；新增"移动端开发"节（Flutter/Dart）；相关 Skills 节补充 5 个新 patterns 引用。
+
+---
+
 ## [4.6.0] - 2026-04-19
 
 ### Added

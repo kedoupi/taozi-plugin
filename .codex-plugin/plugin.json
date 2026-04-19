@@ -1,6 +1,6 @@
 {
   "name": "taozi",
-  "version": "4.6.0",
-  "description": "Taozi 4.6.0 - 飞书万能链接助手（/taozi:lark）：任意飞书链接读取→分析→逐步确认→写回；配置体系重构（3 层平铺 + 多账号支持）；wechat 软引导替硬停；xiaohongshu 项目配置层。",
+  "version": "5.0.0",
+  "description": "Taozi 5.0.0 - 全栈语言覆盖：9 门语言三件套完整支持（TypeScript/Python/Go/Java/Rust/Kotlin/C++/C#/Flutter）；新增 13 个语言专项 agent + 5 个 patterns skill；build-error-resolver 明确为 TypeScript 专属。",
   "skills": "./skills/"
 }
