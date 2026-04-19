@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-18T06:53:49.156Z",
+  "generatedAt": "2026-04-19T04:04:07.923Z",
   "entries": [
     ".agents/skills/api-design",
     ".agents/skills/backend-architecture",
@@ -28,6 +28,7 @@
     ".agents/skills/instinct-export",
     ".agents/skills/instinct-import",
     ".agents/skills/instinct-status",
+    ".agents/skills/lark",
     ".agents/skills/learning",
     ".agents/skills/legacy-migration",
     ".agents/skills/mcp-templates",

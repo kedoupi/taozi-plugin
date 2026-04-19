@@ -4,7 +4,8 @@ description: 微信公众号文章全链路：热点选题 → YouMind 研究 �
 triggers: "公众号文章,微信推文,发草稿箱,公众号写作,写公众号,微信公众号,WeChat article,publish to WeChat"
 allowed-tools:
   - Bash([ -d "$HOME/.taozi" ]*)
-  - Bash([ -f "$HOME/.taozi/platforms/wechat/style.yaml" ]*)
+  - Bash([ -f "$HOME/.taozi/platforms/wechat.yaml" ]*)
+  - Bash([ -f ".taozi/platforms/wechat.yaml" ]*)
   - Bash([ -d "wechat" ]*)
   - Bash([ -f "wechat/history.yaml" ]*)
   - Bash(mkdir -p *)
@@ -41,18 +42,25 @@ allowed-tools:
 
 ```bash
 [ -d "$HOME/.taozi" ] && echo "taozi_exists" || echo "taozi_missing"
-[ -f "$HOME/.taozi/platforms/wechat/style.yaml" ] && echo "wechat_cfg_exists" || echo "wechat_cfg_missing"
+[ -f "$HOME/.taozi/platforms/wechat.yaml" ] && echo "wechat_cfg_exists" || echo "wechat_cfg_missing"
 ```
 
-**`~/.taozi/` 不存在** 或 **`~/.taozi/platforms/wechat/style.yaml` 不存在** → 停止执行，提示用户：
+**`~/.taozi/` 不存在** → 停止执行，提示用户：
 
 ```
-❌ 尚未完成 Taozi 全局配置。
-
-请运行 /taozi:setup 完成初始化（约 2 分钟交互向导），配置完成后再回来。
+❌ 尚未完成 Taozi 全局配置，请运行 /taozi:setup（约 2 分钟），配置完成后再回来。
 ```
 
-**两个目录均存在** → 继续阶段 2。
+**`~/.taozi/platforms/wechat.yaml` 不存在** → 软引导（不停止，继续执行）：
+
+```
+⚠️ 未检测到微信配置，是否现在完成初始化？（需填写 AppID / AppSecret / 作者名）[初始化/跳过]
+```
+
+- **初始化**：引导用户填写，写入 `~/.taozi/config.yaml` 的 `wechat.accounts.default` 字段和 `~/.taozi/platforms/wechat.yaml`，然后继续执行。
+- **跳过**：继续执行，凭据从环境变量读取（`$WECHAT_APPID` / `$WECHAT_APPSECRET`）。
+
+**`~/.taozi/` 存在**（无论 wechat.yaml 是否存在）→ 继续阶段 2。
 
 ---
 
@@ -123,17 +131,20 @@ def deep_merge(base, override):
 
 cfg = {}
 cfg = deep_merge(cfg, load_yaml(os.path.join(TAOZI, 'config.yaml')))
-cfg = deep_merge(cfg, load_yaml(os.path.join(TAOZI, 'platforms', 'wechat', 'style.yaml')))
-cfg = deep_merge(cfg, load_yaml('.taozi/platforms/wechat/style.yaml'))
-cfg = deep_merge(cfg, load_yaml('wechat/style.yaml'))
+cfg = deep_merge(cfg, load_yaml(os.path.join(TAOZI, 'platforms', 'wechat.yaml')))
+cfg = deep_merge(cfg, load_yaml('.taozi/platforms/wechat.yaml'))
 
-wechat  = cfg.get('wechat', {}) or {}
-youmind = cfg.get('youmind', {}) or {}
-fmt     = cfg.get('format', {}) or {}
+wechat   = cfg.get('wechat', {}) or {}
+accounts = wechat.get('accounts', {}) or {}
+account_name = cfg.get('account', 'default')
+account  = accounts.get(account_name, {}) or wechat  # 兼容旧格式（直接存 appid/secret）
+youmind  = cfg.get('youmind', {}) or {}
+fmt      = cfg.get('format', {}) or {}
 
-appid  = expand(wechat.get('appid',  '\$WECHAT_APPID'))
-secret = expand(wechat.get('secret', '\$WECHAT_APPSECRET'))
+appid  = expand(account.get('appid',  '\$WECHAT_APPID'))
+secret = expand(account.get('secret', '\$WECHAT_APPSECRET'))
 apikey = expand(youmind.get('api_key', '\$YOUMIND_API_KEY'))
+proxy  = expand(wechat.get('proxy', cfg.get('proxy', '')))
 theme  = fmt.get('theme', cfg.get('theme', 'newspaper')) or 'newspaper'
 
 missing = []
@@ -363,8 +374,8 @@ def read_brand(filename):
                 return f.read()
     return ''
 
-def read_platform(filename):
-    path = os.path.join(HOME, '.taozi', 'platforms', 'wechat', filename)
+def read_platform_yaml():
+    path = os.path.join(HOME, '.taozi', 'platforms', 'wechat.yaml')
     try:
         with open(path) as f:
             return f.read()
@@ -376,7 +387,7 @@ print('CHARACTER_EXISTS:' + ('yes' if char else 'no'))
 if char:
     print('CHARACTER_CONTENT:' + char[:500])
 
-style = read_platform('style.yaml')
+style = read_platform_yaml()
 m = re.search(r'palette\s*:\s*[^\S\n]*([^\n#]+)', style)
 palette = m.group(1).strip().strip(chr(34)).strip(chr(39)) if m else ''
 print('PALETTE:' + palette)
@@ -547,7 +558,7 @@ python3 skills/wechat/scripts/wechat_publish.py \
 |------|------|
 | 必填字段未填写 | 停止，列出缺少的字段，提示运行 `/taozi:setup` 补填 |
 | token 获取失败（40001）| 检查 appid/secret 是否正确，重试一次 |
-| IP 不在白名单（40164）| 提示用户配置 IP 白名单或在 `~/.taozi/platforms/wechat/style.yaml` 的 proxy 字段填入代理 |
+| IP 不在白名单（40164）| 提示用户配置 IP 白名单或在 `~/.taozi/config.yaml` 的 wechat.proxy 字段填入代理 |
 | 草稿创建失败（45009）| 提示已达今日调用上限（1000 次/天），明天再试 |
 | 未开通草稿箱（43019）| 提示用户在公众号后台：设置与开发 → 接口权限 → 开通草稿箱 |
 | YouMind 超时 | 告知用户稍后重试或简化主题关键词 |
