@@ -1,6 +1,6 @@
 ---
 name: setup
-description: Taozi 配置向导：交互式引导创建 ~/.taozi/ 全局配置（YouMind key、品牌人设、平台凭据），一次配置，所有内容 skill 共享。新设备或新账号配置时使用。
+description: Taozi 配置向导：交互式引导创建 ~/.taozi/ 全局配置（YouMind key、品牌人设、平台凭据），支持微信/飞书等多平台，一次配置所有内容 skill 共享。新设备或新账号配置时使用。
 triggers: "配置taozi,taozi配置,setup,初始化配置,配置微信,配置YouMind"
 allowed-tools:
   - Bash([ -d "$HOME/.taozi" ]*)
@@ -29,7 +29,7 @@ files = {
     'brand/voice.md':           os.path.join(TAOZI, 'brand', 'voice.md'),
     'brand/playbook.md':        os.path.join(TAOZI, 'brand', 'playbook.md'),
     'brand/character.md':       os.path.join(TAOZI, 'brand', 'character.md'),
-    'platforms/wechat/style.yaml': os.path.join(TAOZI, 'platforms', 'wechat', 'style.yaml'),
+    'platforms/wechat.yaml': os.path.join(TAOZI, 'platforms', 'wechat.yaml'),
 }
 status = {k: os.path.exists(v) for k, v in files.items()}
 print(json.dumps(status))
@@ -60,6 +60,15 @@ mkdir -p "$HOME/.taozi"
 
 youmind:
   api_key: <API_KEY>    # 获取：https://youmind.com/settings/api-keys
+
+# 微信账号（支持多账号，在 .taozi/platforms/wechat.yaml 中用 account: <名称> 引用）
+# wechat:
+#   accounts:
+#     default:
+#       appid: $WECHAT_APPID
+#       secret: $WECHAT_APPSECRET
+#       author: "作者名"
+#   proxy: $WECHAT_PROXY
 ```
 
 ---
@@ -211,7 +220,13 @@ Character: <你的角色英文描述>.
 > 要配置哪些发布平台？（可多选）
 > 1. 微信公众号
 > 2. 小红书（无需凭据，确认格式偏好）
-> 3. 抖音（无需凭据，确认格式偏好）
+> 3. 飞书知识库（无需在此配置凭据，使用 lark-cli auth login 认证）
+> 4. 抖音（无需凭据，确认格式偏好）
+
+选择飞书时，展示说明：
+> 飞书使用 lark-cli 统一认证，无需存储 token。
+> 请确保已运行：lark-cli auth login
+> 项目绑定知识库：在项目目录创建 .taozi/platforms/lark.yaml 即可。
 
 ---
 
@@ -225,45 +240,31 @@ Character: <你的角色英文描述>.
 3. 作者名（文章底部显示）
 4. 代理地址（可选，没有代理则需配置微信 IP 白名单）
 
-写入 `~/.taozi/platforms/wechat/style.yaml`：
-
 ```bash
-mkdir -p "$HOME/.taozi/platforms/wechat"
+mkdir -p "$HOME/.taozi/platforms"
 ```
 
-**`~/.taozi/platforms/wechat/style.yaml` 内容**：
+在 `~/.taozi/config.yaml` 的 youmind 字段后追加微信账号配置：
 
 ```yaml
-# 微信公众号平台配置 — 由 /taozi:setup 自动生成
-# 继承 ~/.taozi/brand/voice.md 的人设，只写微信特有内容
-
-# 【必填】API 凭据
 wechat:
-  appid: <APPID>
-  secret: <APPSECRET>
-  author: "<AUTHOR>"
+  accounts:
+    default:
+      appid: <APPID>
+      secret: <APPSECRET>
+      author: "<AUTHOR>"
+  proxy: <PROXY 或 $WECHAT_PROXY>
+```
 
-# 【可选】代理（绕过微信 IP 白名单）
-proxy: <PROXY 或 $WECHAT_PROXY>
+写入 `~/.taozi/platforms/wechat.yaml`（格式偏好）：
 
-# 微信特有格式
+```yaml
+# 微信公众号格式配置 — 由 /taozi:setup 自动生成
 format:
   length: "1200-2500"
   digest_limit: 54
   cover_ratio: "16:9"
-  theme: "newspaper"    # simple | sspai | minimal | tech-modern | github | newspaper
-
-# 【可选】配色方案（影响封面和配图的颜色风格；留空则由 image skill 根据风格自动决定）
-# palette: "warm orange, cream white, soft coral"
-
-# 封面叠字（可选）
-# cover_text:
-#   enabled: true
-#   font_size: 52
-#   color: "#FFFFFF"
-#   shadow: true
-#   position: "bottom"
-#   max_chars_per_line: 14
+  theme: "newspaper"
 ```
 
 ### 小红书（若选择）
@@ -284,15 +285,17 @@ format:
 ✅ ~/.taozi/ 配置完成！
 
 已配置：
-  ~/.taozi/config.yaml           ← YouMind API Key
-  ~/.taozi/brand/voice.md        ← 品牌人设
-  ~/.taozi/brand/playbook.md     ← 通用写作规范
-  ~/.taozi/brand/character.md    ← 封面角色（可选填写）
-  ~/.taozi/platforms/wechat/style.yaml  ← 微信公众号配置
+  ~/.taozi/config.yaml               ← YouMind API Key + 微信账号凭据
+  ~/.taozi/brand/voice.md            ← 品牌人设
+  ~/.taozi/brand/playbook.md         ← 通用写作规范
+  ~/.taozi/brand/character.md        ← 封面角色（可选填写）
+  ~/.taozi/platforms/wechat.yaml     ← 微信格式偏好
 
 可选后续操作：
   📎 填写 ~/.taozi/brand/character.md 中的「我的角色」→ 封面图出现固定角色
-  📎 可在任意项目建 ./.taozi/brand/voice.md 覆盖全局人设
+  📎 在任意项目建 .taozi/platforms/wechat.yaml 可覆盖微信账号和格式
+  📎 在任意项目建 .taozi/platforms/lark.yaml 可绑定飞书知识库
+  📎 在任意项目建 .taozi/brand/voice.md 可覆盖全局人设
 
 现在可以运行：/taozi:wechat · /taozi:xiaohongshu
 ```
