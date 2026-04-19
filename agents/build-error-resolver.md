@@ -1,6 +1,6 @@
 ---
 name: build-error-resolver
-description: 构建错误修复专家 — TypeScript 类型错误、编译失败、依赖冲突快速定位和修复
+description: TypeScript/Node.js 构建错误修复专家 — TS 类型错误、编译失败、依赖冲突快速定位和修复。其他语言请用对应的 {lang}-build-resolver。
 tools: Read, Write, Edit, Bash, Grep, Glob
 model: sonnet
 ---
