@@ -90,22 +90,19 @@ def _deep_merge(base, override):
 
 
 def load_taozi_config(platform: str, cwd: str = ".") -> dict:
-    """按优先级从低到高四级合并：
+    """按优先级从低到高三级合并：
     ~/.taozi/config.yaml
-    → ~/.taozi/platforms/<p>/style.yaml
-    → ./.taozi/platforms/<p>/style.yaml
-    → ./<p>/style.yaml
+    → ~/.taozi/platforms/<p>.yaml
+    → ./.taozi/platforms/<p>.yaml
     """
     HOME  = os.path.expanduser("~")
     TAOZI = os.path.join(HOME, ".taozi")
     cfg = {}
     cfg = _deep_merge(cfg, _load_yaml_file(os.path.join(TAOZI, "config.yaml")))
     cfg = _deep_merge(cfg, _load_yaml_file(
-        os.path.join(TAOZI, "platforms", platform, "style.yaml")))
+        os.path.join(TAOZI, "platforms", f"{platform}.yaml")))
     cfg = _deep_merge(cfg, _load_yaml_file(
-        os.path.join(cwd, ".taozi", "platforms", platform, "style.yaml")))
-    cfg = _deep_merge(cfg, _load_yaml_file(
-        os.path.join(cwd, platform, "style.yaml")))
+        os.path.join(cwd, ".taozi", "platforms", f"{platform}.yaml")))
     return cfg
 
 
@@ -126,7 +123,7 @@ def load_brand_file(filename: str, cwd: str = ".") -> str:
 
 
 def load_config():
-    """从 ~/.taozi/ 四级配置合并读取，环境变量兜底。"""
+    """从 ~/.taozi/ 三级配置合并读取，多账号支持，环境变量兜底。"""
     def resolve(val):
         if isinstance(val, str) and val.startswith("$"):
             return os.environ.get(val[1:], "")
@@ -135,11 +132,14 @@ def load_config():
     raw = load_taozi_config("wechat", os.getcwd())
 
     config = {}
-    wechat = raw.get("wechat", {}) or {}
-    config["appid"]  = resolve(wechat.get("appid",  "$WECHAT_APPID"))
-    config["secret"] = resolve(wechat.get("secret", "$WECHAT_APPSECRET"))
-    config["author"] = wechat.get("author", "") or ""
-    config["proxy"]  = resolve(raw.get("proxy", "$WECHAT_PROXY"))
+    wechat      = raw.get("wechat", {}) or {}
+    accounts    = wechat.get("accounts", {}) or {}
+    account_name = raw.get("account", "default")
+    account     = accounts.get(account_name, {}) or wechat  # 兼容旧格式（直接存 appid/secret）
+    config["appid"]  = resolve(account.get("appid",  "$WECHAT_APPID"))
+    config["secret"] = resolve(account.get("secret", "$WECHAT_APPSECRET"))
+    config["author"] = account.get("author", "") or ""
+    config["proxy"]  = resolve(wechat.get("proxy", raw.get("proxy", "$WECHAT_PROXY")))
     fmt = raw.get("format", {}) or {}
     config["theme"]  = fmt.get("theme", raw.get("theme", "newspaper")) or "newspaper"
     ct = raw.get("cover_text", {}) or {}
@@ -670,7 +670,7 @@ def sync(title, content_md, cover_path, image_paths=None, theme=None):
         dict: {"media_id": "...", "title": "..."}
     """
     if not WECHAT_APPID or not WECHAT_APPSECRET:
-        raise Exception("请设置 WECHAT_APPID 和 WECHAT_APPSECRET（环境变量或 ~/.taozi/platforms/wechat/style.yaml）")
+        raise Exception("请设置 WECHAT_APPID 和 WECHAT_APPSECRET（环境变量或 ~/.taozi/config.yaml 的 wechat.accounts.default）")
 
     print(f"[同步] 开始: {title}", file=sys.stderr)
     token = get_access_token()
