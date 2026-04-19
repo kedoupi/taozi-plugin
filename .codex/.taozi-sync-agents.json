@@ -1,11 +1,15 @@
 {
-  "generatedAt": "2026-04-19T11:06:22.932Z",
+  "generatedAt": "2026-04-19T11:14:30.368Z",
   "entries": [
     ".codex/agents/architect.toml",
     ".codex/agents/build-error-resolver.toml",
     ".codex/agents/chief-of-staff.toml",
     ".codex/agents/code-reviewer.toml",
     ".codex/agents/context-manager.toml",
+    ".codex/agents/cpp-build-resolver.toml",
+    ".codex/agents/cpp-reviewer.toml",
+    ".codex/agents/csharp-build-resolver.toml",
+    ".codex/agents/csharp-reviewer.toml",
     ".codex/agents/debugger.toml",
     ".codex/agents/devops-engineer.toml",
     ".codex/agents/doc-updater.toml",

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-19T11:06:22.963Z",
+  "generatedAt": "2026-04-19T11:14:30.399Z",
   "entries": [
     ".agents/skills/api-design",
     ".agents/skills/backend-architecture",
@@ -10,6 +10,8 @@
     ".agents/skills/code-review",
     ".agents/skills/content",
     ".agents/skills/continuous-learning",
+    ".agents/skills/cpp-patterns",
+    ".agents/skills/csharp-patterns",
     ".agents/skills/database-migrations",
     ".agents/skills/deep-research",
     ".agents/skills/deployment-patterns",
