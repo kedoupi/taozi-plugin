@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-19T10:31:50.999Z",
+  "generatedAt": "2026-04-19T11:06:22.963Z",
   "entries": [
     ".agents/skills/api-design",
     ".agents/skills/backend-architecture",
@@ -28,6 +28,7 @@
     ".agents/skills/instinct-export",
     ".agents/skills/instinct-import",
     ".agents/skills/instinct-status",
+    ".agents/skills/kotlin-patterns",
     ".agents/skills/lark",
     ".agents/skills/learning",
     ".agents/skills/legacy-migration",
@@ -42,6 +43,7 @@
     ".agents/skills/python-patterns",
     ".agents/skills/quality-gate",
     ".agents/skills/research",
+    ".agents/skills/rust-patterns",
     ".agents/skills/security-patterns",
     ".agents/skills/security-scan",
     ".agents/skills/setup",
