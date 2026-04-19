@@ -61,7 +61,7 @@ def _parse_simple_yaml(text):
     return result
 
 
-# ── 配置加载（~/.taozi/ 四级合并）────────────────────────────────────
+# ── 配置加载（~/.taozi/ 三级合并）────────────────────────────────────
 def _load_yaml_file(path):
     """读取 YAML 文件，PyYAML 不可用时降级到简单解析器。"""
     if not os.path.exists(path):
