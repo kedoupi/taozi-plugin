@@ -4,6 +4,15 @@ All notable changes to Taozi Plugin are documented here.
 
 ---
 
+## [5.3.0] - 2026-04-20
+
+### Changed
+
+- **`/taozi:xiaohongshu` 配图升级**：引入 baoyu-xhs-images 风格体系（12种风格 × 8种布局），封面与内容图比例统一为 3:4。封面改为带标题文字的小红书图文卡（sparse 布局，含中文标题 + 角色 + Style Anchor）；内容图同样带章节文字。配图 sub-agent 改为调用 `taozi:image` Direct Mode，删除手写 YouMind API 调用。
+- **`/taozi:image` 平台尺寸规则**：小红书正文配图比例由 `1:1` 更新为 `3:4`，与封面保持一致。
+
+---
+
 ## [5.2.0] - 2026-04-20
 
 ### Added

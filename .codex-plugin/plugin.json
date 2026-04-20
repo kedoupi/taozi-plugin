@@ -1,6 +1,6 @@
 {
   "name": "taozi",
-  "version": "5.2.0",
-  "description": "Taozi 5.2.0 - 吸收 Superpowers 方法论：新增 /taozi:debug（4阶段根因调试）、/taozi:finish（分支收尾门禁）；/taozi:plan 升级为重量版 5 阶段设计流程；verify 加完成门禁，multi-execute 加 per-task 双重审查。",
+  "version": "5.3.0",
+  "description": "Taozi 5.3.0 - 小红书配图升级：引入 baoyu-xhs-images 风格体系（12种风格×8种布局），封面/内容图统一 3:4，封面带标题文字+角色+Style Anchor，调用 taozi:image Direct Mode 生成。",
   "skills": "./skills/"
 }

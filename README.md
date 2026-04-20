@@ -1,4 +1,4 @@
-# Taozi Plugin 5.2.0
+# Taozi Plugin 5.3.0
 
 智能开发工具集 - 工作流驱动、3 条铁律、思维工具箱、自动化 Hooks + YouMind AI 创作能力。
 
@@ -207,7 +207,7 @@ mkdir -p .agents/plugins
 | `/taozi:ppt` | PPT 生成（返回封面图预览 + Craft 编辑链接）|
 | `/taozi:webpage` | 网页生成（描述 → 可访问的 CDN 链接）|
 | `/taozi:wechat` | 微信公众号全链路（热点选题 → 研究 → 写作 → 章节配图 → 草稿箱；image Context Mode 自主决策风格，封面 900×383，角色锚点注入）|
-| `/taozi:xiaohongshu` | 小红书全链路（热点选题 → 研究 → 正文 → 配图；image Context Mode 自主决策风格，封面 3:4，正文 1:1，Style Anchor 视觉一致性）|
+| `/taozi:xiaohongshu` | 小红书全链路（热点选题 → 研究 → 正文 → 配图；baoyu-xhs-images 风格体系，12种风格×8种布局，封面/正文统一 3:4，图文卡含标题文字+角色+Style Anchor）|
 
 ## 使用示例
 

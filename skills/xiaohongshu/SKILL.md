@@ -152,74 +152,70 @@ if char:
 - `character`：character.md 角色外形描述核心段落（若不存在则为空）
 - `compatible_styles`：character.md 中 `compatible_styles:` 值（若不存在，默认 `[warm, vector-illustration, flat design]`）
 
-## 步骤 1：决策配图风格（Context Mode，基于 image skill 规则）
+## 步骤 1：风格决策（baoyu-xhs-images 体系）
 
-读取 `skills/image/SKILL.md` 中的 **上下文感知模式：决策规则** 和 `skills/infographic/references/styles.md` 中的**内容类型 → 风格推荐**表。
+根据 article_type 选风格和布局：
 
-**封面图决策**（image_role: cover，platform: xiaohongshu）：
-- character 存在 → 角色锚点 + 从 compatible_styles 选 Style + xiaohongshu 风格关键词
-- character 不存在 → 按 article_type 选封面风格（参考 image skill 映射表）
-- **定义 Style Anchor 字符串**（所有后续图片共用，保证视觉一致性）：
-  `[Style Anchor] art style: <选定风格描述>, color palette: <对应配色>, character: <角色锚点（如有）>, consistent visual DNA`
+| article_type    | 推荐风格                  | 推荐布局  |
+|----------------|--------------------------|---------|
+| storytelling   | warm / cute              | balanced |
+| opinion        | bold / minimal           | sparse  |
+| tech           | notion                   | dense   |
+| tutorial       | chalkboard / sketch-notes | flow   |
+| knowledge      | notion / sketch-notes    | list / dense |
 
-**内容图决策**（image_role: body，platform: xiaohongshu）：
-- 每张内容图基于对应章节内容判断 section_type（infographic 或 illustration）
-- 按 image skill 角色注入规则 + `skills/infographic/references/styles.md` 推荐规则选 style + layout
-- infographic 类型：读 `skills/infographic/references/layouts.md` 和 `styles.md`；**不注入角色锚点**
+若 character 存在，从 compatible_styles 中选与上述推荐风格最接近的。
 
-## 步骤 2：生成封面图（串行，建立 Style Anchor）
+定义 **Style Anchor 字符串**（所有图共用，保证视觉一致）：
+```
+[Style Anchor] art style: <选定风格描述>, color palette: <对应配色>, <角色锚点（如有）>, consistent visual DNA
+```
+
+## 步骤 2：生成封面图（串行，建立视觉基准）
 
 ```bash
 mkdir -p xiaohongshu/images/<YYYYMMDD>-<title_slug>/
 ```
 
-封面 prompt 结构：
+**封面是带文字的小红书图文卡，参考 baoyu-xhs-images sparse 布局。**
+
+封面 prompt 结构（自行组装，Direct Mode 传给 taozi:image）：
 ```
-<角色锚点（如有）>, <article_type 场景描述，10词>, <风格关键词>, portrait orientation, no text overlay, high quality
-[Style Anchor 全文附在末尾]
+<角色锚点，如有：character 描述原文, consistent character design throughout.>
+<article_type 场景主视觉，10词英文，聚焦1个主体>
+Xiaohongshu cover card design, sparse layout, one prominent visual element,
+Include large bold title text in Simplified Chinese: "<文章标题，最多20字>",
+<Style Anchor 全文>,
+3:4 portrait, high quality
 ```
 
-派子 agent：
+示例（knowledge 类型，无角色）：
 ```
-1. youmind --help > /dev/null 2>&1 || npm install -g @youmind-ai/cli
-2. youmind call getDefaultBoard → boardId
-3. youmind call createChat '{"boardId":"<boardId>","message":"<封面 prompt>","tools":{"imageGenerate":{"useTool":"required","aspectRatio":"3:4","quality":"high","model":"gemini-3-pro-image-preview"}}}'
-4. 每5秒 getChat 轮询，status=completed 后 listMessages 提取 URL
-5. 下载到 xiaohongshu/images/<YYYYMMDD>-<title_slug>/cover.jpg
-6. 输出：SAVED: xiaohongshu/images/<YYYYMMDD>-<title_slug>/cover.jpg
+Flat vector illustration of a glowing laptop with colorful app icons,
+Xiaohongshu cover card design, sparse layout, one prominent visual element,
+Include large bold title text in Simplified Chinese: "5款AI工具测评",
+art style: flat vector illustration, color palette: macaron (soft pink lavender mint peach cream), consistent visual DNA,
+3:4 portrait, high quality
 ```
+
+调用 `taozi:image`（Direct Mode，传完整 prompt + aspectRatio: 3:4）。
+等待完成，保存到 `xiaohongshu/images/<YYYYMMDD>-<title_slug>/cover.jpg`。
 
 ## 步骤 3：并行生成内容图（最多 7 张）
 
-对每张内容图，各派一个独立子 agent。
+**内容图也是带文字的图文卡，每张对应一个章节要点。**
 
-**内容图 prompt 结构（按 section_type 区分）**：
-
-- `illustration` 类型 → 注入 Style Anchor，保持系列视觉一致性：
+每张内容图 prompt 结构（自行组装，Direct Mode 传给 taozi:image）：
 ```
-<该张图的具体内容描述（50字内）>, [Style Anchor 全文], same visual DNA as the series
-```
-
-- `infographic` 类型 → **不注入 Style Anchor**，改用 infographic references 的 Layout × Style：
-```
-Create a professional infographic following these specifications:
-Layout: <从 skills/infographic/references/layouts.md 选择>
-Style: <从 skills/infographic/references/styles.md 选择>
-Content: <section_content，中文，100字以内>
-All text in Simplified Chinese, aspectRatio 1:1
+<角色锚点，如有：character 描述原文, consistent character design throughout.>
+<该节场景描述，10词英文>
+Xiaohongshu content card design, <balanced/dense/list/flow> layout,
+Include section key text in Simplified Chinese: "<该节标题或核心要点，15字内>",
+[Style Anchor 全文], same visual DNA as the cover, consistent art style,
+3:4 portrait, high quality
 ```
 
-每个子 agent：
-```
-1. youmind --help > /dev/null 2>&1 || npm install -g @youmind-ai/cli
-2. youmind call getDefaultBoard → boardId
-3. youmind call createChat '{"boardId":"<boardId>","message":"<内容图 prompt>","tools":{"imageGenerate":{"useTool":"required","aspectRatio":"1:1","quality":"high","model":"gemini-3-pro-image-preview"}}}'
-4. 每5秒 getChat 轮询，status=completed 后 listMessages 提取 URL
-5. 下载到 xiaohongshu/images/<YYYYMMDD>-<title_slug>/image-<n>.jpg
-6. 输出：SAVED: xiaohongshu/images/<YYYYMMDD>-<title_slug>/image-<n>.jpg
-```
-
-同时派出所有子 agent，等全部完成后进入步骤 4。
+同时调用 `taozi:image`（Direct Mode）为每张内容图生成，等全部完成后保存到 `xiaohongshu/images/<YYYYMMDD>-<title_slug>/image-<n>.jpg`。
 
 ## 步骤 4：用 PushNotification 通知用户
 

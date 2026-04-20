@@ -1,6 +1,6 @@
 {
   "name": "taozi-universal",
-  "version": "5.2.0",
+  "version": "5.3.0",
   "description": "Taozi Plugin - 工作流驱动、3 条铁律、思维工具箱、自动化 Hooks + YouMind AI 创作能力（图片/研究/内容/PPT/网页/微信公众号/小红书/飞书）。全栈语言覆盖：9 门语言三件套（reviewer + build-resolver + patterns）。支持 Claude Code 和 Codex。",
   "author": {
     "name": "kedoupi",
