@@ -6,7 +6,7 @@ allowed-tools: Bash(git status:*), Bash(git diff:*), Bash(git log:*), Bash(git a
 
 # Commit
 
-生成符合 Taozi 规范的 git commit。emoji 表与分支命名见 [`git-conventions`](../git-conventions/SKILL.md) skill。
+生成符合 Taozi 规范的 git commit。完整规范（emoji/type/分支名/行为约束）见 [git-conventions](../git-conventions/SKILL.md)。
 
 ## 流程
 
@@ -62,8 +62,6 @@ EOF
 
 - 禁止 `--no-verify` 跳过 hook
 - 禁止把无关改动塞进同一个 commit
-
-> 完整 git 禁止原则（--force、--amend 已推送、AI footer、`||` 吞错等）见 [git-workflow](../git-workflow/SKILL.md)。
 
 ## 失败回退
 
