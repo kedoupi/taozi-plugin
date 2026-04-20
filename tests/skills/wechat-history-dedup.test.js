@@ -81,3 +81,7 @@ test('Sub-Agent B 步骤 0b 输出 MANDATORY_ENHANCEMENTS / RECOMMENDED_ENHANCEM
 test('Sub-Agent B 草稿元信息含文件缺失时的回退格式', () => {
   assert.ok(/框架: 无 \| 增强: 无（文件缺失）/.test(subAgentB), '缺少文件缺失时的草稿元信息回退格式');
 });
+
+test('Sub-Agent B 草稿元信息含 enhancements.md 单独缺失时的回退格式', () => {
+  assert.ok(/增强: 无（增强库缺失）/.test(subAgentB), '缺少 enhancements.md 单独缺失时的草稿元信息回退格式');
+});

@@ -400,6 +400,12 @@ SECTION_IMAGE_META_2: 五大高危职业 | infographic | 数据录入员、电�
 <!-- 框架: 无 | 增强: 无（文件缺失） -->
 ```
 
+若仅 enhancements.md 缺失（框架已选，增强未注入），元信息注释写：
+
+```html
+<!-- 框架: <SELECTED_FRAMEWORK> | 增强: 无（增强库缺失） -->
+```
+
 ### 步骤 5：返回结果
 DRAFT_DONE
 title: <标题>
