@@ -1,6 +1,6 @@
 {
   "name": "taozi",
-  "version": "5.3.0",
-  "description": "Taozi 5.3.0 - 小红书配图升级：引入 baoyu-xhs-images 风格体系（12种风格×8种布局），封面/内容图统一 3:4，封面带标题文字+角色+Style Anchor，调用 taozi:image Direct Mode 生成。",
+  "version": "6.0.0",
+  "description": "Taozi 6.0.0 - Git skills 重设计（BREAKING）：从 7 个精简到 4 个，保留 git-conventions / commit / worktree / finish；删除 git-workflow / pr / cleanup。finish 改为单步「测试 → 本地 --no-ff 合并 → 清理分支/worktree」，不自动推送 main；想发 PR 请手动 git push && gh pr create。",
   "skills": "./skills/"
 }
