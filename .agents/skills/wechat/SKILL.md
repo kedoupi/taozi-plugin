@@ -220,10 +220,10 @@ print('PLAYBOOK_FOUND:' + ('yes' if playbook else 'no'))
 
 依次派以下子 Agent：
 
-**子 Agent A — 热点研究 + 选题**
+**子 Agent A — 热点研究 + 选题（多路调研 + 历史去重 + 打分）**
 
 ```
-你是热点选题 agent，任务是找到适合该公众号发布的热点话题。
+你是热点选题 agent，任务是从多路热点中筛出适合该公众号发布的选题。
 
 ## 品牌信息（来自 ~/.taozi/brand/voice.md）
 <voice.md 内容，含行业/目标读者/内容方向/禁用词>
@@ -233,17 +233,47 @@ print('PLAYBOOK_FOUND:' + ('yes' if playbook else 'no'))
 ### 步骤 1：安装 YouMind CLI（如未安装）
 youmind --help > /dev/null 2>&1 || npm install -g @youmind-ai/cli
 
-### 步骤 2：搜索近 48 小时热点
-从 voice.md 提取行业关键词，拼接搜索词：
-youmind call webSearch '{"query":"<行业> 最新动态 热点","timeRange":"48h","limit":10}'
+### 步骤 2：读取历史选题（去重池）
+读取 wechat/history.yaml（用 Read 工具），过滤 `published_at` 在今天 -30 天以内的记录，提取其 `articles[].keywords` 字段合并为去重池。
+若文件不存在或为空，去重池为空集，继续后续步骤（不报错）。
 
-### 步骤 3：筛选 + 生成选题
-根据搜索结果，结合品牌信息中的定位和目标读者，生成 3 个候选标题，格式：
+### 步骤 3：3 路并行 YouMind 调研
+从 voice.md 提取行业关键词 <INDUSTRY> 和领域关键词 <DOMAIN>，**一次性发出以下三个 tool call**（Claude Code 支持多 tool call 并行执行）：
+
+路 1（行业热点 — 模拟微博/知乎热榜）：
+youmind call webSearch '{"query":"<INDUSTRY> 本周热点 trending 讨论度高","timeRange":"7d","limit":10}'
+
+路 2（破圈话题 — 模拟抖音/小红书爆款）：
+youmind call webSearch '{"query":"<INDUSTRY> 出圈 跨界 普通人也在聊","timeRange":"7d","limit":10}'
+
+路 3（竞品对标 — 同行高赞）：
+youmind call webSearch '{"query":"<DOMAIN> 头部公众号 近期高赞文章主题","timeRange":"14d","limit":10}'
+
+3 路任一失败：用剩余路结果，最终输出标注"仅 N 路数据"。
+3 路全失败：报错并提示用户检查 YouMind 配置，停止。
+
+### 步骤 4：合并去重 + history 过滤
+- 合并 3 路结果，按标题语义相似度合并重复项（同义不同表述算一条）
+- 用步骤 2 的去重池过滤：若候选标题的核心主题与历史关键词高度重叠（核心词至少 2 个相同，或整体语义基本一致），直接淘汰
+- 候选池为空 → 提示用户放宽时间窗口或换关键词，停止
+
+### 步骤 5：3 维打分（每候选 0–10 分，加权汇总）
+- 热度（权重 0.4）：出现路数（1 路=3，2 路=6，3 路=10）
+- 相关性（权重 0.4）：与品牌定位语义匹配度。锚点：7–10 分（直接在品牌行业内，目标读者高关注）；4–6 分（跨界话题，需改造贴合）；1–3 分（明显偏离品牌定位）
+- SEO（权重 0.2）：标题是否含常见搜索意图词（教程/对比/指南/趋势/盘点/避坑等）+ 长度是否在 16–28 字（公众号搜索友好区间）。若 YouMind 返回了搜索量提示则参考；无数据时按标题本身判断。
+
+汇总分 = 热度 × 0.4 + 相关性 × 0.4 + SEO × 0.2
+
+取 top 10 候选 → 选汇总分最高 1 个为推荐 + 接下来 3 个为备选。
+
+### 步骤 6：输出格式
 TOPICS_DONE
-1. <标题1> | <一句话说明选题理由>
-2. <标题2> | <一句话说明选题理由>
-3. <标题3> | <一句话说明选题理由>
-RECOMMENDED: 1
+RECOMMENDED: <标题1> | 热度<x>/相关性<y>/SEO<z> 汇总<总> | <一句话推荐理由>
+ALTERNATIVES:
+- <标题2> | 热度/相关性/SEO 汇总 | 理由
+- <标题3> | 热度/相关性/SEO 汇总 | 理由
+- <标题4> | 热度/相关性/SEO 汇总 | 理由
+DATA_NOTE: <"3 路完整数据" 或 "仅 <成功路数> 路数据 — <缺失原因>">
 ```
 
 收到选题后，**询问用户选择哪个**（或提供自己的主题），等待确认后再派写作 Agent。
@@ -262,6 +292,29 @@ RECOMMENDED: 1
 
 ## 执行步骤
 
+### 步骤 0：选择写作框架 + 准备增强指令
+
+a) 读取 `skills/wechat/references/frameworks.md`（用 Read 工具），按其中"框架选择判断顺序"段判定本文应使用的框架。
+   输出到本轮会话上下文（**不写入文件**，由步骤 4 填入草稿元信息注释时引用）：
+   SELECTED_FRAMEWORK: <框架名>
+   REASON: <一句话理由>
+
+b) 读取 `skills/wechat/references/enhancements.md`（用 Read 工具），从"框架 → 增强映射表"查询本框架对应的"必启用"和"推荐启用"策略，并输出到本轮会话上下文（**不写入文件**，由步骤 0c / 步骤 4 引用）：
+   MANDATORY_ENHANCEMENTS: <必启用策略，多项用" + "（空格+号空格）连接>
+   RECOMMENDED_ENHANCEMENTS: <推荐启用策略，多项用" + "连接；若映射表该列为 `—` 则写"无">
+
+c) 把以下内容作为步骤 2 撰写时的**内联约束**（写作过程严格遵守，不是改 system prompt）：
+   - 选定框架的"段落骨架"完整文本（直接引用原文，不改写）
+   - 必启用策略的"注入指令模板"完整文本（直接引用原文，不改写）
+   - 推荐启用策略的"注入指令模板"完整文本（若映射表该列为 `—` 则跳过）
+
+   在步骤 2 开始撰写前，必须先完整读完上述三块文本，并在整篇文章中遵守。
+
+文件缺失处理：
+- frameworks.md 缺失 → 警告"框架库缺失，跳过步骤 0 全部子步骤，直接进步骤 1"，本轮不选框架也不注入增强
+- enhancements.md 缺失（但 frameworks.md 存在）→ 警告"增强库缺失，跳过步骤 0c 的增强注入部分"，步骤 0a/0b 仍执行（选框架），步骤 2 仅按骨架写
+- 两者均缺失 → 等同于 frameworks.md 缺失情形（跳过步骤 0 全部，直接进步骤 1）
+
 ### 步骤 1：YouMind 深度研究
 youmind call webSearch '{"query":"<主题>","limit":15}'
 提炼：核心观点 3-5 条、数据/案例 2-3 个、争议点 1-2 个
@@ -269,6 +322,8 @@ youmind call webSearch '{"query":"<主题>","limit":15}'
 ### 步骤 2：撰写文章（Markdown）
 
 **写作前必须参考以下规范**：
+- 步骤 0 输出的 `SELECTED_FRAMEWORK` 对应框架的"段落骨架"（步骤 0c 已读取）：**按该骨架的章节顺序组织正文**，不得擅自改变框架顺序
+- 步骤 0c 已读取的"必启用/推荐启用"策略注入指令：写作全程遵守
 - 参数中的 `playbook.md` 内容：标题规范、段落节奏、HKR 质检框架、风格禁忌
 - `references/writing-guide.md`（若存在）：de-AI 四级协议、So What 三层法、原子洞察强制框架
   读取路径：`skills/wechat/references/writing-guide.md`
@@ -332,6 +387,24 @@ SECTION_IMAGE_META_2: 五大高危职业 | infographic | 数据录入员、电�
 路径说明：草稿位于 `wechat/drafts/`，图片位于 `wechat/images/<YYYYMMDD>-<slug>/`，相对路径需写 `../images/<YYYYMMDD>-<slug>/section-<n>.jpg` 才能在本地 Markdown 预览中正确显示。
 
 将处理后的完整 Markdown 写入 `wechat/drafts/<YYYYMMDD>-<slug>.md`。
+
+**草稿元信息**：在草稿末尾追加 HTML 注释行（位于全部内容最末，不影响显示）：
+
+```html
+<!-- 框架: <SELECTED_FRAMEWORK> | 增强: <实际启用的增强项，多项用" + "（空格+号空格）连接，例如"密度强化 + 细节锚定"> -->
+```
+
+若步骤 0 因文件缺失被整体跳过（`SELECTED_FRAMEWORK` 未产生），元信息注释写：
+
+```html
+<!-- 框架: 无 | 增强: 无（文件缺失） -->
+```
+
+若仅 enhancements.md 缺失（框架已选，增强未注入），元信息注释写：
+
+```html
+<!-- 框架: <SELECTED_FRAMEWORK> | 增强: 无（增强库缺失） -->
+```
 
 ### 步骤 5：返回结果
 DRAFT_DONE
