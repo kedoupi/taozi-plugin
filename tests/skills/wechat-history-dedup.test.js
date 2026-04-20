@@ -72,3 +72,12 @@ test('Sub-Agent B 含增强策略注入步骤（Read enhancements.md）', () => 
 test('Sub-Agent B 草稿元信息格式含框架名 + 增强项', () => {
   assert.ok(/<!-- 框架:.*增强:/.test(subAgentB), '缺少草稿元信息格式说明');
 });
+
+test('Sub-Agent B 步骤 0b 输出 MANDATORY_ENHANCEMENTS / RECOMMENDED_ENHANCEMENTS', () => {
+  assert.ok(/MANDATORY_ENHANCEMENTS/.test(subAgentB), '缺少 MANDATORY_ENHANCEMENTS 输出标识');
+  assert.ok(/RECOMMENDED_ENHANCEMENTS/.test(subAgentB), '缺少 RECOMMENDED_ENHANCEMENTS 输出标识');
+});
+
+test('Sub-Agent B 草稿元信息含文件缺失时的回退格式', () => {
+  assert.ok(/框架: 无 \| 增强: 无（文件缺失）/.test(subAgentB), '缺少文件缺失时的草稿元信息回退格式');
+});

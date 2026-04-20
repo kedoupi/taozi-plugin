@@ -299,7 +299,9 @@ a) 读取 `skills/wechat/references/frameworks.md`（用 Read 工具），按其
    SELECTED_FRAMEWORK: <框架名>
    REASON: <一句话理由>
 
-b) 读取 `skills/wechat/references/enhancements.md`（用 Read 工具），从"框架 → 增强映射表"查询本框架对应的"必启用"和"推荐启用"策略。
+b) 读取 `skills/wechat/references/enhancements.md`（用 Read 工具），从"框架 → 增强映射表"查询本框架对应的"必启用"和"推荐启用"策略，并输出到本轮会话上下文（**不写入文件**，由步骤 0c / 步骤 4 引用）：
+   MANDATORY_ENHANCEMENTS: <必启用策略，多项用" + "（空格+号空格）连接>
+   RECOMMENDED_ENHANCEMENTS: <推荐启用策略，多项用" + "连接；若映射表该列为 `—` 则写"无">
 
 c) 把以下内容作为步骤 2 撰写时的**内联约束**（写作过程严格遵守，不是改 system prompt）：
    - 选定框架的"段落骨架"完整文本（直接引用原文，不改写）
@@ -390,6 +392,12 @@ SECTION_IMAGE_META_2: 五大高危职业 | infographic | 数据录入员、电�
 
 ```html
 <!-- 框架: <SELECTED_FRAMEWORK> | 增强: <实际启用的增强项，多项用" + "（空格+号空格）连接，例如"密度强化 + 细节锚定"> -->
+```
+
+若步骤 0 因文件缺失被整体跳过（`SELECTED_FRAMEWORK` 未产生），元信息注释写：
+
+```html
+<!-- 框架: 无 | 增强: 无（文件缺失） -->
 ```
 
 ### 步骤 5：返回结果
