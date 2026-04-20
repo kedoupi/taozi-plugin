@@ -1,10 +1,11 @@
 {
-  "generatedAt": "2026-04-20T01:50:19.148Z",
+  "generatedAt": "2026-04-20T03:26:58.550Z",
   "entries": [
     ".agents/skills/api-design",
     ".agents/skills/backend-architecture",
     ".agents/skills/build-fix",
     ".agents/skills/checkpoint",
+    ".agents/skills/cleanup",
     ".agents/skills/clip",
     ".agents/skills/code-quality-checklist",
     ".agents/skills/code-review",
@@ -46,6 +47,7 @@
     ".agents/skills/nextjs-architecture",
     ".agents/skills/plan",
     ".agents/skills/ppt",
+    ".agents/skills/pr",
     ".agents/skills/python-patterns",
     ".agents/skills/quality-gate",
     ".agents/skills/research",
@@ -72,6 +74,7 @@
     ".agents/skills/verify",
     ".agents/skills/webpage",
     ".agents/skills/wechat",
+    ".agents/skills/worktree",
     ".agents/skills/xiaohongshu"
   ]
 }

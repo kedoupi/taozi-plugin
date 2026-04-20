@@ -1,73 +1,71 @@
 ---
 name: commit
-description: Git 提交快捷入口 — emoji + 约定式格式，暂存检查，自动拆分提交。/taozi:git-workflow commit 章节的专用触发别名
-allowed-tools: Bash(git:*), Read, Grep
+description: Git 提交助手 — 分析 staged diff，按 emoji + Conventional Commits 生成提交信息。检测未暂存变更并建议拆分提交。
+allowed-tools: Bash(git status:*), Bash(git diff:*), Bash(git log:*), Bash(git add:*), Bash(git commit:*), Bash(git branch:*), Read
 ---
 
 # Commit
 
-`/taozi:git-workflow` commit 子场景的专用入口，逻辑与 git-workflow 保持一致。
+生成符合 Taozi 规范的 git commit。emoji 表与分支命名见 [`git-conventions`](../git-conventions/SKILL.md) skill。
 
-## 当前状态
+## 流程
 
-- 分支: !`git branch --show-current`
-- 状态: !`git status --porcelain`
-- 已暂存: !`git diff --cached --stat`
-- 未暂存: !`git diff --stat`
+### 1. 收集状态
 
-## 提交流程
+按需运行（不要全部一次性跑）：
 
-**1. 暂存检查**
+```bash
+git branch --show-current
+git status --porcelain
+git diff --cached --stat
+```
 
-如果没有文件被暂存（`git diff --cached` 为空）：
-- 显示所有变更文件
-- 询问用户是否暂存所有变更或选特定文件
+若 `--cached --stat` 为空 → 当前没有暂存任何变更，进入步骤 2。否则跳到步骤 3。
 
-**2. 目录上下文检测**
+### 2. 暂存（仅当无 staged 时）
 
-- 目录文件数 ≥ 3 且无 `CLAUDE.md` → 询问是否创建
-- 有 `CLAUDE.md` → 询问是否需要更新
+- 列出未暂存的变更文件，问用户：全部 `git add -A` 还是按文件挑选？
+- 不要替用户决定，等用户回应后再 `git add`。
 
-**3. 分析变更并提交**
+### 3. 分析与拆分
 
-1. 执行 `git diff --cached` 分析已暂存更改
-2. 判断是否需要拆分为多个提交
-3. 使用 **emoji + 约定式提交格式**
+```bash
+git diff --cached
+```
 
-## 提交格式
+判断是否需要拆分：
 
-`<emoji> <type>: <description>`
+- 多个**逻辑无关**的改动 → 建议拆分，每次 `git reset HEAD <path>` 取出再单独 commit
+- 同一逻辑的多文件改动 → 单个 commit 即可
 
-| Emoji | Type | 说明 |
-|-------|------|------|
-| ✨ | feat | 新功能 |
-| 🐛 | fix | Bug 修复 |
-| 📝 | docs | 文档 |
-| 🎨 | style | 代码格式 |
-| ♻️ | refactor | 重构 |
-| ⚡️ | perf | 性能优化 |
-| ✅ | test | 测试 |
-| 🔧 | chore | 配置/工具 |
-| 🚀 | ci | CI/CD |
-| ⏪️ | revert | 回退 |
-| 🚧 | wip | 进行中 |
+### 4. 生成提交信息
 
-**更多**：🏷️ 类型定义 / 🌐 i18n / 👔 业务逻辑 / 🚸 UX / 💥 重大变更 / 🚑️ 紧急修复 / 🔒️ 安全 / 🩹 简单修复 / 💚 修 CI / 💡 注释 / 💄 UI / 🚚 移动重命名 / ⚰️ 删无用代码 / ➕ 加依赖 / ➖ 删依赖 / 🎉 初始提交
+格式：`<emoji> <type>: <description>`
 
-## 提交规范
-
-- 现在时祈使语气（"添加功能" 而非 "添加了功能"）
+- 现在时祈使语气（"添加" 而非 "添加了"）
 - 第一行 ≤ 72 字符
-- 关注"为什么"而非"是什么"
-- 永远不要 `--no-verify` 跳过 hooks（除非用户明确要求）
+- description 写**为什么**，不写**是什么**（diff 已展示是什么）
+- emoji + type 对照表见 [git-conventions](../git-conventions/SKILL.md)
 
-## 执行
+### 5. 执行
 
 ```bash
 git commit -m "$(cat <<'EOF'
 <emoji> <type>: <description>
 
-<body if needed>
+<可选 body：背景、动机、影响>
 EOF
 )"
 ```
+
+## 禁止（commit 专属）
+
+- 禁止 `--no-verify` 跳过 hook
+- 禁止把无关改动塞进同一个 commit
+
+> 完整 git 禁止原则（--force、--amend 已推送、AI footer、`||` 吞错等）见 [git-workflow](../git-workflow/SKILL.md)。
+
+## 失败回退
+
+- pre-commit hook 失败 → 修复底层问题后**新建 commit**，不要 `--amend`
+- 用户拒绝建议的信息 → 让用户改写，不要硬推

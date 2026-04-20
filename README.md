@@ -167,7 +167,11 @@ mkdir -p .agents/plugins
 | 触发 | 功能 |
 |------|------|
 | `/taozi:taozi` | 智能调度入口 - 意图识别 + 工作流匹配 |
-| `/taozi:git-workflow` | Git 工作流（commit / pr / worktree / cleanup 合流） |
+| `/taozi:commit` | 智能 git 提交（emoji + Conventional Commits） |
+| `/taozi:pr` | 推送分支并创建 PR（gh CLI） |
+| `/taozi:worktree` | 创建隔离 git worktree |
+| `/taozi:cleanup` | PR 合并后清理本地分支与 worktree |
+| `/taozi:git-workflow` | Git 工作流总览索引（指向上述四个） |
 | `/taozi:update-context` | 更新目录 CLAUDE.md |
 | `/taozi:ultra-think` | 深度分析思考 |
 | `/taozi:plan` | 功能实现计划（重量版 5 阶段：探索 → 澄清 → 方案 → 设计文档 → 实现计划） |
@@ -219,11 +223,11 @@ mkdir -p .agents/plugins
 /taozi:taozi 修复支付流程的报错        # → bug-fixing 工作流
 /taozi:taozi 审查最近的代码变更        # → code-review 工作流
 
-# Git 工作流（commit / pr / worktree / cleanup 已合流到 git-workflow skill）
-/taozi:git-workflow worktree feat/login   # 隔离环境
-/taozi:git-workflow commit                # 智能提交
-/taozi:git-workflow pr                    # 创建 PR
-/taozi:git-workflow cleanup               # PR 合并后清理
+# Git 工作流（按职责拆分为四个独立 skill）
+/taozi:worktree feat/login   # 隔离环境
+/taozi:commit                # 智能提交
+/taozi:pr                    # 创建 PR
+/taozi:cleanup               # PR 合并后清理
 ```
 
 ### AI 创作工作流
@@ -299,9 +303,9 @@ mkdir -p .agents/plugins
 
 Claude / Codex 根据任务自动引用相关知识库；同时 `/taozi:<name>` 手动触发工作流类 skill。
 
-### 工作流 Skills（27 个，带 `/taozi:` 触发）
+### 工作流 Skills（30 个，带 `/taozi:` 触发）
 
-`taozi` · `plan` · `tdd` · `verify` · `debug` · `finish` · `code-review` · `quality-gate` · `commit` · `git-workflow` · `update-context` · `model-route` · `learning` · `multi-plan` · `multi-execute` · `build-fix` · `checkpoint` · `ultra-think` · `evolve` · `harness-audit` · `instinct-status` · `instinct-import` · `instinct-export` · `skill-create` · `security-scan` · `setup` · `lark`
+`taozi` · `plan` · `tdd` · `verify` · `debug` · `finish` · `code-review` · `quality-gate` · `commit` · `pr` · `worktree` · `cleanup` · `git-workflow` · `update-context` · `model-route` · `learning` · `multi-plan` · `multi-execute` · `build-fix` · `checkpoint` · `ultra-think` · `evolve` · `harness-audit` · `instinct-status` · `instinct-import` · `instinct-export` · `skill-create` · `security-scan` · `setup` · `lark`
 
 ### 开发知识库（36 个，自动引用）
 
