@@ -220,10 +220,10 @@ print('PLAYBOOK_FOUND:' + ('yes' if playbook else 'no'))
 
 依次派以下子 Agent：
 
-**子 Agent A — 热点研究 + 选题**
+**子 Agent A — 热点研究 + 选题（多路调研 + 历史去重 + 打分）**
 
 ```
-你是热点选题 agent，任务是找到适合该公众号发布的热点话题。
+你是热点选题 agent，任务是从多路热点中筛出适合该公众号发布的选题。
 
 ## 品牌信息（来自 ~/.taozi/brand/voice.md）
 <voice.md 内容，含行业/目标读者/内容方向/禁用词>
@@ -233,17 +233,47 @@ print('PLAYBOOK_FOUND:' + ('yes' if playbook else 'no'))
 ### 步骤 1：安装 YouMind CLI（如未安装）
 youmind --help > /dev/null 2>&1 || npm install -g @youmind-ai/cli
 
-### 步骤 2：搜索近 48 小时热点
-从 voice.md 提取行业关键词，拼接搜索词：
-youmind call webSearch '{"query":"<行业> 最新动态 热点","timeRange":"48h","limit":10}'
+### 步骤 2：读取历史选题（去重池）
+读取 wechat/history.yaml，提取近 30 天 articles[].keywords 字段为去重池。
+若文件不存在或为空，去重池为空集，继续后续步骤（不报错）。
 
-### 步骤 3：筛选 + 生成选题
-根据搜索结果，结合品牌信息中的定位和目标读者，生成 3 个候选标题，格式：
+### 步骤 3：3 路并行 YouMind 调研
+从 voice.md 提取行业关键词 <INDUSTRY> 和领域关键词 <DOMAIN>，并行调用：
+
+路 1（行业热点 — 模拟微博/知乎热榜）：
+youmind call webSearch '{"query":"<INDUSTRY> 本周热点 trending 讨论度高","timeRange":"7d","limit":10}'
+
+路 2（破圈话题 — 模拟抖音/小红书爆款）：
+youmind call webSearch '{"query":"<INDUSTRY> 出圈 跨界 普通人也在聊","timeRange":"7d","limit":10}'
+
+路 3（竞品对标 — 同行高赞）：
+youmind call webSearch '{"query":"<DOMAIN> 头部公众号 近期高赞文章主题","timeRange":"14d","limit":10}'
+
+3 路任一失败：用剩余路结果，最终输出标注"仅 N 路数据"。
+3 路全失败：报错并提示用户检查 YouMind 配置，停止。
+
+### 步骤 4：合并去重 + history 过滤
+- 合并 3 路结果，按标题语义相似度合并重复项（同义不同表述算一条）
+- 用步骤 2 的去重池过滤：候选与历史关键词相似度 >70% 直接淘汰
+- 候选池为空 → 提示用户放宽时间窗口或换关键词，停止
+
+### 步骤 5：3 维打分（每候选 0–10 分，加权汇总）
+- 热度（权重 0.4）：出现路数（1 路=3，2 路=6，3 路=10）
+- 相关性（权重 0.4）：与品牌定位语义匹配度（你自己评估）
+- SEO（权重 0.2）：标题是否含搜索高频词（参考 YouMind 返回的搜索量提示）
+
+汇总分 = 热度 × 0.4 + 相关性 × 0.4 + SEO × 0.2
+
+取 top 10 候选 → 选汇总分最高 1 个为推荐 + 接下来 3 个为备选。
+
+### 步骤 6：输出格式
 TOPICS_DONE
-1. <标题1> | <一句话说明选题理由>
-2. <标题2> | <一句话说明选题理由>
-3. <标题3> | <一句话说明选题理由>
-RECOMMENDED: 1
+RECOMMENDED: <标题1> | 热度<x>/相关性<y>/SEO<z> 汇总<总> | <一句话推荐理由>
+ALTERNATIVES:
+  1. <标题2> | 热度/相关性/SEO 汇总 | 理由
+  2. <标题3> | 热度/相关性/SEO 汇总 | 理由
+  3. <标题4> | 热度/相关性/SEO 汇总 | 理由
+DATA_NOTE: <"3 路完整数据" 或 "仅 N 路数据 — 缺失原因">
 ```
 
 收到选题后，**询问用户选择哪个**（或提供自己的主题），等待确认后再派写作 Agent。
