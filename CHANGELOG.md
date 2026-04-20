@@ -6,9 +6,23 @@ All notable changes to Taozi Plugin are documented here.
 
 ## [Unreleased]
 
-### Changed
+### Changed (BREAKING)
 
-- **Git 工作流 skill 拆分**：原 `/taozi:git-workflow` 聚合 skill 按职责拆为 `/taozi:commit`、`/taozi:pr`、`/taozi:worktree`、`/taozi:cleanup` 四个独立 skill，触发更精准；`git-workflow` 保留为索引页指向四者。
+- **Git skills 从 7 个精简到 4 个**：围绕用户真实的两种开发模式（日常快撸 / 完整 Git Flow）重组。
+  - 保留：`git-conventions`（规范）、`commit`（高频日常主力）、`worktree`（Git Flow 开工）、`finish`（Git Flow 收尾）。
+  - 删除：`git-workflow`、`pr`、`cleanup`。
+  - `finish` 重写为"测试 → 本地 `--no-ff` 合并 → 清理分支/worktree"单步收尾，默认不推送 main；想发 PR 的用户改用手动 `git push && gh pr create`。
+
+  **迁移对照表：**
+
+  | 旧 skill | 新做法 |
+  |---|---|
+  | `/taozi:git-workflow` | 规范合并进 `git-conventions`（被其他 skill 外链，不直接调用） |
+  | `/taozi:pr` | 删除。手动执行 `git push -u origin <branch> && gh pr create` |
+  | `/taozi:cleanup` | 删除。清理逻辑合并进 `/taozi:finish` 的 Step 6-7 |
+  | `/taozi:finish → verify → code-review → pr` 四步链 | 单步 `/taozi:finish`；`verify` / `code-review` 改为按需手动调用 |
+
+- **Git 工作流 skill 拆分**（已被本次重构覆盖）：原 `/taozi:git-workflow` 聚合 skill 按职责拆为 `/taozi:commit`、`/taozi:pr`、`/taozi:worktree`、`/taozi:cleanup` 四个独立 skill，触发更精准；`git-workflow` 保留为索引页指向四者。
 - **修复 cleanup 误删风险**：分支过滤改用精确正则 `^\s*(main|master)$`，避免 `feature/mainline` 等含子串分支被误匹配；squash-merge 场景改为 `git cherry` 检测 + 用户确认未推送 commit 才允许 `-D`。
 - **修复 PR 流程错误吞咽**：移除 `git pull main || git pull master` 这类 `||` 静默回退，改为 `git symbolic-ref refs/remotes/origin/HEAD` 显式探测 base 分支。
 - **commit / pr / worktree / cleanup frontmatter `allowed-tools` 收紧**：commit 仅授权 git status/diff/log/add/commit/branch；其他 skill 同样按需最小授权。
