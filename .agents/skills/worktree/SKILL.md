@@ -6,7 +6,7 @@ allowed-tools: Bash(git:*), Bash(pnpm:*), Bash(yarn:*), Bash(npm:*), Bash(mkdir:
 
 # Worktree
 
-为隔离工作创建 git worktree。通用 git 禁止原则见 [git-workflow](../git-workflow/SKILL.md)。
+为隔离工作创建 git worktree。通用 git 约束见 [git-conventions](../git-conventions/SKILL.md)。
 
 ## 何时使用
 
@@ -35,7 +35,7 @@ BRANCH=<feat|fix|...>/<description>
 WORKTREE_PATH="${TAOZI_HOME:-$HOME/.taozi}/worktrees/$REPO_NAME/$BRANCH"
 ```
 
-> 路径约定：`$TAOZI_HOME/worktrees/<repo>/<branch>`，方便 `/taozi:cleanup` 找到并删除。
+> 路径约定：`$TAOZI_HOME/worktrees/<repo>/<branch>`，方便 `/taozi:finish` 识别并清理。
 
 ### 3. 创建并进入
 

@@ -1,11 +1,10 @@
 {
-  "generatedAt": "2026-04-20T03:26:58.550Z",
+  "generatedAt": "2026-04-20T05:20:47.943Z",
   "entries": [
     ".agents/skills/api-design",
     ".agents/skills/backend-architecture",
     ".agents/skills/build-fix",
     ".agents/skills/checkpoint",
-    ".agents/skills/cleanup",
     ".agents/skills/clip",
     ".agents/skills/code-quality-checklist",
     ".agents/skills/code-review",
@@ -27,7 +26,6 @@
     ".agents/skills/foundation-models",
     ".agents/skills/frontend-react",
     ".agents/skills/git-conventions",
-    ".agents/skills/git-workflow",
     ".agents/skills/go-patterns",
     ".agents/skills/harness-audit",
     ".agents/skills/image",
@@ -47,7 +45,6 @@
     ".agents/skills/nextjs-architecture",
     ".agents/skills/plan",
     ".agents/skills/ppt",
-    ".agents/skills/pr",
     ".agents/skills/python-patterns",
     ".agents/skills/quality-gate",
     ".agents/skills/research",
