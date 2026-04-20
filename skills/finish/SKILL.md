@@ -30,7 +30,7 @@ npm run lint 2>/dev/null || echo "无 lint 配置，跳过"
 ### 3. Debug 代码清理
 
 ```bash
-grep -rn "console\.log\|debugger\|TODO\|FIXME\|HACK" \
+grep -rn -E "console\.log|debugger|TODO|FIXME|HACK" \
   --include="*.js" --include="*.ts" \
   --exclude-dir=node_modules --exclude-dir=.git .
 ```
@@ -59,7 +59,14 @@ git log --oneline main..HEAD
 
 ### 6. PR 描述输出
 
-所有检查通过后，输出 PR 描述：
+先收集上下文：
+
+```bash
+git log --oneline main..HEAD
+git diff main --stat
+```
+
+然后基于以上信息，所有检查通过后，输出 PR 描述：
 
 ```
 ## 做了什么
