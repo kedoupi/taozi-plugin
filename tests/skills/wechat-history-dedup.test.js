@@ -48,3 +48,27 @@ test('Sub-Agent A 含 3 路失败分级处理（任一失败 + 全失败）', ()
   assert.ok(/任一失败|某路失败/.test(subAgentA), '缺少"任一失败"分支');
   assert.ok(/全失败|全部失败|3 路全/.test(subAgentA), '缺少"全失败"分支');
 });
+
+// ============ Task 4: Sub-Agent B 框架选择 + 增强注入测试 ============
+
+function extractSubAgentB(content) {
+  const start = content.indexOf('**子 Agent B');
+  if (start < 0) return '';
+  const afterB = content.indexOf('**子 Agent C', start + 1);
+  return content.slice(start, afterB > 0 ? afterB : content.length);
+}
+const subAgentB = extractSubAgentB(fullContent);
+
+test('Sub-Agent B 含框架选择步骤（Read frameworks.md）', () => {
+  assert.ok(/frameworks\.md/.test(subAgentB), 'Sub-Agent B 缺少 frameworks.md 引用');
+  assert.ok(/SELECTED_FRAMEWORK/.test(subAgentB), '缺少 SELECTED_FRAMEWORK 输出标识');
+});
+
+test('Sub-Agent B 含增强策略注入步骤（Read enhancements.md）', () => {
+  assert.ok(/enhancements\.md/.test(subAgentB), 'Sub-Agent B 缺少 enhancements.md 引用');
+  assert.ok(/必启用|启用增强|注入指令/.test(subAgentB), '缺少增强启用描述');
+});
+
+test('Sub-Agent B 草稿元信息格式含框架名 + 增强项', () => {
+  assert.ok(/<!-- 框架:.*增强:/.test(subAgentB), '缺少草稿元信息格式说明');
+});

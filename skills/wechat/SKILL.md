@@ -292,6 +292,24 @@ DATA_NOTE: <"3 路完整数据" 或 "仅 <成功路数> 路数据 — <缺失原
 
 ## 执行步骤
 
+### 步骤 0：选择写作框架 + 准备增强指令
+
+a) 读取 `skills/wechat/references/frameworks.md`（用 Read 工具），按其中"框架选择判断顺序"段判定本文应使用的框架。
+   输出（写到草稿元信息备用）：
+   SELECTED_FRAMEWORK: <框架名>
+   REASON: <一句话理由>
+
+b) 读取 `skills/wechat/references/enhancements.md`（用 Read 工具），从"框架 → 增强映射表"查询本框架对应的"必启用"和"推荐启用"策略。
+
+c) 把以下内容拼接进本 Agent 的写作 system prompt（在步骤 2 撰写前）：
+   - 选定框架的"段落骨架"完整文本
+   - 必启用策略的"注入指令模板"完整文本
+   - 推荐启用策略的"注入指令模板"完整文本（如适用）
+
+文件缺失处理：
+- frameworks.md 缺失 → 警告"框架库缺失，回退原写作流程"，跳过 a/b/c，沿用旧流程
+- enhancements.md 缺失 → 警告"增强库缺失，跳过增强注入"，仅按框架骨架写
+
 ### 步骤 1：YouMind 深度研究
 youmind call webSearch '{"query":"<主题>","limit":15}'
 提炼：核心观点 3-5 条、数据/案例 2-3 个、争议点 1-2 个
@@ -362,6 +380,12 @@ SECTION_IMAGE_META_2: 五大高危职业 | infographic | 数据录入员、电�
 路径说明：草稿位于 `wechat/drafts/`，图片位于 `wechat/images/<YYYYMMDD>-<slug>/`，相对路径需写 `../images/<YYYYMMDD>-<slug>/section-<n>.jpg` 才能在本地 Markdown 预览中正确显示。
 
 将处理后的完整 Markdown 写入 `wechat/drafts/<YYYYMMDD>-<slug>.md`。
+
+**草稿元信息**：在草稿末尾追加 HTML 注释行（位于全部内容最末，不影响显示）：
+
+```html
+<!-- 框架: <SELECTED_FRAMEWORK> | 增强: <实际启用的增强项，+ 号连接> -->
+```
 
 ### 步骤 5：返回结果
 DRAFT_DONE
