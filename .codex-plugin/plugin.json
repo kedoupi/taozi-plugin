@@ -1,6 +1,6 @@
 {
   "name": "taozi",
-  "version": "5.1.0",
-  "description": "Taozi 5.1.0 - 新增 /taozi:commit skill + git-commit-guard hook，在 Claude Code 中强制走 emoji + 约定式提交流程。",
+  "version": "5.2.0",
+  "description": "Taozi 5.2.0 - 吸收 Superpowers 方法论：新增 /taozi:debug（4阶段根因调试）、/taozi:finish（分支收尾门禁）；/taozi:plan 升级为重量版 5 阶段设计流程；verify 加完成门禁，multi-execute 加 per-task 双重审查。",
   "skills": "./skills/"
 }

@@ -4,6 +4,22 @@ All notable changes to Taozi Plugin are documented here.
 
 ---
 
+## [5.2.0] - 2026-04-20
+
+### Added
+
+- **`/taozi:debug` skill**：4 阶段系统调试方法论（Iron Law：未完成根因调查禁止提 fix）。Phase 1 根因调查 → Phase 2 假设形成 → Phase 3 Fix 实现 → Phase 4 验证，强制按序执行，禁止跳步。
+- **`/taozi:finish` skill**：分支收尾强制检查清单（全量测试 → Lint → Debug代码清理 → Git Diff确认 → Commit规范 → PR描述输出）。任一失败禁止宣告完成。
+
+### Changed
+
+- **`/taozi:plan` 升级为重量版 5 阶段流程**：新增上下文探索、需求澄清（一次一问）、方案提议（2-3 个方案含推荐）、设计文档（逐章节用户审批 + 保存至 `docs/specs/`）五个阶段；设计文档未获批准禁止进入实现计划阶段；实现计划要求 Bite-sized tasks（每步 2-5 分钟），禁止写 TBD/TODO 占位。
+- **`/taozi:multi-execute` 加入 per-task 双重审查**：每个子任务完成后强制经过 Spec 合规审查（对照 `docs/specs/`）和代码质量审查两阶段，全部通过才标记完成。
+- **`/taozi:verify` 加入完成门禁**：任一步骤 FAIL 时禁止输出"完成"/"可以提 PR"等结论，必须修复所有问题后重新验证通过才能声称完成。
+- **CLAUDE.md 自动触发规则扩充**：新增 debug（遇到 bug/测试失败自动触发）和 finish（用户说"完成了"/"提 PR"时自动触发）两条规则；plan 触发描述更新为 5 阶段完整说明；PR 准备链更新为 `/taozi:finish` → `/taozi:verify` → `/taozi:code-review`。
+
+---
+
 ## [5.1.0] - 2026-04-20
 
 ### Added

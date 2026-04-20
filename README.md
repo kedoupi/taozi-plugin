@@ -1,4 +1,4 @@
-# Taozi Plugin 5.1.0
+# Taozi Plugin 5.2.0
 
 智能开发工具集 - 工作流驱动、3 条铁律、思维工具箱、自动化 Hooks + YouMind AI 创作能力。
 
@@ -158,7 +158,7 @@ mkdir -p .agents/plugins
 - `agents/` 与 `skills/` 是单一事实来源
 - 修改后运行 `node scripts/sync-codex.js` 同步 Codex 产物
 
-## Skills（70 个）
+## Skills（72 个）
 
 所有 skills 触发形式统一为 `/taozi:<skill-name>`。
 
@@ -170,11 +170,13 @@ mkdir -p .agents/plugins
 | `/taozi:git-workflow` | Git 工作流（commit / pr / worktree / cleanup 合流） |
 | `/taozi:update-context` | 更新目录 CLAUDE.md |
 | `/taozi:ultra-think` | 深度分析思考 |
-| `/taozi:plan` | 创建功能实现计划 |
+| `/taozi:plan` | 功能实现计划（重量版 5 阶段：探索 → 澄清 → 方案 → 设计文档 → 实现计划） |
 | `/taozi:tdd` | TDD 工作流 — RED→GREEN→REFACTOR |
 | `/taozi:learning` | 从会话提取可复用模式 |
 | `/taozi:checkpoint` | 保存工作状态检查点 |
-| `/taozi:verify` | 运行构建/测试/lint/安全验证 |
+| `/taozi:verify` | 运行构建/测试/lint/安全验证（完成门禁：FAIL 时禁止声称完成） |
+| `/taozi:debug` | 系统调试（Iron Law：4 阶段根因分析，禁止无根因 fix） |
+| `/taozi:finish` | 分支收尾强制检查清单（测试/Lint/Diff/Commit规范/PR描述） |
 | `/taozi:build-fix` | 修复构建错误 |
 | `/taozi:code-review` | 代码审查 |
 | `/taozi:harness-audit` | 审计插件配置 |
@@ -293,13 +295,13 @@ mkdir -p .agents/plugins
 | context-manager | 上下文优化、CLAUDE.md |
 | prompt-engineer | LLM 提示优化、AI 系统 |
 
-## Skills（70 个）
+## Skills（72 个）
 
 Claude / Codex 根据任务自动引用相关知识库；同时 `/taozi:<name>` 手动触发工作流类 skill。
 
-### 工作流 Skills（25 个，带 `/taozi:` 触发）
+### 工作流 Skills（27 个，带 `/taozi:` 触发）
 
-`taozi` · `plan` · `tdd` · `verify` · `code-review` · `quality-gate` · `commit` · `git-workflow` · `update-context` · `model-route` · `learning` · `multi-plan` · `multi-execute` · `build-fix` · `checkpoint` · `ultra-think` · `evolve` · `harness-audit` · `instinct-status` · `instinct-import` · `instinct-export` · `skill-create` · `security-scan` · `setup` · `lark`
+`taozi` · `plan` · `tdd` · `verify` · `debug` · `finish` · `code-review` · `quality-gate` · `commit` · `git-workflow` · `update-context` · `model-route` · `learning` · `multi-plan` · `multi-execute` · `build-fix` · `checkpoint` · `ultra-think` · `evolve` · `harness-audit` · `instinct-status` · `instinct-import` · `instinct-export` · `skill-create` · `security-scan` · `setup` · `lark`
 
 ### 开发知识库（36 个，自动引用）
 
