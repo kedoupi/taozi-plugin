@@ -48,7 +48,7 @@ error('');
 error('╔══════════════════════════════════════════════════════╗');
 error('║         YouMind API Key 未配置                        ║');
 error('╠══════════════════════════════════════════════════════╣');
-error('║  /taozi:image · /taozi:research · /taozi:content     ║');
+error('║  /taozi:image · /taozi:research · /taozi:infographic ║');
 error('║  /taozi:clip · /taozi:ppt · /taozi:webpage           ║');
 error('║  /taozi:wechat · /taozi:xiaohongshu                  ║');
 error('║  以上功能需要 YOUMIND_API_KEY 才能使用               ║');

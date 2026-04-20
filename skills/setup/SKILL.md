@@ -13,7 +13,7 @@ allowed-tools:
 
 # Taozi 配置向导
 
-交互式引导创建 `~/.taozi/` 全局配置。一次配置，`/taozi:wechat`、`/taozi:xiaohongshu`、`/taozi:content` 等所有内容 skill 共享品牌信息和凭据。
+交互式引导创建 `~/.taozi/` 全局配置。一次配置，`/taozi:wechat`、`/taozi:xiaohongshu` 等所有内容 skill 共享品牌信息和凭据。
 
 ---
 
