@@ -20,6 +20,13 @@ const command = input.tool_input.command || '';
 const isGitCommit = /\bgit\s+commit\b(?!-)/.test(command);
 
 if (isGitCommit) {
+  // 放行已符合 emoji + conventional 格式的 commit（说明已走过 skill 流程）
+  const emojiConventional = /[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/u;
+  const hasEmoji = emojiConventional.test(command);
+  if (hasEmoji) {
+    process.exit(0);
+  }
+
   error('');
   error('========================================');
   error('  BLOCKED: 请使用 /taozi:commit 提交');

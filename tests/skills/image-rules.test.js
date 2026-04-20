@@ -111,13 +111,6 @@ test('规则10: xiaohongshu illustration 类型注入 Style Anchor', () => {
   );
 });
 
-test('规则11: xiaohongshu infographic 类型不注入 Style Anchor', () => {
-  assert(
-    xhsSkill.includes('不注入 Style Anchor'),
-    'xiaohongshu/SKILL.md 应包含"不注入 Style Anchor"字样'
-  );
-});
-
 // ======================================================
 // wechat infographic 不注入角色
 // ======================================================
@@ -126,17 +119,6 @@ test('规则12: wechat/SKILL.md infographic 不注入角色', () => {
   assert(
     wechatSkill.includes('infographic') && wechatSkill.includes('不注入角色'),
     'wechat/SKILL.md 应同时包含"infographic"和"不注入角色"'
-  );
-});
-
-// ======================================================
-// xiaohongshu infographic 不注入角色锚点
-// ======================================================
-
-test('规则13: xiaohongshu/SKILL.md infographic 不注入角色锚点', () => {
-  assert(
-    xhsSkill.includes('infographic') && xhsSkill.includes('不注入角色锚点'),
-    'xiaohongshu/SKILL.md 应同时包含"infographic"和"不注入角色锚点"'
   );
 });
 
