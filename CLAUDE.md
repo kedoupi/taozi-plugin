@@ -97,12 +97,14 @@ Claude Agent 在感知到以下场景时，应主动触发对应 Skill，无需�
 
 | 场景 | 主动触发 |
 |------|----------|
-| 用户描述新功能需求或任务分解 | `/taozi:plan` |
-| 用户准备提交代码或合并 PR | `/taozi:verify` → `/taozi:code-review` |
+| 用户描述新功能需求或任务分解 | `/taozi:plan`（重量版：需求澄清 → 设计文档 → 实现计划） |
+| 用户准备提交代码或合并 PR | `/taozi:finish` → `/taozi:verify` → `/taozi:code-review` |
 | 用户说"发版"、"release"、"升版本" | `/release` |
 | 用户改动 `agents/*.md` 或 `skills/*/SKILL.md` | 提醒运行 `node scripts/sync-codex.js` |
 | 用户要创建新 Skill | `/taozi:skill-create` |
 | 用户遇到构建 / 类型错误 | `/taozi:build-fix` |
+| 用户描述 bug / 测试失败 / 意外行为 / "不知道为什么" | `/taozi:debug` |
+| 用户说"完成了" / "提 PR" / "可以合并" / "done" | `/taozi:finish` |
 | 用户需要研究某个技术方案 | `/taozi:research` 或 `/taozi:deep-research` |
 
 触发前告知用户，用户可随时说"跳过"终止。
