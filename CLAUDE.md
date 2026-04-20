@@ -97,7 +97,7 @@ Claude Agent 在感知到以下场景时，应主动触发对应 Skill，无需�
 
 | 场景 | 主动触发 |
 |------|----------|
-| 用户描述新功能需求或任务分解 | `/taozi:plan`（重量版：需求澄清 → 设计文档 → 实现计划） |
+| 用户描述新功能需求或任务分解 | `/taozi:plan`（重量版 5 阶段：探索 → 澄清 → 方案 → 设计文档 → 实现计划） |
 | 用户准备提交代码或合并 PR | `/taozi:finish` → `/taozi:verify` → `/taozi:code-review` |
 | 用户说"发版"、"release"、"升版本" | `/release` |
 | 用户改动 `agents/*.md` 或 `skills/*/SKILL.md` | 提醒运行 `node scripts/sync-codex.js` |
