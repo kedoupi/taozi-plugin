@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-20T00:03:35.579Z",
+  "generatedAt": "2026-04-20T00:20:38.868Z",
   "entries": [
     ".agents/skills/api-design",
     ".agents/skills/backend-architecture",
@@ -8,6 +8,7 @@
     ".agents/skills/clip",
     ".agents/skills/code-quality-checklist",
     ".agents/skills/code-review",
+    ".agents/skills/commit",
     ".agents/skills/content",
     ".agents/skills/continuous-learning",
     ".agents/skills/cpp-patterns",

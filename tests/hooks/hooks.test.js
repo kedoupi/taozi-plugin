@@ -684,3 +684,68 @@ test('wechat-key-check allows direct wechat_publish.py call with credentials', (
   );
   assert.strictEqual(result.status, 0, 'Should exit(0) when calling wechat_publish.py with credentials');
 });
+
+// =====================
+// 10. git-commit-guard
+// =====================
+
+test('git-commit-guard blocks bare git commit', () => {
+  const script = path.join(HOOKS_DIR, 'git-commit-guard.js');
+  const result = runHook(script, {
+    tool_input: { command: 'git commit -m "fix: something"' },
+  });
+  assert.strictEqual(result.status, 2, 'Should exit(2) for bare git commit');
+  assert(result.stderr.includes('/taozi:commit'), 'Should mention /taozi:commit');
+});
+
+test('git-commit-guard blocks git commit with multiple flags', () => {
+  const script = path.join(HOOKS_DIR, 'git-commit-guard.js');
+  const result = runHook(script, {
+    tool_input: { command: 'git commit --amend --no-edit' },
+  });
+  assert.strictEqual(result.status, 2, 'Should exit(2) for git commit with flags');
+});
+
+test('git-commit-guard blocks git commit in heredoc form', () => {
+  const script = path.join(HOOKS_DIR, 'git-commit-guard.js');
+  const result = runHook(script, {
+    tool_input: { command: 'git commit -m "$(cat <<\'EOF\'\nfeat: add feature\nEOF\n)"' },
+  });
+  assert.strictEqual(result.status, 2, 'Should exit(2) for heredoc git commit');
+});
+
+test('git-commit-guard allows non-commit git commands', () => {
+  const script = path.join(HOOKS_DIR, 'git-commit-guard.js');
+  const result = runHook(script, {
+    tool_input: { command: 'git push origin main' },
+  });
+  assert.strictEqual(result.status, 0, 'Should exit(0) for non-commit git commands');
+});
+
+test('git-commit-guard allows git commit-graph (subcommand)', () => {
+  const script = path.join(HOOKS_DIR, 'git-commit-guard.js');
+  const result = runHook(script, {
+    tool_input: { command: 'git commit-graph write' },
+  });
+  assert.strictEqual(result.status, 0, 'Should exit(0) for git commit-graph');
+});
+
+test('git-commit-guard allows non-git commands', () => {
+  const script = path.join(HOOKS_DIR, 'git-commit-guard.js');
+  const result = runHook(script, {
+    tool_input: { command: 'npm install lodash' },
+  });
+  assert.strictEqual(result.status, 0, 'Should exit(0) for non-git commands');
+});
+
+test('git-commit-guard handles missing tool_input gracefully', () => {
+  const script = path.join(HOOKS_DIR, 'git-commit-guard.js');
+  const result = runHook(script, { some_other_key: true });
+  assert.strictEqual(result.status, 0, 'Should exit(0) for missing tool_input');
+});
+
+test('git-commit-guard handles empty input gracefully', () => {
+  const script = path.join(HOOKS_DIR, 'git-commit-guard.js');
+  const result = runHook(script, {});
+  assert.strictEqual(result.status, 0, 'Should exit(0) for empty input');
+});

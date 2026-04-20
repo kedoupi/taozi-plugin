@@ -21,6 +21,12 @@
       },
       {
         "matcher": "Bash",
+        "hooks": [{ "type": "command", "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/git-commit-guard.js\"" }],
+        "description": "拦截裸 git commit，强制走 /taozi:commit skill 流程（emoji + 约定式格式）",
+        "id": "pre:bash:git-commit-guard"
+      },
+      {
+        "matcher": "Bash",
         "hooks": [{ "type": "command", "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/tmux-hint.js\"" }],
         "description": "dev server 建议使用 tmux",
         "id": "pre:bash:tmux-hint"
