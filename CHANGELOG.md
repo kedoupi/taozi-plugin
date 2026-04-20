@@ -4,6 +4,20 @@ All notable changes to Taozi Plugin are documented here.
 
 ---
 
+## [Unreleased]
+
+### Changed
+
+- **Git 工作流 skill 拆分**：原 `/taozi:git-workflow` 聚合 skill 按职责拆为 `/taozi:commit`、`/taozi:pr`、`/taozi:worktree`、`/taozi:cleanup` 四个独立 skill，触发更精准；`git-workflow` 保留为索引页指向四者。
+- **修复 cleanup 误删风险**：分支过滤改用精确正则 `^\s*(main|master)$`，避免 `feature/mainline` 等含子串分支被误匹配；squash-merge 场景改为 `git cherry` 检测 + 用户确认未推送 commit 才允许 `-D`。
+- **修复 PR 流程错误吞咽**：移除 `git pull main || git pull master` 这类 `||` 静默回退，改为 `git symbolic-ref refs/remotes/origin/HEAD` 显式探测 base 分支。
+- **commit / pr / worktree / cleanup frontmatter `allowed-tools` 收紧**：commit 仅授权 git status/diff/log/add/commit/branch；其他 skill 同样按需最小授权。
+- **移除 `!` 反引号动态注入语法**：原 SKILL.md 使用 slash command 旧语法，Skill 工具加载时不会执行，改为指令式描述。
+- **移除默认 `🤖 Generated with Claude Code` AI footer**：除非用户明确要求。
+- **commit skill 移除越界行为**：不再在提交流程中询问"要不要新建 CLAUDE.md"，该职责归 `/taozi:update-context`。
+
+---
+
 ## [5.3.0] - 2026-04-20
 
 ### Changed

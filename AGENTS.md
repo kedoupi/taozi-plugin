@@ -23,7 +23,7 @@ Taozi now supports both Claude Code and Codex from the same repository.
 - 需要并行协作：`multi-plan` / `multi-execute`
 - 改完后做验证：`verify`
 - 做 review 或发布前检查：`code-review`、`quality-gate`
-- Git 提交、PR、worktree：`git-workflow`
+- Git 提交：`commit`；推 PR：`pr`；建 worktree：`worktree`；合并后清理：`cleanup`（总览索引：`git-workflow`）
 - 更新长期上下文：`update-context`
 - 选择模型策略：`model-route`
 - 沉淀经验和检查点：`learning`
