@@ -15,6 +15,8 @@ allowed-tools: Read, Bash, Grep, Glob
 - 在 feature 分支上开发完成，想本地合并回主分支
 - **不想**走 PR 流程（走 PR 的话手动 `git push && gh pr create`，不要用 finish）
 
+> 如使用 worktree 开发，请在**主 worktree** 执行本 skill，而非 feature worktree — 否则 Step 4 `git checkout $BASE` 会因 base 已在其他 worktree 签出而失败。
+
 ## 前置检查
 
 ### 1. 当前分支不在保护分支
@@ -86,15 +88,9 @@ git merge --no-ff "$FEATURE" -m "Merge branch '$FEATURE'"
 
 若冲突 → 停止，让用户手动解决冲突后重跑。
 
-### 6. 删除 feature 分支
+### 6. 清理 worktree（如适用）
 
-```bash
-git branch -d "$FEATURE"
-```
-
-若 `-d` 拒绝（有未合并提交）→ **停止**，告知用户"分支有未合并提交，确认要删吗？确认后手动 `git branch -D $FEATURE`"。不要自动 -D。
-
-### 7. 清理 worktree（如适用）
+`git branch -d` 会拒绝删除仍在 worktree 中签出的分支，因此**必须先移除 worktree**。
 
 ```bash
 WT_PATH=$(git worktree list --porcelain | awk -v b="$FEATURE" '
@@ -105,6 +101,16 @@ if [ -n "$WT_PATH" ]; then
   git worktree remove "$WT_PATH"
 fi
 ```
+
+若 `worktree remove` 因未提交改动失败 → 停止，让用户处理（Step 2 前置检查本应拦截，但 worktree 内部可能有独立未跟踪文件）。
+
+### 7. 删除 feature 分支
+
+```bash
+git branch -d "$FEATURE"
+```
+
+若 `-d` 拒绝（有未合并提交）→ **停止**，告知用户"分支有未合并提交，确认要删吗？确认后手动 `git branch -D $FEATURE`"。不要自动 -D。
 
 ### 8. 输出结果
 
@@ -119,4 +125,5 @@ fi
 - diff / commit 不规范 → 提示问题但不强制停止（判断由用户）
 - `pull --ff-only` 失败 → 停止，让用户手动 rebase/merge base
 - merge 冲突 → 停止，用户解决后重跑
+- `worktree remove` 失败 → 停止，用户处理 worktree 内未跟踪文件
 - `branch -d` 拒绝 → 停止，用户确认后手动 -D
