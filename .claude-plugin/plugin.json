@@ -1,7 +1,7 @@
 {
   "name": "taozi",
-  "version": "6.0.0",
-  "description": "Taozi 6.0.0 - Git skills 重设计（BREAKING）：从 7 个精简到 4 个，保留 git-conventions / commit / worktree / finish；删除 git-workflow / pr / cleanup。finish 改为单步「测试 → 本地 --no-ff 合并 → 清理分支/worktree」，不自动推送 main；想发 PR 请手动 git push && gh pr create。",
+  "version": "6.1.0",
+  "description": "Taozi 6.1.0 - 删除 /taozi:content skill（BREAKING，轻量多平台文案由 /taozi:wechat + /taozi:xiaohongshu 覆盖）；修复 /taozi:wechat 封面下载零校验 bug，封面路径从 /tmp 全局迁到 wechat/images/<slug>/cover.jpg，脚本层新增字节数 + PIL verify 硬校验。",
   "author": {
     "name": "kedoupi",
     "url": "https://github.com/kedoupi"

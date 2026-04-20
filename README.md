@@ -1,4 +1,4 @@
-# Taozi Plugin 6.0.0
+# Taozi Plugin 6.1.0
 
 智能开发工具集 - 工作流驱动、3 条铁律、思维工具箱、自动化 Hooks + YouMind AI 创作能力。
 
@@ -20,7 +20,7 @@ Taozi 支持两种运行时：
 
 ### YouMind API Key（使用 AI 创作功能必须）
 
-`/taozi:image`、`/taozi:infographic`、`/taozi:research`、`/taozi:content`、`/taozi:clip`、`/taozi:ppt`、`/taozi:webpage`、`/taozi:wechat`、`/taozi:xiaohongshu` 这 9 个 skill 需要配置 YouMind API Key。
+`/taozi:image`、`/taozi:infographic`、`/taozi:research`、`/taozi:clip`、`/taozi:ppt`、`/taozi:webpage`、`/taozi:wechat`、`/taozi:xiaohongshu` 这 8 个 skill 需要配置 YouMind API Key。
 
 **获取 Key：** 访问 [youmind.com](https://youmind.com) → 设置 → API Key → 生成
 
@@ -158,7 +158,7 @@ mkdir -p .agents/plugins
 - `agents/` 与 `skills/` 是单一事实来源
 - 修改后运行 `node scripts/sync-codex.js` 同步 Codex 产物
 
-## Skills（72 个）
+## Skills（71 个）
 
 所有 skills 触发形式统一为 `/taozi:<skill-name>`。
 
@@ -203,7 +203,6 @@ mkdir -p .agents/plugins
 | `/taozi:image` | AI 图片生成（Context Mode 内容感知，自动决策风格/角色/尺寸；Gemini 多模型，批量 + Style Anchor 系列一致性）|
 | `/taozi:infographic` | 专业信息图生成（14 种布局 × 15 种风格，自动匹配内容结构，wechat/xiaohongshu 共用）|
 | `/taozi:research` | 热点研究（webSearch + 深度 research，输出结构化报告）|
-| `/taozi:content` | 多平台内容创作（小红书 / 公众号 / 抖音 / X）|
 | `/taozi:clip` | 内容采集与分析（YouTube / 微信公众号 / 网页，AI 深度分析）|
 | `/taozi:ppt` | PPT 生成（返回封面图预览 + Craft 编辑链接）|
 | `/taozi:webpage` | 网页生成（描述 → 可访问的 CDN 链接）|
@@ -230,14 +229,13 @@ mkdir -p .agents/plugins
 ### AI 创作工作流
 
 ```text
-# 研究 → 内容 → 配图（分步）
-/taozi:research 分析小红书宠物赛道最新趋势
-/taozi:content 基于上面的研究，帮我写一篇种草文
-/taozi:image 生成适合小红书风格的宠物封面图
-
-# 平台专项创作
+# 平台专项创作（内置研究 + 正文 + 配图）
 /taozi:wechat 帮我做一个关于 AI 工具的公众号文章，要有数据支撑
 /taozi:xiaohongshu 分享一个 AI 工具测评，走信息密集风格
+
+# 先调研再写（分步）
+/taozi:research 分析小红书宠物赛道最新趋势
+/taozi:xiaohongshu 基于上面的研究，帮我写一篇种草文
 
 # 采集 URL 并分析
 /taozi:clip https://www.youtube.com/watch?v=xxx 分析视频核心观点
@@ -296,7 +294,7 @@ mkdir -p .agents/plugins
 | context-manager | 上下文优化、CLAUDE.md |
 | prompt-engineer | LLM 提示优化、AI 系统 |
 
-## Skills（72 个）
+## Skills（71 个）
 
 Claude / Codex 根据任务自动引用相关知识库；同时 `/taozi:<name>` 手动触发工作流类 skill。
 
@@ -308,9 +306,9 @@ Claude / Codex 根据任务自动引用相关知识库；同时 `/taozi:<name>` 
 
 `frontend-react` · `backend-architecture` · `nextjs-advanced` · `nextjs-architecture` · `typescript-types` · `typescript-patterns` · `python-patterns` · `go-patterns` · `swift-patterns` · `swift-concurrency` · `foundation-models` · `django-patterns` · `springboot-patterns` · `springboot-tdd` · `springboot-security` · `docker-patterns` · `e2e-testing` · `api-design` · `deployment-patterns` · `database-migrations` · `security-patterns` · `sql-optimization` · `legacy-migration` · `testing-strategies` · `mcp-templates` · `git-conventions` · `code-quality-checklist` · `thinking-tools` · `continuous-learning` · `token-optimization` · `deep-research` · `rust-patterns` · `kotlin-patterns` · `cpp-patterns` · `csharp-patterns` · `flutter-patterns`
 
-### YouMind 创作 Skills（9 个）
+### YouMind 创作 Skills（8 个）
 
-`image` · `infographic` · `research` · `content` · `clip` · `ppt` · `webpage` · `wechat` · `xiaohongshu`
+`image` · `infographic` · `research` · `clip` · `ppt` · `webpage` · `wechat` · `xiaohongshu`
 
 ## YouMind AI 创作能力（详细说明）
 
@@ -319,14 +317,11 @@ Claude / Codex 根据任务自动引用相关知识库；同时 `/taozi:<name>` 
 ### 创作链路
 
 ```
-/taozi:research → 研究报告（热点 + 数据 + 选题建议）
-       ↓
-/taozi:content  → 多平台内容（小红书 / 公众号 / 抖音 / X）
-       ↓
-/taozi:image    → 配图生成
+/taozi:wechat       → 公众号全链路（研究 + 写作 + 章节配图 + 草稿箱）
+/taozi:xiaohongshu  → 小红书全链路（研究 + 正文 + 配图）
 ```
 
-或按平台触发：`/taozi:wechat`（公众号）、`/taozi:xiaohongshu`（小红书）。
+或手动分步：`/taozi:research` → `/taozi:wechat` 或 `/taozi:xiaohongshu` → `/taozi:image` 补充配图。
 
 ### `/taozi:clip` 支持的内容来源
 

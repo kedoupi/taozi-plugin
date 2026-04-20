@@ -4,6 +4,35 @@ All notable changes to Taozi Plugin are documented here.
 
 ---
 
+## [6.1.0] - 2026-04-20
+
+### Changed (BREAKING)
+
+- **删除 `/taozi:content` skill**：夹在 `/taozi:research`（上游）和 `/taozi:wechat` / `/taozi:xiaohongshu`（下游重量版）之间，无独立价值位——纯 LLM 模板生成、零 API、零调研、零配图，Claude 本身就会写这些套路。
+
+  **迁移对照表：**
+
+  | 旧触发 | 新做法 |
+  |---|---|
+  | `/taozi:content` 写小红书 | 改用 `/taozi:xiaohongshu`（内置研究 + 配图 + 风格体系） |
+  | `/taozi:content` 写公众号 | 改用 `/taozi:wechat`（内置研究 + 章节配图 + 推送草稿箱） |
+  | `/taozi:content` 写抖音脚本/X 推文 | 直接用自然语言让 Claude 写，无需 skill |
+  | `/taozi:content` 多平台矩阵 | 串联 `/taozi:xiaohongshu` + `/taozi:wechat`（无独立矩阵 skill） |
+
+  `/taozi:wechat` 的 triggers 追加"写篇文章,生成内容,帮我写,内容创作,内容矩阵"兜底模糊词。
+
+### Fixed
+
+- **`/taozi:wechat` 封面下载零校验 Bug**：封面子 agent 只要写出文件就宣称 `SAVED`，不校验字节数/MIME/可解码性；`SKILL.md:547-562` 的"缺一不过"前置检查只覆盖 section 图，封面完全裸奔；`wechat_publish.py:upload_thumb` 按路径直接读，存在即当成功。YouMind 调用失败/超时时易把空/错/旧封面推进到微信草稿箱。
+  - **路径改造**：`/tmp/cover-<slug>.jpg` → `wechat/images/<YYYYMMDD>-<slug>/cover.jpg`，彻底摆脱 `/tmp` 全局路径的脏数据风险，封面与 section 图同目录管理。
+  - **三层硬校验**：
+    1. 子 agent 下载后强制 `file + stat` 校验（MIME JPEG/PNG + 字节 > 10KB），不通过重试最多 2 次
+    2. `SKILL.md` 前置检查扩展，封面纳入"缺一不过"磁盘校验
+    3. `wechat_publish.py` 新增 `_validate_image_file(path, min_bytes=10_240)`：存在 + 字节数 + `PIL.Image.verify()`（PIL 不可用时 fallback magic bytes），`sync()` 入口在 `get_access_token` 之前调用，避免浪费 token；image_paths 循环亦替换原 `os.path.exists` 简单检查。
+  - 四类故障实测全部按预期 raise：不存在 / 0 字节 / HTML 冒充 JPG / 真实 16:9 封面通过。
+
+---
+
 ## [6.0.0] - 2026-04-20
 
 ### Changed (BREAKING)
