@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-20T00:27:56.459Z",
+  "generatedAt": "2026-04-20T00:56:31.014Z",
   "entries": [
     ".agents/skills/api-design",
     ".agents/skills/backend-architecture",
@@ -14,12 +14,14 @@
     ".agents/skills/cpp-patterns",
     ".agents/skills/csharp-patterns",
     ".agents/skills/database-migrations",
+    ".agents/skills/debug",
     ".agents/skills/deep-research",
     ".agents/skills/deployment-patterns",
     ".agents/skills/django-patterns",
     ".agents/skills/docker-patterns",
     ".agents/skills/e2e-testing",
     ".agents/skills/evolve",
+    ".agents/skills/finish",
     ".agents/skills/flutter-patterns",
     ".agents/skills/foundation-models",
     ".agents/skills/frontend-react",
