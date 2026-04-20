@@ -4,6 +4,15 @@ All notable changes to Taozi Plugin are documented here.
 
 ---
 
+## [5.1.0] - 2026-04-20
+
+### Added
+
+- **`/taozi:commit` skill**：恢复原 `commands/commit.md` 的 Git 提交快捷入口，支持 emoji + 约定式提交格式、暂存检查、自动拆分提交建议。
+- **`git-commit-guard` hook**：PreToolUse 钩子，在 Claude Code 中拦截所有裸 `git commit` 调用（含 `--amend`、链式命令等），强制引导走 `/taozi:commit` 流程。放行 `git commit-graph` 等无关子命令，空输入容错处理。
+
+---
+
 ## [5.0.2] - 2026-04-20
 
 ### Fixed

@@ -1,6 +1,6 @@
 {
   "name": "taozi",
-  "version": "5.0.2",
-  "description": "Taozi 5.0.2 - 修复小红书 skill 同日多篇笔记图片路径冲突问题（每篇笔记使用独立图片目录）。",
+  "version": "5.1.0",
+  "description": "Taozi 5.1.0 - 新增 /taozi:commit skill + git-commit-guard hook，在 Claude Code 中强制走 emoji + 约定式提交流程。",
   "skills": "./skills/"
 }
