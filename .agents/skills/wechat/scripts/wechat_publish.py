@@ -205,6 +205,32 @@ def get_access_token():
     return data["access_token"]
 
 
+def _validate_image_file(path, min_bytes=10_240):
+    """校验图片文件：存在 + 字节数达标 + 可解码为合法图像。
+
+    任何一项不满足即 raise，错误信息包含实际值，便于排查。
+    """
+    if not os.path.exists(path):
+        raise FileNotFoundError(f"图片文件不存在: {path}")
+    size = os.path.getsize(path)
+    if size < min_bytes:
+        raise ValueError(f"图片文件过小（可能是空文件或下载失败）: {path}，字节数={size}，阈值={min_bytes}")
+    try:
+        from PIL import Image as _Image
+        with _Image.open(path) as img:
+            img.verify()
+    except ImportError:
+        # PIL 不可用时 fallback 到 magic bytes 检查
+        with open(path, "rb") as f:
+            header = f.read(8)
+        is_jpeg = header[:3] == b"\xff\xd8\xff"
+        is_png = header[:8] == b"\x89PNG\r\n\x1a\n"
+        if not (is_jpeg or is_png):
+            raise ValueError(f"图片 MIME 非法（非 JPEG/PNG）: {path}，前 8 字节={header!r}")
+    except Exception as e:
+        raise ValueError(f"图片文件损坏或无法解码: {path}，原因={e}")
+
+
 def upload_image(token, image_path, retries=3):
     """上传文章内图片到微信CDN，返回 mmbiz.qpic.cn URL（带重试）"""
     import time as _time
@@ -673,6 +699,11 @@ def sync(title, content_md, cover_path, image_paths=None, theme=None):
         raise Exception("请设置 WECHAT_APPID 和 WECHAT_APPSECRET（环境变量或 ~/.taozi/config.yaml 的 wechat.accounts.default）")
 
     print(f"[同步] 开始: {title}", file=sys.stderr)
+
+    # 封面图硬校验（存在 + 字节 ≥ 10KB + 可解码），任一失败立即中止
+    _validate_image_file(cover_path)
+    print(f"[同步] 封面校验 OK ({os.path.getsize(cover_path)} bytes)", file=sys.stderr)
+
     token = get_access_token()
     print("[同步] token OK", file=sys.stderr)
 
@@ -687,13 +718,9 @@ def sync(title, content_md, cover_path, image_paths=None, theme=None):
 
     # 上传文章内图片并替换路径
     if image_paths:
-        # 前置检查：所有图片文件必须存在，否则立即报错
-        missing = [p for p in image_paths if not os.path.exists(p)]
-        if missing:
-            raise FileNotFoundError(
-                f"以下图片文件不存在，发布中止：{missing}\n"
-                f"请确认图片已成功下载后再执行发布"
-            )
+        # 前置检查：所有图片文件必须存在且可解码，否则立即报错
+        for p in image_paths:
+            _validate_image_file(p)
         for img_path in image_paths:
             filename = os.path.basename(img_path)
             wx_url = upload_image(token, img_path)

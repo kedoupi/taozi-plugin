@@ -1,7 +1,7 @@
 ---
 name: wechat
 description: 微信公众号文章全链路：热点选题 → YouMind 研究 → AI 写作 → 封面图生成 → 推送草稿箱。依赖 ~/.taozi/ 全局配置（运行 /taozi:setup 初始化），草稿和历史记录存于项目 ./wechat/ 目录。
-triggers: "公众号文章,微信推文,发草稿箱,公众号写作,写公众号,微信公众号,WeChat article,publish to WeChat"
+triggers: "公众号文章,微信推文,发草稿箱,公众号写作,写公众号,微信公众号,写篇文章,生成内容,帮我写,内容创作,内容矩阵,WeChat article,publish to WeChat"
 allowed-tools:
   - Bash([ -d "$HOME/.taozi" ]*)
   - Bash([ -f "$HOME/.taozi/platforms/wechat.yaml" ]*)
@@ -516,14 +516,18 @@ mkdir -p wechat/images/<YYYYMMDD>-<slug>/
 
 派一个子 agent：
 ```
-目标保存路径：/tmp/cover-<slug>.jpg
+目标保存路径：wechat/images/<YYYYMMDD>-<slug>/cover.jpg
 
 1. 安装 CLI（如未安装）：youmind --help > /dev/null 2>&1 || npm install -g @youmind-ai/cli
 2. youmind call getDefaultBoard → boardId
 3. youmind call createChat '{"boardId":"<boardId>","message":"<封面 prompt>","tools":{"imageGenerate":{"useTool":"required","aspectRatio":"16:9","quality":"high","model":"gemini-3-pro-image-preview"}}}'
 4. 每 5 秒 getChat 轮询，status=completed 后 listMessages 提取图片 URL
-5. 下载到 /tmp/cover-<slug>.jpg
-6. 输出：SAVED: /tmp/cover-<slug>.jpg
+5. 下载到 wechat/images/<YYYYMMDD>-<slug>/cover.jpg
+6. **下载后强制校验**（任一条件不满足即重试，最多 2 次，仍失败则报错退出）：
+   - `[ -f wechat/images/<slug>/cover.jpg ]`
+   - `stat -f %z wechat/images/<slug>/cover.jpg` > 10240（字节 > 10KB）
+   - `file wechat/images/<slug>/cover.jpg` 输出含 `JPEG` 或 `PNG`
+7. 输出：SAVED: wechat/images/<YYYYMMDD>-<slug>/cover.jpg
 ```
 
 ### 步骤 3：并行生成章节配图（最多 4 张）
@@ -549,16 +553,22 @@ mkdir -p wechat/images/<YYYYMMDD>-<slug>/
 所有子 agent 完成后，执行以下强制检查（**缺一不过**）：
 
 ```bash
-# 1. 列出实际下载的文件
+# 1. 封面必须存在且有效（字节 > 10KB，MIME 为 JPEG/PNG）
+COVER=wechat/images/<YYYYMMDD>-<slug>/cover.jpg
+[ -f "$COVER" ] || { echo "❌ 封面缺失: $COVER"; exit 1; }
+[ $(stat -f %z "$COVER" 2>/dev/null || stat -c %s "$COVER") -gt 10240 ] || { echo "❌ 封面字节数 < 10KB: $COVER"; exit 1; }
+file "$COVER" | grep -qE 'JPEG|PNG' || { echo "❌ 封面 MIME 非 JPEG/PNG: $COVER"; exit 1; }
+
+# 2. 列出实际下载的章节图
 ls wechat/images/<YYYYMMDD>-<slug>/section-*.jpg 2>/dev/null | sort
 
-# 2. 与草稿中的占位符对比
+# 3. 与草稿中的占位符对比
 # 草稿中有多少个 ![](section-N.jpg) 占位符，磁盘上就必须有多少个文件
 # 文件数 < 占位符数 → 报错，不发布
 ```
 
-若任意图片文件缺失：
-- 用 PushNotification 通知用户："❌ 配图生成失败：section-<n>.jpg 未成功下载，文章未发布，请重试"
+若封面或任意章节图缺失/无效：
+- 用 PushNotification 通知用户："❌ 配图生成失败：<具体文件名> 未成功下载或无效，文章未发布，请重试"
 - **立即终止，不执行步骤 3**
 
 `--images` 参数从磁盘实际文件列表构建，不手动枚举：
@@ -573,7 +583,7 @@ python3 skills/wechat/scripts/wechat_publish.py \
   --publish \
   --title "<title>" \
   --content "<draft_path>" \
-  --cover "/tmp/cover-<slug>.jpg" \
+  --cover "wechat/images/<YYYYMMDD>-<slug>/cover.jpg" \
   --theme "<theme>" \
   --images $IMAGE_FILES
 ```
