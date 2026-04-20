@@ -15,7 +15,7 @@ test('frameworks.md 含 7 个框架小节', () => {
   });
 });
 
-test('每个框架含"段落骨架"段', () => {
+test('每个框架含完整四节结构（适用/段落骨架/一句话范例/反例避坑）', () => {
   const content = fs.readFileSync(FRAMEWORKS_PATH, 'utf8');
   const sections = content.split(/^## /m).slice(1);
   // 注意：含"框架选择判断顺序"段，所以总共 8 个 ## 段，框架占 7 个
@@ -23,7 +23,10 @@ test('每个框架含"段落骨架"段', () => {
   assert.strictEqual(frameworkSections.length, 7, '框架数量应为 7');
   frameworkSections.forEach(sec => {
     const name = sec.split('\n')[0];
-    assert.ok(sec.includes('### 段落骨架'), `${name} 缺少"段落骨架"小节`);
+    assert.ok(sec.includes('### 适用'),       `${name} 缺少"适用"小节`);
+    assert.ok(sec.includes('### 段落骨架'),   `${name} 缺少"段落骨架"小节`);
+    assert.ok(sec.includes('### 一句话范例'), `${name} 缺少"一句话范例"小节`);
+    assert.ok(sec.includes('### 反例避坑'),   `${name} 缺少"反例避坑"小节`);
   });
 });
 
