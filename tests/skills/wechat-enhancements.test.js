@@ -1,11 +1,11 @@
 const fs = require('fs');
 const path = require('path');
 
-const ENH_PATH = path.join(__dirname, '..', '..', 'skills', 'wechat', 'references', 'enhancements.md');
-const content = fs.existsSync(ENH_PATH) ? fs.readFileSync(ENH_PATH, 'utf8') : '';
+const ENHANCEMENTS_PATH = path.join(__dirname, '..', '..', 'skills', 'wechat', 'references', 'enhancements.md');
+const content = fs.existsSync(ENHANCEMENTS_PATH) ? fs.readFileSync(ENHANCEMENTS_PATH, 'utf8') : '';
 
 test('enhancements.md 文件存在', () => {
-  assert.ok(fs.existsSync(ENH_PATH), 'enhancements.md 不存在');
+  assert.ok(fs.existsSync(ENHANCEMENTS_PATH), 'enhancements.md 不存在');
 });
 
 test('enhancements.md 含 4 类增强策略', () => {
@@ -41,4 +41,14 @@ test('热点解读型和纯观点型必启用角度发现', () => {
 
 test('含输出元信息格式说明（<!-- 框架: ... | 增强: ... -->）', () => {
   assert.ok(/<!-- 框架:.*增强:/.test(content), '缺少草稿元信息格式说明');
+});
+
+test('映射表中痛点型和对比型必启用密度强化，故事型必启用真实体感', () => {
+  const lines = content.split('\n');
+  const painline = lines.find(l => l.startsWith('| 痛点型'));
+  const cmpline  = lines.find(l => l.startsWith('| 对比型'));
+  const storyline = lines.find(l => l.startsWith('| 故事型'));
+  assert.ok(painline && painline.includes('密度强化'), '痛点型应必启用密度强化');
+  assert.ok(cmpline && cmpline.includes('密度强化'), '对比型应必启用密度强化');
+  assert.ok(storyline && storyline.includes('真实体感'), '故事型应必启用真实体感');
 });
