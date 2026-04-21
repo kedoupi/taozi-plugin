@@ -4,6 +4,24 @@ All notable changes to Taozi Plugin are documented here.
 
 ---
 
+## [6.2.0] - 2026-04-21
+
+### Fixed
+
+- **`security-scan` hook 脱敏输出**：CRITICAL 命中的敏感片段（API Key、密码、DB URL 等）原本原样写回 stderr / session log，现改为保留前 4 + `***` + 后 4 字符的脱敏格式。加回归测试断言原始 secret 永不出现在输出里。
+- **`git-commit-guard` emoji 绕过漏洞**：原逻辑只检查命令里任意位置出现 emoji 即放行，`git commit -m "random 😀"` 可绕过 guard。修复为必须严格匹配 `<emoji> <type>(<scope>)?: <subject>` 格式才放行，补充绕过场景回归测试。
+- **`youmind-key-check` / `wechat-key-check` 未支持 `TAOZI_HOME`**：两个 hook 分别硬编码 `~/.taozi` 或 `TAOZI_TEST_HOME`，自定义 `TAOZI_HOME` 环境变量时被忽略，导致已配置凭据的用户误被拦截。现统一走 `utils.getTaoziDir()`。
+
+### Changed
+
+- **Claude / Codex PreToolUse hooks 完全对齐**：`sync-codex.js` 新增 `syncHooks()`，从 `hooks/hooks.json` 自动生成 `.codex/hooks.json`，Claude 侧 5 个 PreToolUse hook（youmind / wechat / no-verify / git-commit-guard / tmux）全部同步到 Codex，CI 加 parity 测试把关。
+- **README catalog 自动化**：README 中 agents、skills、rules、hooks 四个 catalog 区域加入机器边界标记，`sync-codex.js` 新增 `syncReadmeCatalog` + `--check` 校验模式，CI 加 `catalog-integrity` 步骤，消灭手工数字漂移。
+- **`bump-version.sh` → 跨平台 Node 实现**：原脚本依赖 `packaging`（非标准库）和 macOS 专属 `sed -i ''`，在 Linux CI 可能失败。改为 `scripts/bump-version.js`（零外部依赖），`.sh` 保留为 thin wrapper。CI 新增 `bump-version --dry-run` 门禁。
+- **npm 打包/sync 产物清理**：`sync-codex.js` 的 `copyDir` 跳过 `__pycache__`、`.pyc` 等构建缓存；新增 `.npmignore` 确保 npm pack 产物干净；CI 新增 `npm pack --dry-run` 检查。
+- **README agents 数量修正**：从旧的 23 个补全到实际 36 个，补齐语言三件套（cpp/csharp/kotlin/rust/flutter reviewer + 对应 build-resolver）完整表格。
+
+---
+
 ## [6.1.0] - 2026-04-20
 
 ### Changed (BREAKING)

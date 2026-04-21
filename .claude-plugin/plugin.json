@@ -1,7 +1,7 @@
 {
   "name": "taozi",
-  "version": "6.1.0",
-  "description": "Taozi 6.1.0 - 删除 /taozi:content skill（BREAKING，轻量多平台文案由 /taozi:wechat + /taozi:xiaohongshu 覆盖）；修复 /taozi:wechat 封面下载零校验 bug，封面路径从 /tmp 全局迁到 wechat/images/<slug>/cover.jpg，脚本层新增字节数 + PIL verify 硬校验。",
+  "version": "6.2.0",
+  "description": "Taozi 6.2.0 - 平台化收口：security-scan 脱敏输出、git-commit-guard emoji 绕过修复、Claude/Codex hooks 完全对齐、README catalog 自动化（sync-codex --check）、bump-version.js 跨平台、npm 打包清理。",
   "author": {
     "name": "kedoupi",
     "url": "https://github.com/kedoupi"
