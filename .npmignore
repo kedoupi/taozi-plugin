@@ -1,0 +1,17 @@
+# 构建缓存（与 .gitignore 同步，但 npm 默认会无视 .gitignore 的目录排除）
+**/__pycache__/
+**/.pytest_cache/
+**/.mypy_cache/
+**/.ruff_cache/
+*.pyc
+*.pyo
+
+# OS / 编辑器
+.DS_Store
+.vscode/
+.idea/
+
+# 开发产物
+.worktrees/
+.private-journal/
+.ccb/

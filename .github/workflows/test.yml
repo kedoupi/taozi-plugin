@@ -67,3 +67,24 @@ jobs:
           done
 
           [ "$found" -eq 1 ] || { echo "✗ 未找到 shell 脚本"; exit 1; }
+
+      - name: 验证 bump-version 实际可执行（dry-run）
+        run: |
+          # 用一个一定大于当前版本的目标跑 dry-run，验证跨平台可执行。
+          node scripts/bump-version.js --dry-run 999.0.0 > /tmp/bump.log 2>&1 || { cat /tmp/bump.log; exit 1; }
+          grep -q "DRY-RUN 模式" /tmp/bump.log || { cat /tmp/bump.log; exit 1; }
+          echo "✓ bump-version.js dry-run 可执行"
+
+      - name: 验证 npm pack 产物干净（无 __pycache__）
+        run: |
+          npm pack --dry-run 2>&1 | tee /tmp/pack.log | head -40
+          if grep -E '(__pycache__|\.pyc|\.DS_Store)' /tmp/pack.log; then
+            echo "✗ npm pack 产物中包含不应发布的文件"
+            exit 1
+          fi
+          echo "✓ npm pack 产物干净"
+
+      - name: 验证 README catalog 与源文件一致
+        run: |
+          node scripts/sync-codex.js --check
+          echo "✓ README catalog 已同步"

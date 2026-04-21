@@ -6,8 +6,38 @@
         "hooks": [
           {
             "type": "command",
+            "command": "node -e \"const fs=require('fs'),path=require('path'),os=require('os'),cp=require('child_process');const hook='youmind-key-check.js';const roots=[];if(process.env.CODEX_PLUGIN_ROOT) roots.push(process.env.CODEX_PLUGIN_ROOT);const home=process.env.CODEX_HOME?path.resolve(process.env.CODEX_HOME):path.join(os.homedir(),'.codex');roots.push(path.join(home,'plugins','taozi'));try{roots.push(cp.execSync('git rev-parse --show-toplevel',{encoding:'utf8',stdio:['ignore','pipe','ignore']}).trim())}catch{}const root=roots.find(p=>p&&fs.existsSync(path.join(p,'scripts','hooks',hook)));if(!root){console.error('[Taozi] Unable to locate Codex hook root');process.exit(1)}require(path.join(root,'scripts','hooks',hook));\"",
+            "statusMessage": "YouMind 命令执行前检查 YOUMIND_API_KEY，未配置则 block 并给出设置指引"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e \"const fs=require('fs'),path=require('path'),os=require('os'),cp=require('child_process');const hook='wechat-key-check.js';const roots=[];if(process.env.CODEX_PLUGIN_ROOT) roots.push(process.env.CODEX_PLUGIN_ROOT);const home=process.env.CODEX_HOME?path.resolve(process.env.CODEX_HOME):path.join(os.homedir(),'.codex');roots.push(path.join(home,'plugins','taozi'));try{roots.push(cp.execSync('git rev-parse --show-toplevel',{encoding:'utf8',stdio:['ignore','pipe','ignore']}).trim())}catch{}const root=roots.find(p=>p&&fs.existsSync(path.join(p,'scripts','hooks',hook)));if(!root){console.error('[Taozi] Unable to locate Codex hook root');process.exit(1)}require(path.join(root,'scripts','hooks',hook));\"",
+            "statusMessage": "微信 API 命令执行前检查 WECHAT_APPID / WECHAT_APPSECRET，未配置则 block 并给出设置指引"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
             "command": "node -e \"const fs=require('fs'),path=require('path'),os=require('os'),cp=require('child_process');const hook='no-verify-guard.js';const roots=[];if(process.env.CODEX_PLUGIN_ROOT) roots.push(process.env.CODEX_PLUGIN_ROOT);const home=process.env.CODEX_HOME?path.resolve(process.env.CODEX_HOME):path.join(os.homedir(),'.codex');roots.push(path.join(home,'plugins','taozi'));try{roots.push(cp.execSync('git rev-parse --show-toplevel',{encoding:'utf8',stdio:['ignore','pipe','ignore']}).trim())}catch{}const root=roots.find(p=>p&&fs.existsSync(path.join(p,'scripts','hooks',hook)));if(!root){console.error('[Taozi] Unable to locate Codex hook root');process.exit(1)}require(path.join(root,'scripts','hooks',hook));\"",
-            "statusMessage": "Checking forbidden git flags"
+            "statusMessage": "阻止 git --no-verify 标志（3 铁律强制执行：调试铁律）"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e \"const fs=require('fs'),path=require('path'),os=require('os'),cp=require('child_process');const hook='git-commit-guard.js';const roots=[];if(process.env.CODEX_PLUGIN_ROOT) roots.push(process.env.CODEX_PLUGIN_ROOT);const home=process.env.CODEX_HOME?path.resolve(process.env.CODEX_HOME):path.join(os.homedir(),'.codex');roots.push(path.join(home,'plugins','taozi'));try{roots.push(cp.execSync('git rev-parse --show-toplevel',{encoding:'utf8',stdio:['ignore','pipe','ignore']}).trim())}catch{}const root=roots.find(p=>p&&fs.existsSync(path.join(p,'scripts','hooks',hook)));if(!root){console.error('[Taozi] Unable to locate Codex hook root');process.exit(1)}require(path.join(root,'scripts','hooks',hook));\"",
+            "statusMessage": "拦截裸 git commit，强制走 /taozi:commit skill 流程（emoji + 约定式格式）"
           }
         ]
       },
@@ -17,7 +47,7 @@
           {
             "type": "command",
             "command": "node -e \"const fs=require('fs'),path=require('path'),os=require('os'),cp=require('child_process');const hook='tmux-hint.js';const roots=[];if(process.env.CODEX_PLUGIN_ROOT) roots.push(process.env.CODEX_PLUGIN_ROOT);const home=process.env.CODEX_HOME?path.resolve(process.env.CODEX_HOME):path.join(os.homedir(),'.codex');roots.push(path.join(home,'plugins','taozi'));try{roots.push(cp.execSync('git rev-parse --show-toplevel',{encoding:'utf8',stdio:['ignore','pipe','ignore']}).trim())}catch{}const root=roots.find(p=>p&&fs.existsSync(path.join(p,'scripts','hooks',hook)));if(!root){console.error('[Taozi] Unable to locate Codex hook root');process.exit(1)}require(path.join(root,'scripts','hooks',hook));\"",
-            "statusMessage": "Checking long-running shell commands"
+            "statusMessage": "dev server 建议使用 tmux"
           }
         ]
       }

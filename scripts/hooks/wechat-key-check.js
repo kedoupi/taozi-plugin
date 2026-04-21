@@ -7,7 +7,7 @@
  * exit(0) = 放行
  */
 
-const { readStdinJson, error } = require('../lib/utils');
+const { readStdinJson, error, getTaoziDir } = require('../lib/utils');
 
 const input = readStdinJson();
 if (!input || !input.tool_input) {
@@ -31,13 +31,11 @@ function resolveEnvRef(val) {
 }
 
 // 从新版配置文件读取凭据（优先），回退到 process.env
-// 支持 TAOZI_TEST_HOME 注入，用于测试隔离
+// 目录解析统一走 utils.getTaoziDir()，支持 TAOZI_HOME 环境变量
 function loadYamlCreds() {
-  const os = require('os');
   const fs = require('fs');
   const path = require('path');
-  const HOME = process.env.TAOZI_TEST_HOME || os.homedir();
-  const TAOZI = path.join(HOME, '.taozi');
+  const TAOZI = getTaoziDir();
 
   // 按优先级尝试：config.yaml（全局凭据） > platforms/wechat.yaml（平台配置）
   const candidates = [

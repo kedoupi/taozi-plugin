@@ -561,6 +561,44 @@ test('security-scan 扫描未跟踪的 .env 文件', () => {
   }
 });
 
+test('security-scan CRITICAL 命中必须脱敏，不回显原始 secret', () => {
+  const script = path.join(HOOKS_DIR, 'security-scan.js');
+  const repoDir = path.join(os.tmpdir(), `taozi-security-mask-${Date.now()}`);
+
+  const fakeSecrets = [
+    'AKIAIOSFODNN7EXAMPLE',
+    'ghp_1234567890abcdefghijklmnopqrstuvwxyz',
+    'sk-1234567890abcdefghijklmnopqrstuvABCDEFGHIJ',
+    'SuperSecret123',
+  ];
+
+  try {
+    initGitRepo(repoDir);
+    fs.writeFileSync(
+      path.join(repoDir, 'leak.js'),
+      [
+        `const a = "${fakeSecrets[0]}";`,
+        `const b = "${fakeSecrets[1]}";`,
+        `const c = "${fakeSecrets[2]}";`,
+        `const password = "${fakeSecrets[3]}";`,
+        '',
+      ].join('\n')
+    );
+
+    const result = runHook(script, {}, { cwd: repoDir });
+    assert.strictEqual(result.status, 0, 'Should exit(0)');
+    for (const secret of fakeSecrets) {
+      assert(
+        !result.stderr.includes(secret),
+        `stderr must NOT contain raw secret: ${secret}`
+      );
+    }
+    assert(result.stderr.includes('***'), 'Should use mask placeholder');
+  } finally {
+    fs.rmSync(repoDir, { recursive: true, force: true });
+  }
+});
+
 test('security-scan 为重复命中报告准确行号', () => {
   const script = path.join(HOOKS_DIR, 'security-scan.js');
   const repoDir = path.join(os.tmpdir(), `taozi-security-lines-${Date.now()}`);
@@ -624,7 +662,7 @@ test('wechat-key-check blocks when WECHAT_APPID missing', () => {
   const result = runHook(
     script,
     { tool_input: { command: 'curl https://api.weixin.qq.com/cgi-bin/stable_token' } },
-    { env: { WECHAT_APPID: '', WECHAT_APPSECRET: 'secret_test456', TAOZI_TEST_HOME: '/tmp/taozi-test-nohome' } }
+    { env: { WECHAT_APPID: '', WECHAT_APPSECRET: 'secret_test456', TAOZI_HOME: '/tmp/taozi-test-nohome' } }
   );
   assert.strictEqual(result.status, 2, 'Should exit(2) when WECHAT_APPID is missing');
   assert(result.stderr.includes('WECHAT_APPID'), 'Should mention missing variable');
@@ -635,7 +673,7 @@ test('wechat-key-check blocks when WECHAT_APPSECRET missing', () => {
   const result = runHook(
     script,
     { tool_input: { command: 'curl https://api.weixin.qq.com/cgi-bin/stable_token' } },
-    { env: { WECHAT_APPID: 'wx_test123', WECHAT_APPSECRET: '', TAOZI_TEST_HOME: '/tmp/taozi-test-nohome' } }
+    { env: { WECHAT_APPID: 'wx_test123', WECHAT_APPSECRET: '', TAOZI_HOME: '/tmp/taozi-test-nohome' } }
   );
   assert.strictEqual(result.status, 2, 'Should exit(2) when WECHAT_APPSECRET is missing');
   assert(result.stderr.includes('WECHAT_APPSECRET'), 'Should mention missing variable');
@@ -646,7 +684,7 @@ test('wechat-key-check blocks when both credentials missing', () => {
   const result = runHook(
     script,
     { tool_input: { command: 'python3 wechat_publish.py --url https://api.weixin.qq.com/draft/add' } },
-    { env: { WECHAT_APPID: '', WECHAT_APPSECRET: '', TAOZI_TEST_HOME: '/tmp/taozi-test-nohome' } }
+    { env: { WECHAT_APPID: '', WECHAT_APPSECRET: '', TAOZI_HOME: '/tmp/taozi-test-nohome' } }
   );
   assert.strictEqual(result.status, 2, 'Should exit(2) when both env vars are missing');
   assert(result.stderr.includes('WECHAT_APPID'), 'Should list WECHAT_APPID in missing');
@@ -670,7 +708,7 @@ test('wechat-key-check blocks direct wechat_publish.py call without credentials'
   const result = runHook(
     script,
     { tool_input: { command: 'python3 wechat_publish.py --publish' } },
-    { env: { WECHAT_APPID: '', WECHAT_APPSECRET: '', TAOZI_TEST_HOME: '/tmp/taozi-test-nohome' } }
+    { env: { WECHAT_APPID: '', WECHAT_APPSECRET: '', TAOZI_HOME: '/tmp/taozi-test-nohome' } }
   );
   assert.strictEqual(result.status, 2, 'Should exit(2) when calling wechat_publish.py without credentials');
 });
@@ -748,4 +786,28 @@ test('git-commit-guard handles empty input gracefully', () => {
   const script = path.join(HOOKS_DIR, 'git-commit-guard.js');
   const result = runHook(script, {});
   assert.strictEqual(result.status, 0, 'Should exit(0) for empty input');
+});
+
+test('git-commit-guard allows emoji + conventional format', () => {
+  const script = path.join(HOOKS_DIR, 'git-commit-guard.js');
+  for (const cmd of [
+    'git commit -m "🙈 chore: ignore ds store"',
+    'git commit -m "🐛 fix(wechat): cover download"',
+    'git commit -m "🔖 chore: bump 6.1.0"',
+  ]) {
+    const result = runHook(script, { tool_input: { command: cmd } });
+    assert.strictEqual(result.status, 0, `Should allow: ${cmd}`);
+  }
+});
+
+test('git-commit-guard blocks bypass via stray emoji (no conventional type)', () => {
+  const script = path.join(HOOKS_DIR, 'git-commit-guard.js');
+  for (const cmd of [
+    'git commit -m "random 😀"',
+    'git commit -m "😀 random text without type"',
+    'git commit -m "🙈 something without colon"',
+  ]) {
+    const result = runHook(script, { tool_input: { command: cmd } });
+    assert.strictEqual(result.status, 2, `Should block bypass: ${cmd}`);
+  }
 });

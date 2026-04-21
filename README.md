@@ -245,55 +245,75 @@ mkdir -p .agents/plugins
 /taozi:webpage 设计一个产品发布落地页
 ```
 
-## Agents（23 个）
+<!-- catalog:agents:start -->
+## Agents（36 个）
 
 ### 编排层
 | Agent | 专长 |
 |-------|------|
-| chief-of-staff | 高层任务编排、Agent 调度、结果汇总 |
+| chief-of-staff | 高层任务编排者。分析复杂请求，拆解为子任务，选择最优 Agent 组合，协调执行顺序，汇总结果。比 /taozi 更智能的调度层。 |
 
 ### 执行层
 | Agent | 专长 |
 |-------|------|
-| fullstack-developer | 端到端开发、完整功能实现 |
-| devops-engineer | CI/CD、Docker、K8s、部署 |
-| debugger | Bug 诊断、错误分析 |
-| build-error-resolver | 构建错误修复、类型错误 |
+| fullstack-developer | 端到端开发主力专家，覆盖前端、后端、数据库和完整功能实现。所有开发任务的首选 Agent。 |
+| devops-engineer | DevOps 和基础设施专家。在 CI/CD 流水线、Docker 容器化、Kubernetes 部署、云服务配置、监控告警和自动化运维方面请主动使用。 |
+| debugger | 专门处理错误、测试失败和意外行为的调试专家。遇到问题、分析堆栈跟踪或调查系统问题时请主动使用。 |
+| build-error-resolver | TypeScript/Node.js 构建错误修复专家 — TS 类型错误、编译失败、依赖冲突快速定位和修复。其他语言请用对应的 {lang}-build-resolver。 |
 
 ### 规划层
 | Agent | 专长 |
 |-------|------|
-| architect | 系统架构、技术选型 |
-| planner | 需求分解、任务拆分 |
+| architect | 系统架构设计专家 — 技术选型、架构模式、数据流设计、可扩展性分析 |
+| planner | 功能实现规划师 — 需求分解、任务拆分、依赖分析、风险评估 |
 
 ### 质量层
 | Agent | 专长 |
 |-------|------|
-| code-reviewer | 代码质量、安全性审查（通用） |
-| typescript-reviewer | TypeScript 类型安全、React hooks |
-| python-reviewer | Python 类型注解、async 陷阱 |
-| go-reviewer | goroutine 泄漏、error 处理 |
-| java-reviewer | Spring 反模式、JPA N+1 |
-| testing-engineer | 测试策略、TDD、覆盖率 |
-| tdd-guide | TDD 循环强制、RED→GREEN→REFACTOR |
-| e2e-runner | Playwright E2E 测试 |
-| security-reviewer | 安全漏洞检测、OWASP Top 10 |
+| code-reviewer | 代码质量与安全审查专家。负责代码审查、安全漏洞检测、质量评估和最佳实践验证。 |
+| typescript-reviewer | TypeScript 专项代码审查。聚焦类型安全、any 滥用、泛型设计、React hooks 陷阱、运行时与编译期安全的一致性。 |
+| python-reviewer | Python 专项代码审查。聚焦类型注解完整性、async/await 陷阱、可变默认参数、异常处理模式、依赖注入与测试可测性。 |
+| go-reviewer | Go 专项代码审查。聚焦 goroutine 泄漏、channel 死锁、error 处理规范、interface 设计、context 传播。 |
+| java-reviewer | Java/Spring 专项代码审查。聚焦 Spring 反模式、JPA N+1、事务边界、依赖注入滥用、空指针风险。 |
+| cpp-reviewer | C++ 专项代码审查。聚焦内存安全（raw pointer/UAF）、未定义行为、RAII 违反、现代 C++ 惯用法。 |
+| csharp-reviewer | C# 专项代码审查。聚焦 async/await 死锁、IDisposable 泄漏、LINQ 延迟求值陷阱、nullable 注解完整性。 |
+| kotlin-reviewer | Kotlin 专项代码审查。聚焦协程泄漏、null safety 绕过、Java 互操作陷阱、Compose 性能问题。 |
+| rust-reviewer | Rust 专项代码审查。聚焦 unsafe 合规性、所有权/借用反模式、async 阻塞、错误处理规范。 |
+| flutter-reviewer | Flutter/Dart 专项代码审查。聚焦 Widget 重建性能、BuildContext 跨 async 使用、null safety 绕过、状态管理反模式。 |
+| testing-engineer | 测试策略、用例设计和质量保证专家。在编写单元测试、集成测试、E2E 测试、TDD 实践、测试覆盖率优化和测试架构设计方面请主动使用。 |
+| tdd-guide | TDD 引导专家 — 强制执行 RED→GREEN→REFACTOR 循环，确保测试先行 |
+| e2e-runner | E2E 测试专家 — Playwright 测试生成、页面模型、CI 集成 |
+| security-reviewer | 安全审查专家 — 漏洞检测、OWASP Top 10、密钥泄露、依赖安全 |
+
+### 语言构建修复层
+| Agent | 专长 |
+|-------|------|
+| cpp-build-resolver | C++ 构建错误修复专家 — 头文件找不到、链接错误、模板实例化失败、CMake 配置问题快速定位和修复 |
+| csharp-build-resolver | C#/.NET 构建错误修复专家 — NuGet 依赖冲突、目标框架不兼容、EF migrations 不同步、缺少 using 快速定位和修复 |
+| flutter-build-resolver | Flutter/Dart 构建错误修复专家 — pubspec 版本冲突、native plugin 编译失败、Dart SDK 版本不兼容、flutter pub 问题快速定位和修复 |
+| go-build-resolver | Go 构建错误修复专家 — undefined、类型不匹配、module 路径错误、CGO 问题快速定位和修复 |
+| java-build-resolver | Java/Spring 构建错误修复专家 — cannot find symbol、依赖冲突、Spring Bean 注入失败、Maven/Gradle 构建问题快速定位和修复 |
+| kotlin-build-resolver | Kotlin 构建错误修复专家 — Gradle 构建失败、kapt 注解处理错误、Kotlin/JVM 版本不兼容、Compose 编译器问题快速定位和修复 |
+| python-build-resolver | Python 构建错误修复专家 — ModuleNotFoundError、依赖冲突、mypy 类型错误、虚拟环境问题快速定位和修复 |
+| rust-build-resolver | Rust 构建错误修复专家 — 生命周期标注、借用冲突、trait 未实现、feature flag 缺失快速定位和修复 |
 
 ### 优化层
 | Agent | 专长 |
 |-------|------|
-| refactoring-specialist | 代码重构、设计模式 |
-| performance-engineer | 性能分析、优化调优 |
-| refactor-cleaner | 死代码清理 |
+| refactoring-specialist | 代码重构和架构改进专家。在代码异味识别、设计模式应用、技术债务清理、代码现代化和架构演进方面请主动使用。 |
+| performance-engineer | 性能优化和调优专家。在应用性能分析、瓶颈诊断、前端性能优化、后端性能调优、数据库优化和负载测试方面请主动使用。 |
+| refactor-cleaner | 代码清理专家 — 死代码检测、重复代码合并、依赖清理 |
 
 ### 支撑层
 | Agent | 专长 |
 |-------|------|
-| documentation-engineer | 技术文档、API 文档 |
-| doc-updater | 文档同步、codemap 更新 |
-| context-manager | 上下文优化、CLAUDE.md |
-| prompt-engineer | LLM 提示优化、AI 系统 |
+| documentation-engineer | 技术文档和 API 文档专家。在编写 README、API 文档、架构文档、用户指南和技术规范方面请主动使用。 |
+| doc-updater | 文档更新专家 — 同步代码变更到文档、生成 codemap、维护 README |
+| context-manager | 上下文优化和 Token 管理专家。在长对话管理、上下文压缩、信息提炼、会话策略优化和多轮对话效率提升方面请主动使用。 |
+| prompt-engineer | 专门优化 LLM 和 AI 系统提示的专家。构建 AI 功能、改进代理性能或制作系统提示时请主动使用。精通提示模式和技巧。 |
+<!-- catalog:agents:end -->
 
+<!-- catalog:skills:start -->
 ## Skills（71 个）
 
 Claude / Codex 根据任务自动引用相关知识库；同时 `/taozi:<name>` 手动触发工作流类 skill。
@@ -304,11 +324,12 @@ Claude / Codex 根据任务自动引用相关知识库；同时 `/taozi:<name>` 
 
 ### 开发知识库（36 个，自动引用）
 
-`frontend-react` · `backend-architecture` · `nextjs-advanced` · `nextjs-architecture` · `typescript-types` · `typescript-patterns` · `python-patterns` · `go-patterns` · `swift-patterns` · `swift-concurrency` · `foundation-models` · `django-patterns` · `springboot-patterns` · `springboot-tdd` · `springboot-security` · `docker-patterns` · `e2e-testing` · `api-design` · `deployment-patterns` · `database-migrations` · `security-patterns` · `sql-optimization` · `legacy-migration` · `testing-strategies` · `mcp-templates` · `git-conventions` · `code-quality-checklist` · `thinking-tools` · `continuous-learning` · `token-optimization` · `deep-research` · `rust-patterns` · `kotlin-patterns` · `cpp-patterns` · `csharp-patterns` · `flutter-patterns`
+`api-design` · `backend-architecture` · `code-quality-checklist` · `continuous-learning` · `cpp-patterns` · `csharp-patterns` · `database-migrations` · `deep-research` · `deployment-patterns` · `django-patterns` · `docker-patterns` · `e2e-testing` · `flutter-patterns` · `foundation-models` · `frontend-react` · `git-conventions` · `go-patterns` · `kotlin-patterns` · `legacy-migration` · `mcp-templates` · `nextjs-advanced` · `nextjs-architecture` · `python-patterns` · `rust-patterns` · `security-patterns` · `springboot-patterns` · `springboot-security` · `springboot-tdd` · `sql-optimization` · `swift-concurrency` · `swift-patterns` · `testing-strategies` · `thinking-tools` · `token-optimization` · `typescript-patterns` · `typescript-types`
 
 ### YouMind 创作 Skills（8 个）
 
 `image` · `infographic` · `research` · `clip` · `ppt` · `webpage` · `wechat` · `xiaohongshu`
+<!-- catalog:skills:end -->
 
 ## YouMind AI 创作能力（详细说明）
 
@@ -342,11 +363,14 @@ Claude / Codex 根据任务自动引用相关知识库；同时 `/taozi:<name>` 
 
 返回一个直接可访问的 CDN 链接，无需部署，生成即可分享。
 
+<!-- catalog:rules:start -->
 ## Rules（31 个规则文件）
+<!-- catalog:rules:end -->
 
 Claude 自动遵循的约束规范，覆盖通用编码规范 + TypeScript / Python / Go / Swift / Java 5 个语言生态。
 
-## Hooks（11 个自动化钩子）
+<!-- catalog:hooks:start -->
+## Hooks（13 个自动化钩子）
 
 | 事件 | 描述 |
 |------|------|
@@ -361,6 +385,7 @@ Claude 自动遵循的约束规范，覆盖通用编码规范 + TypeScript / Pyt
 | Stop | 会话结束后评估可学习模式 |
 | Stop | 会话结束后扫描安全问题（OWASP Top 10）|
 | PreCompact | 压缩前保留关键上下文 |
+<!-- catalog:hooks:end -->
 
 ## MCP 配置
 

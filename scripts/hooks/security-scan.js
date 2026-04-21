@@ -266,6 +266,14 @@ function getLineNumberFromIndex(content, index) {
   return content.substring(0, index).split('\n').length;
 }
 
+// 对 CRITICAL 命中做脱敏：保留前 4 + 后 4 字符，中间固定 *** 占位。
+// 目的：避免 stderr / session log 再次完整回显 secret。
+function maskSnippet(s) {
+  const str = String(s);
+  if (str.length <= 8) return '***';
+  return `${str.slice(0, 4)}***${str.slice(-4)}`;
+}
+
 // --- 执行扫描 ---
 
 const input = readStdinJson();
@@ -335,12 +343,13 @@ for (const filePath of modifiedFiles) {
       while ((match = pattern.regex.exec(content)) !== null) {
         const snippet = match[0];
         const lineNum = getLineNumberFromIndex(content, match.index);
+        const truncated = snippet.slice(0, 80);
         findings[rule.severity].push({
           file: filePath,
           line: lineNum,
           rule: rule.name,
           desc: pattern.desc,
-          snippet: snippet.slice(0, 80),
+          snippet: rule.severity === SEVERITY.CRITICAL ? maskSnippet(truncated) : truncated,
         });
 
         // Avoid infinite loops on zero-length patterns.

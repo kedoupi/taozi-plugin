@@ -21,9 +21,11 @@ const isGitCommit = /\bgit\s+commit\b(?!-)/.test(command);
 
 if (isGitCommit) {
   // 放行已符合 emoji + conventional 格式的 commit（说明已走过 skill 流程）
-  const emojiConventional = /[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/u;
-  const hasEmoji = emojiConventional.test(command);
-  if (hasEmoji) {
+  // 必须匹配：<emoji> <type>(<scope>)?: <subject>
+  // 仅命令里任意位置出现 emoji 并不足够（例如 "git commit -m 'random 😀'" 不应放行）
+  const conventionalWithEmoji =
+    /[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}][️‍]?\s*(feat|fix|docs|style|refactor|perf|test|chore|build|ci|revert|wip)(\([^)]+\))?:\s+\S/u;
+  if (conventionalWithEmoji.test(command)) {
     process.exit(0);
   }
 

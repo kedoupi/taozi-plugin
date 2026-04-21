@@ -22,7 +22,7 @@ const SYNC_SCRIPT = path.join(ROOT, 'scripts', 'sync-codex.js');
 
 function makeFixtureRoot() {
   const fixtureRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'taozi-codex-test-'));
-  for (const relativePath of ['agents', 'skills', 'scripts']) {
+  for (const relativePath of ['agents', 'skills', 'scripts', 'hooks', 'rules', 'README.md']) {
     fs.cpSync(path.join(ROOT, relativePath), path.join(fixtureRoot, relativePath), {
       recursive: true,
     });
@@ -143,6 +143,32 @@ test('Codex hook commands resolve Taozi hook scripts outside the current repo', 
     }
   } finally {
     fs.rmSync(repoRoot, { recursive: true, force: true });
+  }
+});
+
+test('Codex PreToolUse hooks cover every Claude PreToolUse hook (parity)', () => {
+  const claudeHooks = JSON.parse(fs.readFileSync(path.join(ROOT, 'hooks', 'hooks.json'), 'utf8'));
+  const codexHooks = JSON.parse(fs.readFileSync(CODEX_HOOKS, 'utf8'));
+
+  const extractHookFiles = (groups) => {
+    const files = new Set();
+    for (const g of groups || []) {
+      for (const h of g.hooks || []) {
+        const m = (h.command || '').match(/([a-z0-9_-]+\.js)/);
+        if (m) files.add(m[1]);
+      }
+    }
+    return files;
+  };
+
+  const claudeHookFiles = extractHookFiles(claudeHooks.hooks.PreToolUse);
+  const codexHookFiles = extractHookFiles(codexHooks.hooks.PreToolUse);
+
+  for (const f of claudeHookFiles) {
+    assert(
+      codexHookFiles.has(f),
+      `Codex PreToolUse missing parity hook: ${f}. Run: node scripts/sync-codex.js`
+    );
   }
 });
 
@@ -282,5 +308,49 @@ test('sync-codex skips skill directory without SKILL.md', () => {
     assert.strictEqual(result.status, 0, 'sync should succeed even with an empty skill dir');
     const targetDir = path.join(fixtureRoot, '.agents', 'skills', 'empty-no-skill-md');
     assert(!fs.existsSync(targetDir), 'skill dir without SKILL.md should not be synced');
+  });
+});
+
+test('sync-codex --check passes in current workspace', () => {
+  const result = spawnSync('node', [SYNC_SCRIPT, '--check'], {
+    cwd: ROOT,
+    encoding: 'utf8',
+    timeout: 10000,
+  });
+
+  assert.strictEqual(result.status, 0, result.stderr || result.stdout || '--check should pass in current workspace');
+  assert((result.stdout || '').includes('README catalog check: OK'), 'missing README catalog success output');
+});
+
+test('sync-codex --check fails when README catalog is stale', () => {
+  withFixture(fixtureRoot => {
+    const fakeAgent = path.join(fixtureRoot, 'agents', 'fake-agent.md');
+    fs.writeFileSync(
+      fakeAgent,
+      [
+        '---',
+        'name: fake-agent',
+        'description: 用于验证 README catalog 校验失败',
+        'tools: Read, Grep, Glob',
+        'model: sonnet',
+        '---',
+        '',
+        '正文内容足够长，避免被前置解析当成空文件。',
+        '',
+      ].join('\n'),
+      'utf8'
+    );
+
+    const result = spawnSync('node', [path.join(fixtureRoot, 'scripts', 'sync-codex.js'), '--check'], {
+      cwd: fixtureRoot,
+      encoding: 'utf8',
+      timeout: 10000,
+    });
+
+    assert.strictEqual(result.status, 1, 'README catalog check should fail when source changes but README is not regenerated');
+    assert(
+      (result.stderr || result.stdout).includes('unassigned agents in README catalog'),
+      'missing stale README catalog detection output'
+    );
   });
 });

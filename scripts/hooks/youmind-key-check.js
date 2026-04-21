@@ -7,7 +7,7 @@
  * exit(0) = 放行
  */
 
-const { readStdinJson, error } = require('../lib/utils');
+const { readStdinJson, error, getTaoziDir } = require('../lib/utils');
 
 const input = readStdinJson();
 if (!input || !input.tool_input) {
@@ -22,11 +22,11 @@ if (!isYouMindCommand) {
   process.exit(0);
 }
 
-// 从 ~/.taozi/config.yaml 读取 youmind.api_key（优先），回退 process.env
+// 从 <TAOZI_HOME>/config.yaml 读取 youmind.api_key（优先），回退 process.env
 function loadYamlApiKey() {
   const fs = require('fs');
-  const os = require('os');
-  const yamlPath = `${os.homedir()}/.taozi/config.yaml`;
+  const path = require('path');
+  const yamlPath = path.join(getTaoziDir(), 'config.yaml');
   try {
     const text = fs.readFileSync(yamlPath, 'utf8');
     const m = text.match(/^\s+api_key\s*:\s*(.+)$/m);

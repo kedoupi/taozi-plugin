@@ -6,11 +6,16 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Claude Code 插件 + Codex 适配层的双运行时仓库。
 
-- `agents/` + `skills/` = 单一事实来源（两个运行时共享）
-- `hooks/` + `.claude-plugin/` = Claude Code 专用
-- `.codex/` + `.codex-plugin/` + `.agents/` = Codex 专用（由脚本生成，禁止手工编辑）
+- `agents/` + `skills/` + `hooks/hooks.json` = 单一事实来源
+- `.claude-plugin/` = Claude Code 专用
+- `.codex/` + `.codex-plugin/` + `.agents/` = Codex 专用（由 `scripts/sync-codex.js` 生成，禁止手工编辑）
 
 > commands/ 目录已彻底废除 — 所有 `/taozi:xxx` 触发都通过 skills。官方文档 "Custom commands have been merged into skills"。
+
+### Hook 双运行时差异
+- Claude 支持 `PreToolUse / PostToolUse / SessionStart / Stop / PreCompact` 五类事件；Codex 目前只支持 `PreToolUse`。
+- `PreToolUse` 必须在两侧严格对齐：sync-codex 会从 `hooks/hooks.json` 的 PreToolUse 生成 `.codex/hooks.json`，CI 有 parity 测试把关。
+- 其他事件（如 `Stop`-触发的 security-scan、`SessionStart`-触发的上下文加载）是 Claude 专有，Codex 侧不生成，这是 runtime 能力约束，不是遗漏。
 
 ## 关键命令
 
@@ -20,15 +25,15 @@ node scripts/sync-codex.js  # agents/ 或 skills/ 变更后同步 Codex 适配�
 npm run lint                # 验证 hooks/hooks.json 格式合法
 ```
 
-## 修改 agents/ 或 skills/ 后必须做
+## 修改 agents/ / skills/ / hooks/hooks.json 后必须做
 
-改动 `agents/*.md` 或 `skills/*/SKILL.md` 后，必须紧跟运行：
+改动 `agents/*.md`、`skills/*/SKILL.md` 或 `hooks/hooks.json` 的 PreToolUse 部分后，必须紧跟运行：
 
 ```bash
 node scripts/sync-codex.js
 ```
 
-否则 `.codex/agents/` 和 `.agents/skills/` 会与源码不一致。
+否则 `.codex/agents/`、`.agents/skills/`、`.codex/hooks.json` 会与源码不一致。CI 的 parity 测试会把关。
 
 ## 发版检查单
 
